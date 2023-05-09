@@ -4,7 +4,7 @@ function [Q11, Q22, Q66, Q12] = internal_getReducedQ(E11, E22,...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.2 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.3 Copyright Louis Vallance 2023
 %   Last modified 09-May-2023 07:31:07 UTC
 %
 

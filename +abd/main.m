@@ -45,7 +45,7 @@ function [varargout] = main(varargin)
 %
 %   [..] = ABD.MAIN(MATERIAL, LAYUP, OUTPUT_DEF).
 %
-%   MATERIAL. A 1x3 cell array specifying mechanical and strength material
+%   MATERIAL. A 1x4 cell array specifying mechanical and strength material
 %   properties.
 %
 %   MATERIAL(1) is a 1xn cell array specifying the mechanical material
@@ -56,6 +56,10 @@ function [varargout] = main(varargin)
 %
 %   MATERIAL(3) is a 1xn cell array specifying the strength properties for
 %   strain-based failure criteria XET, XEC, YET, YEC and SE for each ply.
+%
+%   MATERIAL(4) is a 1xn cell array specifying the strength properties for
+%   the Hashin damage initiation criteria ALPHA, XHT, XHC, YHT, YHC, SHX
+%   and SHY for each ply.
 %
 %   Note: n = 1 for constant material properties; for ply-wise material
 %   properties, specify n sets of properties corresponding to the n ply
@@ -115,11 +119,12 @@ function [varargout] = main(varargin)
 %
 %   OUTPUT_DEF(4) is a 1x4 cell array specifying settings for the stacking
 %   sequence optimiser. OUTPUT_OPTIMISED(1) is the failure criterion for
-%   the optimisation ('MSTRS', 'TSAIH', 'TSAIW', 'AZZIT' or 'MSTRN');
-%   OUTPUT_OPTIMISED(2) is the failure assessment parameter ('RESERVE' or
-%   'VALUE'); OUTPUT_OPTIMISED(3) is the objective function ('MINMAX' or
-%   'MINMEAN'); OUTPUT_OPTIMISED(4) is the angular step size for the
-%   stacking sequence permutations.
+%   the optimisation ('MSTRS', 'TSAIH', 'TSAIW', 'AZZIT', 'MSTRN',
+%   'HSNFTCRT', 'HSNFCCRT', 'HSNMTCRT' or 'HSNMCCRT'); OUTPUT_OPTIMISED(2)
+%   is the failure assessment parameter ('RESERVE' or 'VALUE');
+%   OUTPUT_OPTIMISED(3) is the objective function ('MINMAX' or 'MINMEAN');
+%   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
+%   permutations.
 %
 %   OUTPUT_DEF(5) is a string specifying the results location,
 %   OUTPUT_LOCATION. Use 'DEFAULT' to save results under a new folder in
@@ -183,6 +188,10 @@ function [varargout] = main(varargin)
 %       - TSAIW, Tsai-Wu theory failure measure
 %       - AZZIT, Azzi-Tsai-Hill theory failure measure
 %       - MSTRN, Maximum strain theory failure measure
+%       - HSNFTCRT, Hashin’s fibre tensile damage initiation criterion
+%       - HSNFCCRT, Hashin’s fibre compression damage initiation criterion
+%       - HSNMTCRT, Hashin’s matrix tensile damage initiation criterion
+%       - HSNMCCRT, Hashin’s matrix compression damage initiation criterion
 %       - SFAILRATIO, The proportion of the layup that has failed for each
 %         failure criterion over all section points [%/100]
 %
@@ -226,7 +235,7 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 2.2 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.3 Copyright Louis Vallance 2023
 %   Last modified 09-May-2023 07:31:07 UTC
 
 %% - DO NOT EDIT BELOW LINE
@@ -246,10 +255,10 @@ varargout{8.0} = [];
 
 %% GET USER INPUTS FROM VARARGIN
 [enableTensor, printTensor, materialDataMechanical,...
-    materialDataFailStress, materialDataFailStrain, theta, t_ply,...
-    symmetricPly, SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE,...
-    OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION, Nxx, Nyy, Nxy,...
-    Mxx, Myy, Mxy, deltaT, deltaM] =...
+    materialDataFailStress, materialDataFailStrain, materialDataHashin,...
+    theta, t_ply, symmetricPly, SECTION_POINTS, OUTPUT_PLY,...
+    OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION,...
+    Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM] =...
     ...
     abd.internal_initialise(nargin, varargin);
 

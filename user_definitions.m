@@ -78,6 +78,27 @@ TIP:
 %}
 FAIL_STRAIN = [];
 
+% HASHIN  Strength properties for Hashin damage initiation criteria
+%{
+TIP:
+
+    Specify strength properties for n plies as a 1xn cell array:
+    Shear influence parameter;
+    Lamina tensile/compressive strength (longitudinal);
+    Lamina tensile/compressive strength (transverse);
+    Lamina in-plane/transverse shear strength;
+
+    HASHIN = {[ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](1),
+              ...,
+              [ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](n)}
+
+    Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
+
+    Units:
+    Stress - [N/mm2]
+%}
+HASHIN = [];
+
 %% 2: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up) [degrees]
 STACKING_SEQUENCE = [0.0, 45.0, 90.0];
@@ -173,12 +194,12 @@ OUTPUT_LOCATION = 'DEFAULT';
 % Submit the layup for analysis!
 [ABD1, ABD2, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT_SEQ] =...
     ...
-    abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN}, {STACKING_SEQUENCE,...
-    PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY,...
-    OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION},...
-    [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
+    abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN},...
+    {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS},...
+    {OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED,...
+    OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
 
-clear MATERIAL FAIL_STRESS FAIL_STRAIN STACKING_SEQUENCE PLY_THICKNESS...
-    SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY DELTA_T...
-    DELTA_M OUTPUT_PLY OUTPUT_FIGURE OUTPUT_STRENGTH OUTPUT_OPTIMISED...
-    OUTPUT_LOCATION
+clear MATERIAL FAIL_STRESS FAIL_STRAIN HASHIN STACKING_SEQUENCE...
+    PLY_THICKNESS SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY...
+    DELTA_T DELTA_M OUTPUT_PLY OUTPUT_FIGURE OUTPUT_STRENGTH...
+    OUTPUT_OPTIMISED OUTPUT_LOCATION

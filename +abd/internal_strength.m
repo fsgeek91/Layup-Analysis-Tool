@@ -3,7 +3,7 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.2 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.3 Copyright Louis Vallance 2023
 %   Last modified 09-May-2023 07:31:07 UTC
 %
 
@@ -258,6 +258,49 @@ classdef internal_strength < handle
             ME12 = abs(strain_12./SE);
 
             MSTRN = max([ME11; ME22; ME12]);
+        end
+
+        %% FAILURE CRITERION: HASHIN
+        function [HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT] = getHashin(...
+                stress, Xht, Xhc, Yht, Yhc, Sl, St, alpha)
+            % Get stresses for each section point
+            S1 = stress(1.0, :);
+            S2 = stress(2.0, :);
+            T12 = stress(3.0, :);
+
+            % Mode I/II
+            S11Pos = S1 >= 0.0;
+            S11Neg = S1 < 0.0;
+            
+            if any(S11Pos) == false
+                HSNFTCRT = 0.0;
+            else
+                HSNFTCRT = max((S1(S11Pos)./ Xht).^2.0 +...
+                    alpha.*(T12(S11Pos) ./ Sl).^2.0);
+            end
+            if any(S11Neg) == false
+                HSNFCCRT = 0.0;
+            else
+                HSNFCCRT = max((S1(S11Neg) ./ Xhc).^2.0);
+            end
+            
+            % Mode III/IV
+            S22Pos = S2 >= 0.0;
+            S22Neg = S2 < 0.0;
+            
+            if any(S22Pos) == false
+                HSNMTCRT = 0.0;
+            else
+                HSNMTCRT = max((S2(S22Pos) ./ Yht).^2.0 +...
+                    (T12(S22Pos) ./ Sl).^2.0);
+            end
+            if any(S22Neg) == false
+                HSNMCCRT = 0.0;
+            else
+                HSNMCCRT = max((S2(S22Neg) ./...
+                    (2.0*St)).^2.0 + ((Yhc ./ (2.0.*St)).^2.0 - 1.0).*...
+                    (S2(S22Neg) ./ Yhc) + (T12(S22Neg) ./ Sl).^2.0);
+            end
         end
     end
 end
