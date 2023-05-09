@@ -1,5 +1,5 @@
 function [error, noStrength, varargout] =...
-    internal_getMaterial(data, nPlies, symmetricPly, mode)
+    internal_getMaterial(data, nPlies, symmetricPly, mode, tag)
 %   Get material data for each ply.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -27,7 +27,7 @@ switch mode
         varargout{6.0} = [];
         varargout{7.0} = [];
         varargout{8.0} = [];
-    case 2.0 % FAIL STRESS
+    case 2.0 % FAIL STRESS OR HASHIN
         varargout{1.0} = [];
         varargout{2.0} = [];
         varargout{3.0} = [];
@@ -125,7 +125,7 @@ switch mode
             % Property count check
             if length(currentMaterial) ~= 8.0
                 fprintf(['[ABD ERROR] Incorrect number of properties s',...
-                    'pecified in MATERIAL\n']);
+                    'pecified in %s\n'], tag);
                 error = true;
                 return
             end
@@ -160,7 +160,7 @@ switch mode
             % Property count check
             if length(currentMaterial) ~= 7.0
                 fprintf(['[ABD ERROR] Incorrect number of properties s',...
-                    'pecified in FAIL_STRESS\n']);
+                    'pecified in %s\n'], tag);
                 error = true;
                 return
             end
@@ -193,7 +193,7 @@ switch mode
             % Property count check
             if length(currentMaterial) ~= 5.0
                 fprintf(['[ABD ERROR] Incorrect number of properties s',...
-                    'pecified in FAIL_STRAIN\n']);
+                    'pecified in %s\n'], tag);
                 error = true;
                 return
             end

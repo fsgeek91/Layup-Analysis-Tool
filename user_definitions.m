@@ -4,7 +4,7 @@
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 2.2 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.3 Copyright Louis Vallance 2023
 %   Last modified 09-May-2023 07:31:07 UTC
 
 %% 1: MATERIAL DATA
@@ -170,6 +170,9 @@ OUTPUT_STRENGTH = false;
 
     Second argument (failure parameter):
     '<param>': Reserve (reserve factor); Value (criterion value)
+
+    Note: The reserve factor applies only to Tsai-Hill, Tsai-Wu and
+    Azzi-Tsai-Hill.
 
     Third argument (objective function):
     '<fun>': MinMax (minimise the maximum criterion value); MinMean

@@ -2,10 +2,10 @@ function [] = internal_outputToFile(dateString, outputLocation,...
     outputStrength, nPlies, t_ply, theta, enableTensor, printTensor,...
     S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy, ABD, symmetricAbd,...
     EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS,...
-    TSAIH, TSAIW, AZZIT, MSTRN, noFailStress, noFailStrain,...
-    nSectionPoints, outputPoints, plyBuffer, thickness, OUTPUT_ENVELOPE,...
-    ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED,...
-    OUTPUT_FIGURE)
+    TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
+    noFailStress, noFailStrain, noHashin, nSectionPoints, outputPoints,...
+    plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE,...
+    outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -188,6 +188,25 @@ if outputStrength == 1.0
             MAX_MSTRN, MSTRN_SYM);
     end
 
+    if noHashin == false
+        % Get the critical ply and the symmetry condition
+        [MAX_HSNFTCRT, MAX_HSNFTCRT_VAL, HSNFTCRT_SYM,...
+            MAX_HSNFCCRT, MAX_HSNFCCRT_VAL, HSNFCCRT_SYM,...
+            MAX_HSNMTCRT, MAX_HSNMTCRT_VAL, HSNMTCRT_SYM,...
+            MAX_HSNMCCRT, MAX_HSNMCCRT_VAL, HSNMCCRT_SYM] =...
+            ...
+            abd.internal_getCriticalPly([HSNFTCRT', HSNFCCRT',...
+            HSNMTCRT', HSNMCCRT'], symmetricAbd, outputPoints,...
+            plyBuffer, nPlies);
+
+        % Print the result
+        fprintf(fid, ['HSNFTCRT      %-14.0f%-9s\nHSNFCCRT      %-14.0',...
+            'f%-9s\nHSNMTCRT      %-14.0f%-9s\nHSNMCCRT      %-14.0f%-',...
+            '9s\n'],...
+            MAX_HSNFTCRT, HSNFTCRT_SYM, MAX_HSNFCCRT, HSNFCCRT_SYM,...
+            MAX_HSNMTCRT, HSNMTCRT_SYM, MAX_HSNMCCRT, HSNMCCRT_SYM);
+    end
+
     fprintf(fid, ['\n=================================================',...
         '==========================\n']);
 end
@@ -255,6 +274,46 @@ if (outputStrength == 1.0) && (noFailStrain == false)
     fprintf(fid, 'SFAILRATIO    %-14g\n', SFAILRATIO);
 end
 
+%% Print results of damage initiation criteria analysis (HASHIN)
+if (outputStrength == 1.0) && (noHashin == false)
+    HASHIN_ALL = [MAX_HSNFTCRT_VAL, MAX_HSNFCCRT_VAL, MAX_HSNMTCRT_VAL,...
+        MAX_HSNMCCRT_VAL];
+    HASHIN_ALL_MAX = max(HASHIN_ALL, [], 2.0);
+
+    fprintf(fid, '\nFailure analysis summary (Hashin):\n');
+    fprintf(fid, ['PLY           HSNFTCRT      HSNFCCRT      HSNMTCRT ',...
+        '     HSNMCCRT      (WORST)       STATUS\n']);
+    for i = 1.0:nPlies
+        if HASHIN_ALL_MAX(i) >= 1.0
+            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n',...
+                i, MAX_HSNFTCRT_VAL(i), MAX_HSNFCCRT_VAL(i),...
+                MAX_HSNMTCRT_VAL(i), MAX_HSNMCCRT_VAL(i),...
+                HASHIN_ALL_MAX(i), 'UNSAFE');
+        elseif MAX_MSTRS_VAL(i) == -1.0
+            % There is no data for the current ply
+            fprintf(fid, '%-14.0fNO RESULTS\n', i);
+        else
+            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n',...
+                i, MAX_HSNFTCRT_VAL(i), MAX_HSNFCCRT_VAL(i),...
+                MAX_HSNMTCRT_VAL(i), MAX_HSNMCCRT_VAL(i),...
+                HASHIN_ALL_MAX(i), 'SAFE');
+        end
+    end
+
+    % Print SFAILRATIO
+    %{
+        Note: The value of SFAILRATIO considers results over ALL section
+        points
+    %}
+    SFAILRATIO = zeros(1.0, 4.0);
+    for i = 1.0:4.0
+        FAIL_STRESS_CRITERION = HASHIN_ALL(:, i);
+        nFailedPlies = length(FAIL_STRESS_CRITERION(FAIL_STRESS_CRITERION >= 1.0));
+        SFAILRATIO(i) = nFailedPlies/nPlies;
+    end
+    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n', SFAILRATIO);
+end
+
 %% Print failure assessment summary
 if (outputStrength == 1.0) && (any(~[noFailStress, noFailStrain]) == true)
     if any([MSTRS, TSAIH, TSAIW, AZZIT, MSTRN] >= 1.0) == true
@@ -296,8 +355,11 @@ elseif isempty(BEST_SEQUENCE) == false
     % Print the header
     fprintf(fid, '\nStacking sequence optimisation summary:\n');
 
+    % Get the criterion selected for optimisation
+    optiCriterion = lower(OUTPUT_OPTIMISED{2.0});
+
     % Print the criterion
-    switch lower(OUTPUT_OPTIMISED{2.0})
+    switch optiCriterion
         case 'mstrs'
             criterionString = 'Maximum stress';
         case 'tsaih'
@@ -308,8 +370,19 @@ elseif isempty(BEST_SEQUENCE) == false
             criterionString = 'Azzi-Tsai-Hill';
         case 'mstrn'
             criterionString = 'Mean strain';
+        case 'hsnftcrt'
+            criterionString = 'Hashin (fibre-tension)';
+        case 'hsnfccrt'
+            criterionString = 'Hashin (fibre-compression)';
+        case 'hsnmtcrt'
+            criterionString = 'Hashin (matrix-tension)';
+        case 'hsnmccrt'
+            criterionString = 'Hashin (matrix-compression)';
     end
-    if OUTPUT_OPTIMISED{3.0} == 1.0
+    if (OUTPUT_OPTIMISED{3.0} == 1.0) &&...
+            (strcmpi(optiCriterion, 'tsaih') == true ||...
+            strcmpi(optiCriterion, 'tsaiw') == true ||...
+            strcmpi(optiCriterion, 'azzit') == true)
         criterionString = [criterionString, ' (reserve)'];
     else
         criterionString = [criterionString, ' (value)'];
@@ -345,7 +418,7 @@ elseif isempty(BEST_SEQUENCE) == false
 
     fprintf(fid, ['\n=================================================',...
         '==========================\n']);
-elseif OUTPUT_OPTIMISED{1.0} == true && printTensor ~= -1.0
+elseif (OUTPUT_OPTIMISED{1.0} == true) && (printTensor ~= -1.0)
     % Print message about no optimisation output
     fprintf(fid, ['\nNote: Stacking optimisation was not performed. En',...
         'able the strength\ncalculation with OUTPUT_STRENGTH = true\n']);

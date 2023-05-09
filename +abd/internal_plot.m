@@ -1,5 +1,6 @@
 function [] = internal_plot(OUTPUT_FIGURE, outputLocation, nPlies,...
-    E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points)
+    E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points,...
+    CRITERION_BUFFER, MIN_CRITERION, BEST_SEQUENCE, OUTPUT_OPTIMISED)
 %   Plot a MATLAB figure of the ply strain.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -204,6 +205,41 @@ end
 % Set the figure path
 dir = [outputLocation, '\SP, ', figureTitle];
 saveas(f4, dir, 'fig')
+
+% Make the figure visible
+abd.internal_makeVisible([dir, '.fig'], abd.internal_getMATLABVersion)
+
+%% CB, Optimised criterion buffer
+% Create the figure
+f5 = figure('visible', 'off');
+figureTitle = sprintf('Optimiser criterion for all stacking permutations');
+
+% Plot the stresses
+p1 = plot(CRITERION_BUFFER, 'LineWidth', 1.0);
+hold on
+
+% Plot the best value
+p2 = scatter(MIN_CRITERION, BEST_SEQUENCE{2.0});
+
+% Draw the legend
+legend([p1, p2], 'Criterion', 'Best value')
+
+% Other options
+grid minor
+xlabel('Permutation ID', 'FontSize', fontX)
+ylabel(sprintf('%s value', upper(OUTPUT_OPTIMISED{2})), 'FontSize', fontY)
+title(figureTitle, 'FontSize', fontTitle)
+set(gca, 'FontSize', fontTicks)
+
+try
+    axis tight
+catch
+    % Don't tighten the axis
+end
+
+% Set the figure path
+dir = [outputLocation, '\CB, ', figureTitle];
+saveas(f5, dir, 'fig')
 
 % Make the figure visible
 abd.internal_makeVisible([dir, '.fig'], abd.internal_getMATLABVersion)
