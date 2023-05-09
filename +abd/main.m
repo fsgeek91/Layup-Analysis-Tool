@@ -156,12 +156,27 @@ function [varargout] = main(varargin)
 %   laminate. These strains represent the deflections of the laminate
 %   about the neutral axis
 %
-%   E_PLY. A 1x2 cell array of the ply strains for all section points,
+%   E_PLY. A 1x6 cell array of the ply strains for all section points,
 %   where n (below) is the total number of section points in the layup.
 %
 %   E_PLY(1) is a 3xn array of the ply strains in X-Y coordinates.
 %
 %   E_PLY(2) is a 3xn array of the ply strains in the ply directions.
+%
+%   E_PLY(3) is a 3xn array of the stress-free ply strains due to thermal
+%   process in X-Y coordinates.
+%
+%   E_PLY(4) is a 3xn array of the stress-free ply strains due to thermal
+%   process in the ply directions.
+%
+%   E_PLY(5) is a 3xn array of the stress-free ply strains due to moisture
+%   process in X-Y coordinates.
+%
+%   E_PLY(6) is a 3xn array of the stress-free ply strains due to moisture
+%   process in the ply directions.
+%
+%   Note: For stress-free thermal/moisture strains, contractions have
+%   positive values.
 %
 %   S_PLY. A 1x2 cell array of the ply stresses for all section points,
 %   where n (below) is the total number of section points in the layup.
@@ -430,7 +445,8 @@ end
 
 %% COMPUTE TENSOR QUANTITIES
 if enableTensor == true
-    [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned] =...
+    [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned,...
+        E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned] =...
         ...
         abd.internal_getTensor(ABD, Nxx, NxxT, NxxM, Nyy, NyyT, NyyM,...
         Nxy, NxyT, NxyM, Mxx, MxxT, MxxM, Myy, MyyT, MyyM, Mxy, MxyT,...
@@ -513,7 +529,8 @@ end
 varargout{1.0} = ABD;
 varargout{2.0} = inv(ABD);
 varargout{3.0} = E_midplane;
-varargout{4.0} = {E_ply_xy, E_ply_aligned};
+varargout{4.0} = {E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
+    E_moist_xy, E_moist_aligned};
 varargout{5.0} = {S_ply_xy, S_ply_aligned};
 varargout{6.0} = {[EXT, EYT, GXYT, NUXYT, NUYXT],...
                   [EXB, EYB, GXYB, NUXYB, NUYXB]};
@@ -547,7 +564,8 @@ end
 %% WRITE RESULTS TO A TEXT FILE
 abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH,...
     nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned,...
-    S_ply_xy, E_ply_aligned, E_ply_xy, ABD, symmetricAbd, EXT, EYT,...
+    S_ply_xy, E_ply_aligned, E_ply_xy, E_therm_xy, E_moist_xy,...
+    E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT,...
     GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH,...
     TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
     noFailStress, noFailStrain, noHashin, SECTION_POINTS,...

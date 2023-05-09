@@ -1,4 +1,5 @@
-function [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned] =...
+function [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned,...
+    E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned] =...
     internal_getTensor(ABD, Nxx, NxxT, NxxM, Nyy, NyyT, NyyM, Nxy, NxyT,...
     NxyM, Mxx, MxxT, MxxM, Myy, MyyT, MyyM, Mxy, MxyT, MxyM,...
     nPlies_points, z, theta_points, Qt, deltaT, deltaM, axx, ayy, axy,...
@@ -33,11 +34,17 @@ E_midplane = ABD\[(Nxx + NxxT + NxxM);...
                   (Mxy + MxyT + MxyM)];
 
 %% GET X-Y STRAIN FOR EACH PLY
-% Initialise stress/strain buffers
+% Initialise stress/strain buffers for mechanical quantities
 E_ply_xy = zeros(3.0, nPlies_points);
 S_ply_xy = E_ply_xy;
 E_ply_aligned = E_ply_xy;
 S_ply_aligned = E_ply_xy;
+
+% Initialise strain buffers for thermal/moisture quantities
+E_therm_xy = E_ply_xy;
+E_moist_xy = E_ply_xy;
+E_therm_aligned = E_ply_xy;
+E_moist_aligned = E_ply_xy;
 
 % Engineering/tensor conversion
 %A = 2.0;
@@ -65,6 +72,10 @@ for i = 1:nPlies_points
                              E_midplane(5.0);
                              E_midplane(6.0)];
 
+    % Thermal/moiture strain components (XY)
+    E_therm_xy(:, i) = deltaT*[axx(i); ayy(i); axy(i)];
+    E_moist_xy(:, i) = deltaM*[bxx(i); byy(i); bxy(i)];
+
     % Ply stresses in X-Y coordinate system (evaluate at ply number)
     S_ply_xy(:, i) = Qt(:, :, i)*...
         [(E_ply_xy(1.0, i) - deltaT*axx(i) - deltaM*bxx(i));...
@@ -81,6 +92,10 @@ for i = 1:nPlies_points
 
     % Compute the fibre/transverse stresses for the current ply
     S_ply_aligned(:, i) = T*S_ply_xy(:, i);
+
+    % Compute thermal/moisture strain for the current ply
+    E_therm_aligned(:, i) = T*E_therm_xy(:, i);
+    E_moist_aligned(:, i) = T*E_moist_xy(:, i);
 end
 
 % Remove near-zero stress values
