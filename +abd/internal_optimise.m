@@ -258,9 +258,11 @@ classdef internal_optimise < handle
             % Process the first argument
             argument = OUTPUT_OPTIMISED{1.0};
 
+            % Check validity of the argument
             if isempty(argument) == true
                 output{1.0} = false;
             elseif ischar(argument) == false
+                % Incorrect argument type
                 fprintf(['[ABD ERROR] OUTPUT_OPTIMISED(1) must be a st',...
                     'ring\n']);
                     error = true;
@@ -271,6 +273,7 @@ classdef internal_optimise < handle
                     strcmpi(argument, 'tsaiw') == false &&...
                     strcmpi(argument, 'azzit') == false &&...
                     strcmpi(argument, 'mstrn') == false)
+                    % Unregognised parameter
                     fprintf(['[ABD ERROR] OUTPUT_OPTIMISED(1) must be ',...
                         'one of the following parameters:\nMSTRS, TSAI',...
                         'H, TSAIW, AZZIT or MSTRN\n']);
@@ -281,19 +284,22 @@ classdef internal_optimise < handle
                         strcmpi(argument, 'tsaih') == true ||...
                         strcmpi(argument, 'tsaiw') == true ||...
                         strcmpi(argument, 'azzit') == true)
+                    % Insufficient material data
                     fprintf(['[ABD ERROR] Requested a stress-based cri',...
-                        'terion for optimisation, but FAIL_STRESS prop',...
-                        'erties are not available\n']);
+                        'terion for optimisation, but\nFAIL_STRESS pro',...
+                        'perties are not available\n']);
                     error = true;
                     return
                 elseif (noFailStrain == true) && (strcmpi(argument, 'mstrn') == true)
+                    % Insufficient material data
                     fprintf(['[ABD ERROR] Requested a strain-based cri',...
-                        'terion for optimisation, but FAIL_STRAIN prop',...
-                        'erties are not available\n']);
+                        'terion for optimisation, but\nFAIL_STRAIN pro',...
+                        'perties are not available\n']);
                     error = true;
                     return
                 end
             else
+                % Everything is OK
                 output{1.0} = true;
                 output{2.0} = argument;
             end
