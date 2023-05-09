@@ -29,8 +29,6 @@ function [varargout] = main(varargin)
 %   Moisture expansion [1/mm]
 %
 %   Theory References:
-%   William Stein - A summary of Classical Lamination Theory, 2010:
-%   https://tinyurl.com/2s4fp564
 %   Python code (GitHub): https://tinyurl.com/48phdvv8
 %   Coefficient of Hydroscopic Expansion: https://tinyurl.com/2p9b4mvp
 %   Definition of Laminate Plane Element Behaviour:
