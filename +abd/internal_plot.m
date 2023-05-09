@@ -181,7 +181,7 @@ if nPlies < 51.0
     step = 1.0;
 
     for i = 1:nPlies + 1.0
-        line([min(min(S_ply_xy)), max(max(S_ply_xy))], [z_plies_norm(i), z_plies_norm(i)],...
+        line([min(min(S_ply_aligned)), max(max(S_ply_aligned))], [z_plies_norm(i), z_plies_norm(i)],...
             'Color', 'green', 'LineStyle', '--')
 
         step = step + increment;
@@ -215,20 +215,14 @@ if isempty(CRITERION_BUFFER) == false
     f5 = figure('visible', 'off');
     figureTitle = sprintf('Optimiser criterion for all stacking permutations');
 
-    % Plot the stresses
-    p1 = plot(CRITERION_BUFFER, 'LineWidth', 1.0);
+    % Plot the crierion
+    histogram(CRITERION_BUFFER);
     hold on
-
-    % Plot the best value
-    p2 = scatter(MIN_CRITERION, BEST_SEQUENCE{2.0});
-
-    % Draw the legend
-    legend([p1, p2], 'Criterion', 'Best value')
 
     % Other options
     grid minor
-    xlabel('Permutation ID', 'FontSize', fontX)
-    ylabel(sprintf('%s value', upper(OUTPUT_OPTIMISED{2})), 'FontSize', fontY)
+    xlabel(sprintf('%s value', upper(OUTPUT_OPTIMISED{2})), 'FontSize', fontY)
+    ylabel('Number of occurrences', 'FontSize', fontX)
     title(figureTitle, 'FontSize', fontTitle)
     set(gca, 'FontSize', fontTicks)
 
@@ -243,6 +237,13 @@ if isempty(CRITERION_BUFFER) == false
     saveas(f5, dir, 'fig')
 
     % Make the figure visible
-    abd.internal_makeVisible([dir, '.fig'], abd.internal_getMATLABVersion)
+    try
+        abd.internal_makeVisible([dir, '.fig'], abd.internal_getMATLABVersion)
+    catch
+        %{
+            The contents of the figure are probably too large. Accept the
+            conequences and move on
+        %}
+    end
 end
 end
