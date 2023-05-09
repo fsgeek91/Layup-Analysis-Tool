@@ -22,7 +22,7 @@ function [] = internal_outputToFile(dateString, outputLocation,...
 fid = fopen([outputLocation, '\analysis_results.txt'], 'w+');
 
 % Print header
-fprintf(fid, 'Layup Analysis Tool\');
+fprintf(fid, 'Layup Analysis Tool\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
 % Print the units

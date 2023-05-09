@@ -369,7 +369,8 @@ end
 %% GET OPTIMISER SETTINGS
 [error, OUTPUT_OPTIMISED] =...
     ...
-    abd.internal_optimise.getSettings(OUTPUT_OPTIMISED);
+    abd.internal_optimise.getSettings(OUTPUT_OPTIMISED, noFailStress,...
+    noFailStrain);
 
 % An error occurred, so RETURN
 if error == true

@@ -20,23 +20,28 @@ classdef internal_strength < handle
                 nPlies, nPlies_points, SECTION_POINTS)
 
             % Spread material data over section points
-            Xt = abd.internal_spreadProperties(Xt, nPlies, SECTION_POINTS);
-            Xc = abd.internal_spreadProperties(Xc, nPlies, SECTION_POINTS);
-            Yt = abd.internal_spreadProperties(Yt, nPlies, SECTION_POINTS);
-            Yc = abd.internal_spreadProperties(Yc, nPlies, SECTION_POINTS);
-            S = abd.internal_spreadProperties(S, nPlies, SECTION_POINTS);
-            C12 = abd.internal_spreadProperties(C12, nPlies, SECTION_POINTS);
-            B12 = abd.internal_spreadProperties(B12, nPlies, SECTION_POINTS);
-            E11 = abd.internal_spreadProperties(E11, nPlies, SECTION_POINTS);
-            E22 = abd.internal_spreadProperties(E22, nPlies, SECTION_POINTS);
-            G12 = abd.internal_spreadProperties(G12, nPlies, SECTION_POINTS);
-            V12 = abd.internal_spreadProperties(V12, nPlies, SECTION_POINTS);
-            XEt = abd.internal_spreadProperties(XEt, nPlies, SECTION_POINTS);
-            XEc = abd.internal_spreadProperties(XEc, nPlies, SECTION_POINTS);
-            YEt = abd.internal_spreadProperties(YEt, nPlies, SECTION_POINTS);
-            YEc = abd.internal_spreadProperties(YEc, nPlies, SECTION_POINTS);
-            SE = abd.internal_spreadProperties(SE, nPlies, SECTION_POINTS);
+            if noFailStress == false
+                Xt = abd.internal_spreadProperties(Xt, nPlies, SECTION_POINTS);
+                Xc = abd.internal_spreadProperties(Xc, nPlies, SECTION_POINTS);
+                Yt = abd.internal_spreadProperties(Yt, nPlies, SECTION_POINTS);
+                Yc = abd.internal_spreadProperties(Yc, nPlies, SECTION_POINTS);
+                S = abd.internal_spreadProperties(S, nPlies, SECTION_POINTS);
+                C12 = abd.internal_spreadProperties(C12, nPlies, SECTION_POINTS);
+                B12 = abd.internal_spreadProperties(B12, nPlies, SECTION_POINTS);
+            end
 
+            if noFailStrain == false
+                E11 = abd.internal_spreadProperties(E11, nPlies, SECTION_POINTS);
+                E22 = abd.internal_spreadProperties(E22, nPlies, SECTION_POINTS);
+                G12 = abd.internal_spreadProperties(G12, nPlies, SECTION_POINTS);
+                V12 = abd.internal_spreadProperties(V12, nPlies, SECTION_POINTS);
+                XEt = abd.internal_spreadProperties(XEt, nPlies, SECTION_POINTS);
+                XEc = abd.internal_spreadProperties(XEc, nPlies, SECTION_POINTS);
+                YEt = abd.internal_spreadProperties(YEt, nPlies, SECTION_POINTS);
+                YEc = abd.internal_spreadProperties(YEc, nPlies, SECTION_POINTS);
+                SE = abd.internal_spreadProperties(SE, nPlies, SECTION_POINTS);
+            end
+            
             % Initialise output
             MSTRS = [];
             TSAIH = [];
