@@ -210,7 +210,7 @@ function [varargout] = main(varargin)
 %
 %   OPT_SEQ(4) is the analysis time (in seconds).
 %
-%   OPT_SEQ(5) is an error object returned in case of optimisation failure.
+%   OPT_SEQ(5) is an exception returned in case of optimisation failure.
 %
 %   OPT_SEQ(6) is a structure of the stress and strain tensors
 %   corresponding to the optimum stacking sequence.

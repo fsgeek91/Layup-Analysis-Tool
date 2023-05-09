@@ -27,7 +27,7 @@ classdef internal_optimise < handle
                 BEST_SEQUENCE(2) = Critical value
                 BEST_SEQUENCE(3) = Number of permutations
                 BEST_SEQUENCE(4) = Analysis time (s)
-                BEST_SEQUENCE(5) = Error object
+                BEST_SEQUENCE(5) = Exception
                 BEST_SEQUENCE(6) = Best tensor structure
             %}
             BEST_SEQUENCE = cell(1.0, 6.0);
