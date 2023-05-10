@@ -372,7 +372,7 @@ elseif isempty(BEST_SEQUENCE) == false
             criterionString = 'Tsai-Hill';
         case 'tsaiw'
             criterionString = 'Tsai-Wu';
-        case 'aazit'
+        case 'azzit'
             criterionString = 'Azzi-Tsai-Hill';
         case 'mstrn'
             criterionString = 'Mean strain';

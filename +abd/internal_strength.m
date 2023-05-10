@@ -82,8 +82,8 @@ classdef internal_strength < handle
                 % Failure calculation: TSAIW
                 TSAIW =...
                     ...
-                    abd.internal_strength.getTsaiw(1.0, nPlies_points,...
-                    stress, XT, XC, YT, YC, S, C12, B12);
+                    abd.internal_strength.getTsaiw(1.0, stress, XT, XC,...
+                    YT, YC, S, C12, B12);
 
                 % Failure calculation: AZZIT
                 AZZIT =...
@@ -148,18 +148,22 @@ classdef internal_strength < handle
             % Compute the parameter based on user setting
             if parameter == 1.0
                 % Reserve factor (failure index)
-                TSAIH = sqrt(((S1.^2.0./X.^2.0) - ((S1.*S2)./X.^2.0) +...
-                    (S2.^2.0./Y.^2.0) + (T12.^2.0./S.^2.0)));
+                TSAIH = sqrt(((S1.^2.0./X.^2.0) -...
+                             ((S1.*S2)./X.^2.0) +...
+                             (S2.^2.0./Y.^2.0) +...
+                             (T12.^2.0./S.^2.0)));
             else
                 % Criterion value
-                TSAIH = ((S1.^2.0./X.^2.0) - ((S1.*S2)./X.^2.0) +...
-                    (S2.^2.0./Y.^2.0) + (T12.^2.0./S.^2.0));
+                TSAIH = ((S1.^2.0./X.^2.0) -...
+                         ((S1.*S2)./X.^2.0) +...
+                         (S2.^2.0./Y.^2.0) +...
+                         (T12.^2.0./S.^2.0));
             end
         end
 
         %% FAILURE CRITERION: TSAI-WU
-        function [TSAIW] = getTsaiw(parameter, nPlies_points, stress,...
-                XT, XC, YT, YC, S, C12, B12)
+        function [TSAIW] = getTsaiw(parameter, stress,XT, XC, YT, YC, S,...
+                C12, B12)
             % Get stresses for each section point
             S1 = stress(1.0, :);
             S2 = stress(2.0, :);
@@ -182,21 +186,14 @@ classdef internal_strength < handle
             B12Zero = ~B12Notzero;
             F12(B12Zero) = C12(B12Zero).*sqrt(F11(B12Zero).*F22(B12Zero));
 
-            A = (F11.*S1.*S1) + (F22.*S2.*S2) + (F66.*T12.*T12) + (2.0.*F12.*S1.*S2);
-            B = (F1.*S1) + (F2.*S2);
-            TSAIW = -1.0.*ones(1.0, nPlies_points);
-
             if parameter == 1.0
-                for i = 1:nPlies_points
-                    % Compute the parameter based on user setting
-                    Ai = A(i);
-                    Bi = B(i);
-                    Ci = -1.0;
+                % Get the quadratic coefficients
+                A = (F11.*S1.*S1) + (F22.*S2.*S2) + (F66.*T12.*T12) + (2.0.*F12.*S1.*S2);
+                B = (F1.*S1) + (F2.*S2);
 
-                    % Reserve factor (failure index)
-                    TSAIW(i) = abs(1.0./min([(-Bi + sqrt(Bi.^2.0 - (4.0.*Ai.*Ci)))./(2.0.*Ai),...
-                        (-Bi - sqrt(Bi.^2.0 - (4.0.*Ai.*Ci)))./(2.0.*Ai)]));
-                end
+                % Reserve factor (failure index)
+                TSAIW = abs(1.0./min([(-B + sqrt(B.^2.0 + (4.0.*A)))./(2.0.*A);...
+                    (-B - sqrt(B.^2.0 + (4.0.*A)))./(2.0.*A)], [], 1.0));
             else
                 % Criterion value
                 TSAIW = (F1.*S1) + (F2.*S2) + (F11.*S1.^2.0) +...
@@ -225,28 +222,18 @@ classdef internal_strength < handle
             Y(S2 >= 0.0) = YT(S2 >= 0.0);
             Y(S2 < 0.0) = YC(S2 < 0.0);
 
-            AZZIT = -1.0.*ones(1.0, nPlies_points);
-
-            for i = 1:nPlies_points
-                S1i = S1(i);
-                S2i = S2(i);
-                T12i = T12(i);
-
-                Xi = X(i);
-                Yi = Y(i);
-                Si = S(i);
-
-                % Compute the parameter based on user setting
-                if parameter == 1.0
-                    % Reserve factor (failure index)
-                    AZZIT(i) = sqrt(max((S1i.^2.0./Xi.^2.0) -...
-                        (abs((S1i.*S2i))/Xi.^2.0) + (S2i.^2.0./Yi.^2.0) +...
-                        (T12i.^2.0./Si.^2.0)));
-                else
-                    % Criterion value
-                    AZZIT(i) = (S1^2.0./Xi^2.0) - abs((S1.*S2)./Xi^2.0) +...
-                        (S2^2.0./Yi^2.0) + (T12^2.0./Si^2.0);
-                end
+            if parameter == 1.0
+                % Reserve factor (failure index)
+                AZZIT = sqrt((S1.^2.0./X.^2.0) -...
+                             (abs((S1.*S2))./X.^2.0) +...
+                             (S2.^2.0./Y.^2.0) +...
+                             (T12.^2.0./S.^2.0));
+            else
+                % Criterion value
+                AZZIT = (S1.^2.0./X.^2.0) -...
+                         abs((S1.*S2)./X.^2.0) +...
+                         (S2.^2.0./Y.^2.0) +...
+                         (T12.^2.0./S.^2.0);
             end
         end
 
