@@ -159,14 +159,11 @@ classdef internal_strength < handle
 
         %% FAILURE CRITERION: TSAI-WU
         function [TSAIW] = getTsaiw(parameter, nPlies_points, stress,...
-                XT, XC, YT, YC, S, B12, C12)
+                XT, XC, YT, YC, S, C12, B12)
             % Get stresses for each section point
             S1 = stress(1.0, :);
             S2 = stress(2.0, :);
             T12 = stress(3.0, :);
-
-            % Strength buffers
-            X = zeros(1.0, nPlies_points);
 
             % Initialize Tsai-Wu parameters
             F1 = (1.0./XT) + (1.0./XC);
@@ -174,37 +171,36 @@ classdef internal_strength < handle
             F11 = -(1.0./(XT.*XC));
             F22 = -(1.0./(YT.*YC));
             F66 = 1.0./S.^2.0;
-            F12 = X;
 
-            for i = 1:nPlies_points
-                if B12(i) ~= 0.0
-                    F12(i) = (1.0/(2.0*B12(i)^2.0))*(1.0 - ((1.0/XT(i)) + (1.0/XC(i)) +...
-                        (1.0/YT(i)) + (1.0/YC(i)))*(B12(i)) + ((1.0/(XT(i)*XC(i))) +...
-                        (1.0/(YT(i)*YC(i))))*(B12(i)^2.0));
-                else
-                    F12(i) = C12(i)*sqrt(F11(i)*F22(i));
-                end
-            end
+            % Get F12 for non-zero values of B12
+            B12Notzero = B12 ~= 0.0;
+            F12(B12Notzero) = (1.0./(2.0.*B12(B12Notzero).^2.0)).*(1.0 - ((1.0./XT(B12Notzero)) + (1.0./XC(B12Notzero)) +...
+                (1.0./YT(B12Notzero)) + (1.0./YC(B12Notzero))).*(B12(B12Notzero)) + ((1.0./(XT(B12Notzero).*XC(B12Notzero))) +...
+                (1.0./(YT(B12Notzero).*YC(B12Notzero)))).*(B12(B12Notzero).^2.0));
+
+            % Get F12 for zero values of B12
+            B12Zero = ~B12Notzero;
+            F12(B12Zero) = C12(B12Zero).*sqrt(F11(B12Zero).*F22(B12Zero));
 
             A = (F11.*S1.*S1) + (F22.*S2.*S2) + (F66.*T12.*T12) + (2.0.*F12.*S1.*S2);
             B = (F1.*S1) + (F2.*S2);
             TSAIW = -1.0.*ones(1.0, nPlies_points);
 
-            for i = 1:nPlies_points
-                Ai = A(i);
-                Bi = B(i);
-                Ci = -1.0;
+            if parameter == 1.0
+                for i = 1:nPlies_points
+                    % Compute the parameter based on user setting
+                    Ai = A(i);
+                    Bi = B(i);
+                    Ci = -1.0;
 
-                % Compute the parameter based on user setting
-                if parameter == 1.0
                     % Reserve factor (failure index)
                     TSAIW(i) = abs(1.0./min([(-Bi + sqrt(Bi.^2.0 - (4.0.*Ai.*Ci)))./(2.0.*Ai),...
                         (-Bi - sqrt(Bi.^2.0 - (4.0.*Ai.*Ci)))./(2.0.*Ai)]));
-                else
-                    % Criterion value
-                    TSAIW(i) = (F1.*S1) + (F2.*S2) + (F11.*S1^2.0) +...
-                        (F22.*S2^2.0) + (F66.*T12^2.0) + 2.0.*(F12.*S1.*S2);
                 end
+            else
+                % Criterion value
+                TSAIW = (F1.*S1) + (F2.*S2) + (F11.*S1.^2.0) +...
+                    (F22.*S2.^2.0) + (F66.*T12.^2.0) + 2.0.*(F12.*S1.*S2);
             end
 
             TSAIW(isnan(TSAIW) == true) = 0.0;

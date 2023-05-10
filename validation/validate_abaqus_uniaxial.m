@@ -33,7 +33,9 @@ TIP:
     Thermal expansion - [1/degC]
     Hydroscopic expansion - [1/mm]
 %}
-MATERIAL = [2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3];
+MATERIAL = {[200000, 70000, 5000, 0.3, 1e-5, 1e-5, 2e-3, 2e-3],...
+            [100000, 35000, 2500, 0.3, 1e-5, 1e-5, 2e-3, 2e-3],...
+            [200000, 70000, 5000, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]};
 
 % FAIL_STRESS  Strength properties for stress-based failure criteria
 %{
@@ -56,7 +58,9 @@ TIP:
     Units:
     Stress - [N/mm2]
 %}
-FAIL_STRESS = [400, -400, 200, -200, 150, 0, 0];
+FAIL_STRESS = {[400, -400, 200, -200, 150, 0.5, 0],...
+               [200, -200, 100, -100, 75, 0.5, 0],...
+               [400, -400, 200, -200, 150, 0.5, 0]};
 
 % FAIL_STRAIN  Strength properties for strain-based failure criteria
 %{
@@ -76,7 +80,9 @@ TIP:
     Units:
     Strain - [mm/mm]
 %}
-FAIL_STRAIN = [0.02, -0.02, 0.01, -0.01, 0.015];
+FAIL_STRAIN = {[0.02, -0.02, 0.01, -0.01, 0.015],...
+               [0.01, -0.01, 0.005, -0.005, 0.0075],...
+               [0.02, -0.02, 0.01, -0.01, 0.015]};
 
 % HASHIN  Strength properties for Hashin damage initiation criteria
 %{
@@ -97,7 +103,9 @@ TIP:
     Units:
     Stress - [N/mm2]
 %}
-HASHIN = [];
+HASHIN = {[0.1, 400, 400, 200, 200, 150, 150],...
+          [0.1, 200, 200, 100, 100, 75, 75],...
+          [0.1, 400, 400, 200, 200, 150, 150]};
 
 %% 2: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up) [degrees]
@@ -113,7 +121,7 @@ STACKING_SEQUENCE = [0.0, 45.0, 90.0];
 	Note: When SYMMETRIC_LAYUP = true, ply thickness values are only
     required on one side of the symmetry plane.
 %}
-PLY_THICKNESS = 0.1;
+PLY_THICKNESS = [0.1, 0.2, 0.1];
 
 % SYMMETRIC_LAYUP  Make the calculated section symmetric
 SYMMETRIC_LAYUP = false;
@@ -123,7 +131,7 @@ SYMMETRIC_LAYUP = false;
     Note: Section points are evenly distributed over the layup. The total
     number of section points is SECTION_POINTS*length(STACKING_SEQUENCE).
 %}
-SECTION_POINTS = 2.0;
+SECTION_POINTS = 3.0;
 
 %% 3: LOAD MATRIX
 % Mechanical load (forces) [N]

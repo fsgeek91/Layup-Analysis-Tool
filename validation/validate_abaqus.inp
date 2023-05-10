@@ -22,7 +22,7 @@
 ** Section: CompositeLayup-1-1
 *Shell Section, elset=CompositeLayup-1-1, composite, orientation=Ori-1, layup=CompositeLayup-1
 0.1, 3, Material-1, 0., Ply-1
-0.1, 3, Material-1, 45., Ply-2
+0.2, 3, Material-2, 45., Ply-2
 0.1, 3, Material-1, 90., Ply-3
 *End Part
 **  
@@ -34,6 +34,8 @@
 *Instance, name=Part-1-1, part=Part-1
 *End Instance
 **  
+*Node
+      1,           1.,          0.5,           0.
 *Nset, nset=Set-Left, instance=Part-1-1
  1, 3
 *Elset, elset=Set-Left, instance=Part-1-1
@@ -51,14 +53,23 @@ _Surf-Right_E2, E2
 ** MATERIALS
 ** 
 *Material, name=Material-1
-*Density
-1.,
+*Damage Initiation, criterion=HASHIN, alpha=0.1
+400.,400.,200.,200.,150.,150.
 *Elastic, type=LAMINA
 200000.,70000.,   0.3, 5000., 5000., 5000.
 *Fail Strain
  0.02, -0.02,  0.01, -0.01, 0.015
 *Fail Stress
-400.,-400., 200.,-200., 150.,   0.,   0.
+400.,-400., 200.,-200., 150.,  0.5,   0.
+*Material, name=Material-2
+*Damage Initiation, criterion=HASHIN, alpha=0.1
+200.,200.,100.,100., 75., 75.
+*Elastic, type=LAMINA
+100000.,35000.,   0.3, 2500., 2500., 2500.
+*Fail Strain
+ 0.01,  -0.01,  0.005, -0.005, 0.0075
+*Fail Stress
+200.,-200., 100.,-100.,  75.,  0.5,   0.
 ** 
 ** BOUNDARY CONDITIONS
 ** 
@@ -81,7 +92,7 @@ Uniaxial Tension
 ** 
 ** LOADS
 ** 
-** Name: Load-F11   Type: Shell edge load
+** Name: Load-1   Type: Shell edge load
 *Dsload
 Surf-Right, EDNOR, -100.
 ** 
@@ -98,8 +109,8 @@ RF, U
 ** FIELD OUTPUT: F-Output-2
 ** 
 *Element Output, elset=Part-1-1.CompositeLayup-1-1, directions=YES
-1, 2, 3, 4, 5, 6, 7, 8, 9
-CFAILURE, E, S
+1, 3, 4, 6, 7, 9
+CFAILURE, E, HSNFCCRT, HSNFTCRT, HSNMCCRT, HSNMTCRT, S
 ** 
 ** HISTORY OUTPUT: H-Output-1
 ** 
