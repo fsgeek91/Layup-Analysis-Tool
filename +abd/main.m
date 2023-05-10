@@ -1,7 +1,7 @@
 function [varargout] = main(varargin)
 %ABD.MAIN    Analyse a user-defined composite layup.
 %   [VARARGOUT] = ABD.MAIN(VARARGIN) computes the ABD matrix based on an
-%   N-layer composite layup and plane stress material properties. The
+%   n-layer composite layup and plane stress material properties. The
 %   following output is produced:
 %
 %   - A, B and D matrices (and their inverses)
@@ -10,6 +10,8 @@ function [varargout] = main(varargin)
 %   - Ply stresses and strains based on specified forces and moments
 %   - Equivalent extensional and bending moduli (symmetric layups only)
 %   - Stress and strain-based failure criteria
+%   - Stress-based damage initiation criteria
+%   - Stacking sequence optimisation
 %
 %   Notes:
 %   - Support for unidirectional fibre-reinforced composites only
@@ -97,7 +99,7 @@ function [varargout] = main(varargin)
 %
 %     DEFAULT: Top and bottom faces
 %     TOP: Top faces only
-%     MIDDLE: Midspan only
+%     MIDDLE: Midspans only
 %     BOTTOM: Bottom faces only
 %     ALL: All section points in all plies
 %     ENVELOPEABSMAX: The largest (+ve/-ve) value for the layup
