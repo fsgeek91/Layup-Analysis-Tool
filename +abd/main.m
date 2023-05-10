@@ -119,12 +119,11 @@ function [varargout] = main(varargin)
 %
 %   OUTPUT_DEF(4) is a 1x4 cell array specifying settings for the stacking
 %   sequence optimiser. OUTPUT_OPTIMISED(1) is the failure criterion for
-%   the optimisation ('MSTRS', 'TSAIH', 'TSAIW', 'AZZIT', 'MSTRN',
-%   'HSNFTCRT', 'HSNFCCRT', 'HSNMTCRT' or 'HSNMCCRT'); OUTPUT_OPTIMISED(2)
-%   is the failure assessment parameter ('RESERVE' or 'VALUE');
-%   OUTPUT_OPTIMISED(3) is the objective function ('MINMAX' or 'MINMEAN');
-%   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
-%   permutations.
+%   the optimisation ('MSTRS', 'TSAIH', 'TSAIW', 'AZZIT', 'MSTRN' or
+%   'HASHIN'); OUTPUT_OPTIMISED(2) is the failure assessment parameter
+%   ('RESERVE' or 'VALUE'); OUTPUT_OPTIMISED(3) is the objective function
+%   ('MINMAX' or 'MINMEAN'); OUTPUT_OPTIMISED(4) is the angular step size
+%   for the stacking sequence permutations.
 %
 %   OUTPUT_DEF(5) is a string specifying the results location,
 %   OUTPUT_LOCATION. Use 'DEFAULT' to save results under a new folder in
@@ -208,8 +207,7 @@ function [varargout] = main(varargin)
 %       - HSNFCCRT, Hashin’s fibre compression damage initiation criterion
 %       - HSNMTCRT, Hashin’s matrix tensile damage initiation criterion
 %       - HSNMCCRT, Hashin’s matrix compression damage initiation criterion
-%       - SFAILRATIO, The proportion of the layup that has failed for each
-%         failure criterion over all section points [%/100]
+%       - SFAILRATIO, The section failure ratio across all plies [%/100]
 %
 %   Note: Failure criteria Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill are
 %   expressed as the strength reserve factor.

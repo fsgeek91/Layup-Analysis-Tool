@@ -167,9 +167,7 @@ OUTPUT_STRENGTH = false;
     First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-    Hsnftcrt (Hashin, fibre tension); Hsnfccrt (Hashin, fibre compression);
-    Hsnmtcrt (Hashin, matrix tension); Hsnmccrt (Hashin, matrix
-    compression)
+    Hashin;
 
     Second argument (failure parameter):
     '<param>': Reserve (reserve factor); Value (criterion value)

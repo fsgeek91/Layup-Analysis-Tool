@@ -37,9 +37,9 @@ fprintf(fid, 'Composite layup summary:\n');
 
 if (enableTensor == 1.0) && (printTensor == 1.0)
     % Print layup summary header
-    fprintf(fid, ['PLY   THICKNESS    ORIENTATION    MAX. FIBRE    MAX',...
+    fprintf(fid, ['PLY    THICKNESS    ORIENTATION    MAX. FIBRE    MAX',...
         '. TRANSVERSE    MAX. SHEAR    \n']);
-    fprintf(fid, ['                                  STRESS        STR',...
+    fprintf(fid, ['                                   STRESS        STR',...
         'ESS             STRESS        \n']);
 
     % Initialise the section point index
@@ -58,7 +58,7 @@ if (enableTensor == 1.0) && (printTensor == 1.0)
         S3iMax = abd.internal_getAbsMax(Si(3.0, :), 1.0);
 
         % Print information for the current ply
-        fprintf(fid, '%-6.0f%-13g%-15g%-14g%-19g%-14g\n', i, t_ply(i),...
+        fprintf(fid, '%-7.0f%-13g%-15g%-14g%-19g%-14g\n', i, t_ply(i),...
             theta(i), S1iMax, S2iMax, S3iMax);
 
         % Draw symmetry plane (if applicable)
@@ -222,8 +222,8 @@ if (outputStrength == 1.0) && (noFailStress == false)
         MAX_AZZIT_VAL];
     FAIL_STRESS_ALL_MAX = max(FAIL_STRESS_ALL, [], 2.0);
 
-    fprintf(fid, ['\nFailure assessment summary (stress-based criteria',...
-        '):\n']);
+    fprintf(fid, ['\nAssessment summary for stress-based fialure crite',...
+        'ria\nOutput location: Worst section point\n']);
     fprintf(fid, ['PLY           MSTRS         TSAIH         TSAIW    ',...
         '     AZZIT         (WORST)       STATUS\n']);
     for i = 1.0:nPlies
@@ -252,8 +252,8 @@ end
 
 %% Print results of failure criteria analysis (strain-based)
 if (outputStrength == 1.0) && (noFailStrain == false)
-    fprintf(fid, ['\nFailure assessment summary (strain-based criteria',...
-        '):\n']);
+    fprintf(fid, ['\nAssessment summary for strain-based failure crite',...
+        'ria\nOutput location: Worst section point\n']);
     fprintf(fid, 'PLY           MSTRN         STATUS\n');
     for i = 1.0:nPlies
         if MSTRN(i) >= 1.0
@@ -283,7 +283,8 @@ if (outputStrength == 1.0) && (noHashin == false)
         MAX_HSNMCCRT_VAL];
     HASHIN_ALL_MAX = max(HASHIN_ALL, [], 2.0);
 
-    fprintf(fid, '\nDamage initiation assessment summary (Hashin):\n');
+    fprintf(fid, ['\nAssessment summary for Hashin''s damage initiatio',...
+        'n criteria\nOutput location: Worst section point\n']);
     fprintf(fid, ['PLY           HSNFTCRT      HSNFCCRT      HSNMTCRT ',...
         '     HSNMCCRT      (WORST)       STATUS\n']);
     for i = 1.0:nPlies
@@ -375,22 +376,21 @@ elseif isempty(BEST_SEQUENCE) == false
             criterionString = 'Azzi-Tsai-Hill';
         case 'mstrn'
             criterionString = 'Mean strain';
-        case 'hsnftcrt'
-            criterionString = 'Hashin (fibre-tension)';
-        case 'hsnfccrt'
-            criterionString = 'Hashin (fibre-compression)';
-        case 'hsnmtcrt'
-            criterionString = 'Hashin (matrix-tension)';
-        case 'hsnmccrt'
-            criterionString = 'Hashin (matrix-compression)';
+        case 'hashin'
+            criterionString = 'Hashin';
+        otherwise
+            % This condition should never be reached!
     end
-    if (OUTPUT_OPTIMISED{3.0} == 1.0) &&...
-            (strcmpi(optiCriterion, 'tsaih') == true ||...
+
+    % Modify the criterion string
+    if (strcmpi(optiCriterion, 'tsaih') == true ||...
             strcmpi(optiCriterion, 'tsaiw') == true ||...
             strcmpi(optiCriterion, 'azzit') == true)
-        criterionString = [criterionString, ' (reserve)'];
-    else
-        criterionString = [criterionString, ' (value)'];
+        if OUTPUT_OPTIMISED{3.0} == 1.0
+            criterionString = [criterionString, ' (reserve)'];
+        else
+            criterionString = [criterionString, ' (value)'];
+        end
     end
     fprintf(fid, 'Criterion: %s', criterionString);
 
