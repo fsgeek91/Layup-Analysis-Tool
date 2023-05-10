@@ -315,6 +315,13 @@ if OUTPUT_STRENGTH == true
         return
     end
 
+    % Correct the sign (if applicable)
+    XT = abd.internal_correctSign(XT, 1.0);
+    XC = abd.internal_correctSign(XC, -1.0);
+    YT = abd.internal_correctSign(YT, 1.0);
+    YC = abd.internal_correctSign(YC, -1.0);
+    S = abd.internal_correctSign(S, 1.0);
+    
     % Get fail strain properties
     [error, noFailStrain, XET, XEC, YET, YEC, SE] =...
         ...
@@ -326,6 +333,13 @@ if OUTPUT_STRENGTH == true
         return
     end
 
+    % Correct the sign (if applicable)
+    XET = abd.internal_correctSign(XET, 1.0);
+    XEC = abd.internal_correctSign(XEC, -1.0);
+    YET = abd.internal_correctSign(YET, 1.0);
+    YEC = abd.internal_correctSign(YEC, -1.0);
+    SE = abd.internal_correctSign(SE, 1.0);
+
     % Get Hashin properties
     [error, noHashin, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY] =...
         ...
@@ -336,6 +350,14 @@ if OUTPUT_STRENGTH == true
     if error == true
         return
     end
+
+    % Correct the sign (if applicable)
+    XHT = abd.internal_correctSign(XHT, 1.0);
+    XHC = abd.internal_correctSign(XHC, 1.0);
+    YHT = abd.internal_correctSign(YHT, 1.0);
+    YHC = abd.internal_correctSign(YHC, 1.0);
+    SHX = abd.internal_correctSign(SHX, 1.0);
+    SHY = abd.internal_correctSign(SHY, 1.0);
 
     if (noFailStress == true) && (noFailStrain == true) && (noHashin == true)
         %{

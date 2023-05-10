@@ -43,8 +43,8 @@ TIP:
     Specify strength properties for n plies as a 1xn cell array:
     Tensile/compressive stress limit (longitudinal);
     Tensile/compressive stress limit (transverse);
-    Shear strength in the XY-plane;
-    Cross-product coefficient; Biaxial stress limit.
+    Shear strength in the XY-plane; Cross-product coefficient;
+    Biaxial stress limit.
 
     FAIL_STRESS = {[XT, XC, YT, YC, S, C, B](1),
                    ...,
@@ -52,7 +52,9 @@ TIP:
 
     Note: FAIL_STRESS(1) = Bottom; FAIL_STRESS(n) = Top.
 
-	Note: If B = 0, the coupling term is computed from C.
+    Note: Compressive properties (XC and YC) require negative values.
+
+    Note: If B = 0, the coupling term is computed from C.
 
     Units:
     Stress - [N/mm2]
@@ -74,7 +76,9 @@ TIP:
 
     Note: FAIL_STRAIN(1) = Bottom; FAIL_STRAIN(n) = Top.
 
-	Units:
+    Note: Compressive properties (XEC and YEC) require negative values.
+
+    Units:
     Strain - [mm/mm]
 %}
 FAIL_STRAIN = [];
@@ -94,6 +98,8 @@ TIP:
               [ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](n)}
 
     Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
+
+    Note: All properties require positive values.
 
     Units:
     Stress - [N/mm2]
