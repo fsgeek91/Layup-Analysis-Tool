@@ -3,8 +3,8 @@ function [VARIABLE_MAX] = internal_getAbsMax(VARIABLE, MODE)
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.3 Copyright Louis Vallance 2023
-%   Last modified 09-May-2023 07:31:07 UTC
+%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Last modified 10-May-2023 10:16:13 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

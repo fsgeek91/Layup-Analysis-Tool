@@ -164,15 +164,18 @@ OUTPUT_STRENGTH = false;
     Note: The stacking optimisation properties are taken from the number of
     plies and section points from the layup definition.
 
-    First argument (failure criterion):
+    First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
-    Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain)
+    Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
+    Hsnftcrt (Hashin, fibre tension); Hsnfccrt (Hashin, fibre compression);
+    Hsnmtcrt (Hashin, matrix tension); Hsnmccrt (Hashin, matrix
+    compression)
 
     Second argument (failure parameter):
     '<param>': Reserve (reserve factor); Value (criterion value)
 
     Note: The reserve factor applies only to Tsai-Hill, Tsai-Wu and
-    Azzi-Tsai-Hill.
+    Azzi-Tsai-Hill failure criteria.
 
     Third argument (objective function):
     '<fun>': MinMax (minimise the maximum criterion value); MinMean

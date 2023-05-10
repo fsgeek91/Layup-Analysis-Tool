@@ -195,9 +195,10 @@ function [varargout] = main(varargin)
 %   Note: The equivalent moduli are only calculated for symmetric laminate
 %   stacking sequences.
 %
-%   CFAILURE. A structure of the failure measure components.
+%   CFAILURE. A structure of the failure/damage initiation measure
+%   components.
 %
-%   Failure analysis output variable identifiers:
+%   Failure/damage initiation analysis output variable identifiers:
 %       - MSTRS, Maximum stress theory failure measure
 %       - TSAIH, Tsai-Hill theory failure measure
 %       - TSAIW, Tsai-Wu theory failure measure
@@ -210,7 +211,8 @@ function [varargout] = main(varargin)
 %       - SFAILRATIO, The proportion of the layup that has failed for each
 %         failure criterion over all section points [%/100]
 %
-%   Note: Failure criteria are expressed as the strength reserve factor.
+%   Note: Failure criteria Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill are
+%   expressed as the strength reserve factor.
 %
 %   OPT_SEQ. A 1x6 cell of the results of the stacking sequence
 %   optimisation.
@@ -252,8 +254,8 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 2.3 Copyright Louis Vallance 2023
-%   Last modified 09-May-2023 07:31:07 UTC
+%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Last modified 10-May-2023 10:16:13 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -507,7 +509,6 @@ if (OUTPUT_STRENGTH == true) && (printTensor == 1.0)
             G12);
     else
         CRITERION_BUFFER = [];
-        MIN_CRITERION = [];
     end
 else
     % Initialise values to default
@@ -521,7 +522,6 @@ else
     HSNMTCRT = [];
     HSNMCCRT = [];
     CRITERION_BUFFER = [];
-    MIN_CRITERION = [];
 
     % Suppress strength output
     OUTPUT_STRENGTH = false;
@@ -560,7 +560,7 @@ end
 if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (nPlies_points > 1.0)
     abd.internal_plot(OUTPUT_FIGURE, outputLocation, nPlies, E_ply_xy,...
         S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points,...
-        CRITERION_BUFFER, MIN_CRITERION, BEST_SEQUENCE, OUTPUT_OPTIMISED)
+        CRITERION_BUFFER, OUTPUT_OPTIMISED)
 end
 
 %% WRITE RESULTS TO A TEXT FILE
