@@ -195,7 +195,7 @@ function [varargout] = main(varargin)
 %   stacking sequences.
 %
 %   CFAILURE. A structure of the failure/damage initiation measure
-%   components.
+%   components for all section points.
 %
 %   Failure/damage initiation analysis output variable identifiers:
 %       - MSTRS, Maximum stress theory failure measure
