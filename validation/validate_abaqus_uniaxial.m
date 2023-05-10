@@ -169,7 +169,7 @@ OUTPUT_STRENGTH = true;
 % OUTPUT_OPTIMISED  Compute the optimised stacking sequence
 %{
     Note: The stacking optimisation properties are taken from the number of
-    plies and section points from the layup definition.
+    plies and section points in the layup definition.
 
     First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
