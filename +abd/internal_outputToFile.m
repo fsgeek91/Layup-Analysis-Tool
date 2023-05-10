@@ -377,7 +377,7 @@ elseif isempty(BEST_SEQUENCE) == false
         case 'mstrn'
             criterionString = 'Mean strain';
         case 'hashin'
-            criterionString = 'Hashin';
+            criterionString = 'Hashin (worst criterion)';
         otherwise
             % This condition should never be reached!
     end
