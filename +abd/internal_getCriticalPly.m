@@ -1,5 +1,5 @@
 function [varargout] = internal_getCriticalPly(DATA, symmetricAbd,...
-    outputPoints, plyBuffer, nPlies)
+    plyBuffer, nPlies)
 %   Get the worst ply from the static failure assessment.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -22,12 +22,19 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd,...
 [rows, cols] = size(DATA);
 
 % Initialise VARARGOUT
-varargout = cell(1.0, 3.0*cols);
+varargout = cell(1.0, 3.0*cols + 1.0);
 
 % Get indexes for worst plies and symmetric failure flags
 dataIndexes = 1.0:3.0:3.0*cols;
 valueIndexes = 2.0:3.0:3.0*cols;
 symmetryIndexes = 3.0:3.0:3.0*cols;
+sfailratioIndex = 3.0*cols + 1.0;
+
+% Get list of all section points
+nPoints = 1.0:length(plyBuffer);
+
+% Initialise buffer for SFAILRATIO
+SFAILRATIO = zeros(1.0, cols);
 
 for i = 1.0:cols
     % Get the current column from DATA
@@ -41,18 +48,36 @@ for i = 1.0:cols
 
     % Compute the single worst value over all section points for each ply
     DATA_ply = zeros(nPlies, 1.0);
+
+    % Buffer to record failed plies
+    FAILED_PLY = zeros(1.0, nPlies);
+
     for p = 1.0:nPlies
-        currentOutputPoints = outputPoints(plyBuffer == p);
+        % Get maximum value in current ply based on output section points
+        currentOutputPoints = nPoints(plyBuffer == p);
+
+        % Get the values over all section points for the current ply
+        DATA_i_all = DATA_i(currentOutputPoints);
 
         if isempty(currentOutputPoints) == true
             %{
-                There is no data at the requested location
+                There is no data at the requested location. Since the
+                calculation considers ALL section points, this condition
+                should never be met!
             %}
             DATA_ply(p) = -1.0;
         else
-            DATA_ply(p) = max(DATA_i(currentOutputPoints));
+            DATA_ply(p) = max(DATA_i_all);
+        end
+
+        if all(DATA_i_all >= 1.0)
+            % All section points in the ply have failed
+            FAILED_PLY(p) = true;
         end
     end
+
+    % Update the value of SFAILRATIO
+    SFAILRATIO(i) = length(FAILED_PLY(FAILED_PLY == true))/nPlies;
 
     % Update VARARGOUT
     varargout{dataIndexes(i)} = find(DATA_ply == max(DATA_ply), 1.0);
@@ -81,4 +106,7 @@ for i = 1.0:cols
         varargout{symmetryIndexes(i)} = 'N/A';
     end
 end
+
+% Output SFAILRATIO
+varargout{sfailratioIndex} = SFAILRATIO;
 end

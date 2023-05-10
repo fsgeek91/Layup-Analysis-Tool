@@ -6,7 +6,8 @@ function [] = internal_outputToFile(dateString, outputLocation,...
     TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
     noFailStress, noFailStrain, noHashin, nSectionPoints, outputPoints,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE,...
-    outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE)
+    outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE,...
+    plyBuffer_sfailratio)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -166,10 +167,10 @@ if outputStrength == 1.0
         % Get the critical ply and the symmetry condition
         [MAX_MSTRS, MAX_MSTRS_VAL, MSTRS_SYM, MAX_TSAIH, MAX_TSAIH_VAL,...
             TSAIH_SYM, MAX_TSAIW, MAX_TSAIW_VAL, TSAIW_SYM, MAX_AZZIT,...
-            MAX_AZZIT_VAL, AZZIT_SYM] =...
+            MAX_AZZIT_VAL, AZZIT_SYM, SFAILRATIO_STRESS] =...
             ...
             abd.internal_getCriticalPly([MSTRS', TSAIH', TSAIW',...
-            AZZIT'], symmetricAbd, outputPoints, plyBuffer, nPlies);
+            AZZIT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
         % Print the result
         fprintf(fid, ['MSTRS         %-14.0f%-9s\nTSAIH         %-14.0',...
@@ -181,10 +182,10 @@ if outputStrength == 1.0
 
     if noFailStrain == false
         % Get the critical ply and the symmetry condition
-        [MAX_MSTRN, MAX_MSTRN_VAL, MSTRN_SYM] =...
+        [MAX_MSTRN, MAX_MSTRN_VAL, MSTRN_SYM, SFAILRATIO_STRAIN] =...
             ...
             abd.internal_getCriticalPly(MSTRN', symmetricAbd,...
-            outputPoints, plyBuffer, nPlies);
+            plyBuffer_sfailratio, nPlies);
 
         % Print the result
         fprintf(fid, 'MSTRN         %-14.0f%-9s\n',...
@@ -196,11 +197,12 @@ if outputStrength == 1.0
         [MAX_HSNFTCRT, MAX_HSNFTCRT_VAL, HSNFTCRT_SYM,...
             MAX_HSNFCCRT, MAX_HSNFCCRT_VAL, HSNFCCRT_SYM,...
             MAX_HSNMTCRT, MAX_HSNMTCRT_VAL, HSNMTCRT_SYM,...
-            MAX_HSNMCCRT, MAX_HSNMCCRT_VAL, HSNMCCRT_SYM] =...
+            MAX_HSNMCCRT, MAX_HSNMCCRT_VAL, HSNMCCRT_SYM,...
+            SFAILRATIO_HASHIN] =...
             ...
             abd.internal_getCriticalPly([HSNFTCRT', HSNFCCRT',...
-            HSNMTCRT', HSNMCCRT'], symmetricAbd, outputPoints,...
-            plyBuffer, nPlies);
+            HSNMTCRT', HSNMCCRT'], symmetricAbd, plyBuffer_sfailratio,...
+            nPlies);
 
         % Print the result
         fprintf(fid, ['HSNFTCRT      %-14.0f%-9s\nHSNFCCRT      %-14.0',...
@@ -214,14 +216,14 @@ if outputStrength == 1.0
         '==========================\n']);
 end
 
-%% Print results of failure criteria analysis (MAXIMUM STRESS)
+%% Print results of failure criteria analysis (stress-based)
 if (outputStrength == 1.0) && (noFailStress == false)
     FAIL_STRESS_ALL = [MAX_MSTRS_VAL, MAX_TSAIH_VAL, MAX_TSAIW_VAL,...
         MAX_AZZIT_VAL];
     FAIL_STRESS_ALL_MAX = max(FAIL_STRESS_ALL, [], 2.0);
 
-    fprintf(fid, ['\nFailure analysis summary (stress-based criteria):',...
-        '\n']);
+    fprintf(fid, ['\nFailure assessment summary (stress-based criteria',...
+        '):\n']);
     fprintf(fid, ['PLY           MSTRS         TSAIH         TSAIW    ',...
         '     AZZIT         (WORST)       STATUS\n']);
     for i = 1.0:nPlies
@@ -244,19 +246,14 @@ if (outputStrength == 1.0) && (noFailStress == false)
         Note: The value of SFAILRATIO considers results over ALL section
         points
     %}
-    SFAILRATIO = zeros(1.0, 4.0);
-    for i = 1.0:4.0
-        FAIL_STRESS_CRITERION = FAIL_STRESS_ALL(:, i);
-        nFailedPlies = length(FAIL_STRESS_CRITERION(FAIL_STRESS_CRITERION >= 1.0));
-        SFAILRATIO(i) = nFailedPlies/nPlies;
-    end
-    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n', SFAILRATIO);
+    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n',...
+        SFAILRATIO_STRESS);
 end
 
-%% Print results of failure criteria analysis (MAXIMUM STRAIN)
+%% Print results of failure criteria analysis (strain-based)
 if (outputStrength == 1.0) && (noFailStrain == false)
-    fprintf(fid, ['\nFailure analysis summary (strain-based criteria):',...
-        '\n']);
+    fprintf(fid, ['\nFailure assessment summary (strain-based criteria',...
+        '):\n']);
     fprintf(fid, 'PLY           MSTRN         STATUS\n');
     for i = 1.0:nPlies
         if MSTRN(i) >= 1.0
@@ -272,9 +269,12 @@ if (outputStrength == 1.0) && (noFailStrain == false)
     end
 
     % Print SFAILRATIO
-    nFailedPlies = length(MAX_MSTRN_VAL(MAX_MSTRN_VAL >= 1.0));
-    SFAILRATIO = nFailedPlies/nPlies;
-    fprintf(fid, 'SFAILRATIO    %-14g\n', SFAILRATIO);
+    %{
+        Note: The value of SFAILRATIO considers results over ALL section
+        points
+    %}
+    fprintf(fid, 'SFAILRATIO    %-14g\n',...
+        SFAILRATIO_STRAIN);
 end
 
 %% Print results of damage initiation criteria analysis (HASHIN)
@@ -283,7 +283,7 @@ if (outputStrength == 1.0) && (noHashin == false)
         MAX_HSNMCCRT_VAL];
     HASHIN_ALL_MAX = max(HASHIN_ALL, [], 2.0);
 
-    fprintf(fid, '\nFailure analysis summary (Hashin):\n');
+    fprintf(fid, '\nDamage initiation assessment summary (Hashin):\n');
     fprintf(fid, ['PLY           HSNFTCRT      HSNFCCRT      HSNMTCRT ',...
         '     HSNMCCRT      (WORST)       STATUS\n']);
     for i = 1.0:nPlies
@@ -308,25 +308,25 @@ if (outputStrength == 1.0) && (noHashin == false)
         Note: The value of SFAILRATIO considers results over ALL section
         points
     %}
-    SFAILRATIO = zeros(1.0, 4.0);
-    for i = 1.0:4.0
-        FAIL_STRESS_CRITERION = HASHIN_ALL(:, i);
-        nFailedPlies = length(FAIL_STRESS_CRITERION(FAIL_STRESS_CRITERION >= 1.0));
-        SFAILRATIO(i) = nFailedPlies/nPlies;
-    end
-    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n', SFAILRATIO);
+    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n',...
+        SFAILRATIO_HASHIN);
 end
 
 %% Print failure assessment summary
-if (outputStrength == 1.0) && (any(~[noFailStress, noFailStrain]) == true)
-    if any([MSTRS, TSAIH, TSAIW, AZZIT, MSTRN] >= 1.0) == true
+if (outputStrength == 1.0) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
+    if any([SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN] == 1.0) == true
         fprintf(fid, '\nLAYUP IS UNSAFE BASED ON EVALUATED CRITERIA\n');
     else
         fprintf(fid, '\nLAYUP IS SAFE BASED ON EVALUATED CRITERIA\n');
     end
 
-    fprintf(fid, ['\nNote: The failure assessment considers ALL sectio',...
-        'n points in the layup\n']);
+    fprintf(fid, ['\nNotes about failure/damage initiation assessment ',...
+        'output:\n\t- Assessment criteria report the worst section poi',...
+        'nt for each ply\n\t- SFAILRATIO: Section failure ratio across',...
+        ' all the plies (a ply is\n\t  considered failed when all of t',...
+        'he section points in the ply failed)\n\t- It is therefore pos',...
+        'sible for the worst section point value to be\n\t  greater th',...
+        'an 1 without observing ply failure']);
 
     fprintf(fid, ['\n=================================================',...
         '==========================\n']);
@@ -421,7 +421,8 @@ elseif isempty(BEST_SEQUENCE) == false
 
     fprintf(fid, ['\n=================================================',...
         '==========================\n']);
-elseif (OUTPUT_OPTIMISED{1.0} == true) && (printTensor ~= -1.0)
+elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) &&...
+        (OUTPUT_OPTIMISED{1.0} == true)) && (printTensor ~= -1.0)
     % Print message about no optimisation output
     fprintf(fid, ['\nNote: Stacking optimisation was not performed. En',...
         'able the strength\ncalculation with OUTPUT_STRENGTH = true\n']);

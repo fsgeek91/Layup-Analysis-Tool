@@ -1,7 +1,7 @@
 function [error, OUTPUT_PLY_POINTS, plyBuffer, OUTPUT_ENVELOPE,...
-    ENVELOPE_MODE, outputApproximate] = internal_getOutputPoints(...
-    OUTPUT_PLY, z, z_points, nPlies, nPlies_points, plyBuffer,...
-    SECTION_POINTS, tolerance)
+    ENVELOPE_MODE, outputApproximate, plyBuffer_sfailratio] =...
+    internal_getOutputPoints( OUTPUT_PLY, z, z_points, nPlies,...
+    nPlies_points, plyBuffer, SECTION_POINTS, tolerance)
 %   Get list of section points for stress/strain output.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -19,6 +19,13 @@ OUTPUT_PLY_POINTS = [];
 OUTPUT_ENVELOPE =  false;
 ENVELOPE_MODE = 1.0;
 outputApproximate = false;
+
+%{
+    For strength output, the ply is considered to have failed when all of
+    the section points in the layer have failed. Therefore, a version of
+    the ply buffer containing all section points is required
+%}
+plyBuffer_sfailratio = [];
 
 %% If cell, convert to CHAR/NUM
 if (iscell(OUTPUT_PLY) == 1.0) && (isempty(OUTPUT_PLY) == 0.0)
@@ -177,4 +184,5 @@ if isempty(OUTPUT_PLY_POINTS) == true
 end
 
 % Update the ply buffer
+plyBuffer_sfailratio = plyBuffer;
 plyBuffer = plyBuffer(OUTPUT_PLY_POINTS);
