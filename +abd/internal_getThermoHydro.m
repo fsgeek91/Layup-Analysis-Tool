@@ -19,3 +19,11 @@ axy = 2.0.*cosd(theta_points).*sind(theta_points).*(A11_points - A22_points);
 bxx = B11_points.*cosd(theta_points).^2.0 + B22_points.*sind(theta_points).^2.0;
 byy = B11_points.*sind(theta_points).^2.0 + B22_points.*cosd(theta_points).^2.0;
 bxy = 2.0.*cosd(theta_points).*sind(theta_points).*(B11_points - B22_points);
+
+axx(abs(axx) < 1e-12) = 0.0;
+ayy(abs(ayy) < 1e-12) = 0.0;
+axy(abs(axy) < 1e-12) = 0.0;
+
+bxx(abs(bxx) < 1e-12) = 0.0;
+byy(abs(bxy) < 1e-12) = 0.0;
+bxy(abs(bxy) < 1e-12) = 0.0;

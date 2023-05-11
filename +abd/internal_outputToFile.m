@@ -7,7 +7,7 @@ function [] = internal_outputToFile(dateString, outputLocation,...
     noFailStress, noFailStrain, noHashin, nSectionPoints, outputPoints,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE,...
     outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE,...
-    plyBuffer_sfailratio)
+    plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -134,8 +134,22 @@ end
 fprintf(fid, ['\n=====================================================',...
     '======================\n']);
 
+%% Print effective thermal and hydroscopic properties
+fprintf(fid, '\nEffective thermal/hydroscopic constants:\n');
+fprintf(fid, ['PLY   axx           ayy           axy           bxx    ',...
+    '       byy           bxy           \n']);
+for i = 1.0:nPlies
+    s = find(plyBuffer == i, 1.0);
+    fprintf(fid, '%-6.0f%-14g%-14g%-14g%-14g%-14g%-14g\n', i, axx(s),...
+        ayy(s), axy(s), bxx(s), byy(s), bxy(s));
+end
+
+fprintf(fid, ['\n=====================================================',...
+    '======================\n']);
+
 %% Print stress/strain tensors
-if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (nSectionPoints == 1.0)
+if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) &&...
+        (nSectionPoints == 1.0)
     %{
         Inform the user if there is only one total section point for output
         and MATLAB figures were requested

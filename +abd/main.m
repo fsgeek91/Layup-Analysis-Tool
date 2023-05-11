@@ -375,6 +375,9 @@ else
     noHashin = true;
 end
 
+%% SET THE NEAR-ZERO TOLERANCE VALUE
+tolerance = 1e-6;
+
 %% GET THICKNESS FRACTIONS
 % Buffer for thickness fractions
 z = zeros(1.0, nPlies + 1.0);
@@ -395,8 +398,8 @@ for i = 2.0:nPlies + 1.0
     z(i) = z(i - 1.0) + t_ply(i-1);
 end
 
-%% SET THE NEAR-ZERO TOLERANCE VALUE
-tolerance = 1e-6;
+% Reset near-zero values to zero
+z(abs(z) < tolerance) = 0.0;
 
 %% PROCESS SECTION_POINTS
 [error, z_points, theta_points, nPlies_points, A11_points, A22_points,...
@@ -595,7 +598,7 @@ abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH,...
     noFailStress, noFailStrain, noHashin, SECTION_POINTS,...
     OUTPUT_PLY_POINTS, plyBuffer, thickness, OUTPUT_ENVELOPE,...
     ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED,...
-    OUTPUT_FIGURE, plyBuffer_sfailratio)
+    OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy)
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
