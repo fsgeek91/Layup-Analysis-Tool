@@ -5,7 +5,7 @@ function [error, noStrength, varargout] =...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 10-May-2023 10:16:13 UTC
+%   Last modified 11-May-2023 13:34:37 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

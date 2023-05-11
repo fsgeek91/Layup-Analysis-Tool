@@ -13,7 +13,7 @@ function [] = internal_outputToFile(dateString, outputLocation,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 10-May-2023 10:16:13 UTC
+%   Last modified 11-May-2023 13:34:37 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -31,6 +31,11 @@ fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 if printTensor == 1.0
     fprintf(fid, 'Stress units - [N/mm2]; Strain units - [mm/mm]\n\n');
 end
+
+%% Initialise variables
+SFAILRATIO_STRESS = -1.0;
+SFAILRATIO_STRAIN = -1.0;
+SFAILRATIO_HASHIN = -1.0;
 
 %% Print layup summary
 fprintf(fid, 'Composite layup summary:\n');
@@ -277,6 +282,20 @@ if (outputStrength == 1.0) && (noFailStrain == false)
         SFAILRATIO_STRAIN);
 end
 
+%% Print summary of failure criteria assessments
+if (SFAILRATIO_STRESS(1.0) ~= -1.0) || (SFAILRATIO_STRAIN(1.0) ~= -1.0)
+    if any([SFAILRATIO_STRESS, SFAILRATIO_STRAIN] == 1.0) == true
+        fprintf(fid, ['\nEVERY PLY IN THE LAYUP WILL FAIL BASED ON EVA',...
+            'LUATED CRITERIA\n']);
+    elseif any([SFAILRATIO_STRESS, SFAILRATIO_STRAIN] > 0.0) == true
+        fprintf(fid, ['\nAT LEAST ONE PLY IN THE LAYUP WILL FAIL BASED',...
+            ' ON EVALUATED CRITERIA\n']);
+    else
+        fprintf(fid, ['\nLAYUP WILL NOT FAIL BASED ON EVALUATED CRITER',...
+            'IA\n']);
+    end
+end
+
 %% Print results of damage initiation criteria analysis (HASHIN)
 if (outputStrength == 1.0) && (noHashin == false)
     HASHIN_ALL = [MAX_HSNFTCRT_VAL, MAX_HSNFCCRT_VAL, MAX_HSNMTCRT_VAL,...
@@ -313,15 +332,23 @@ if (outputStrength == 1.0) && (noHashin == false)
         SFAILRATIO_HASHIN);
 end
 
+% Print summary of assessment
+if SFAILRATIO_HASHIN(1.0) ~= -1.0
+    if any(SFAILRATIO_HASHIN == 1.0) == true
+        fprintf(fid, ['\nEVERY PLY IN THE LAYUP WILL BE DAMAGED BASED ',...
+            'ON EVALUATED CRITERIA\n']);
+    elseif any(SFAILRATIO_HASHIN > 0.0) == true
+        
+        fprintf(fid, ['\nAT LEAST ONE PLY IN THE LAYUP WILL BE DAMAGED',...
+            ' BASED ON EVALUATED CRITERIA\n']);
+    else
+        fprintf(fid, ['\nLAYUP WILL NOT BE DAMAGED BASED ON EVALUATED ',...
+            'CRITERIA\n']);
+    end
+end
+
 %% Print failure assessment summary
 if (outputStrength == 1.0) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
-    if any([SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN] == 1.0) == true
-        fprintf(fid, '\nLAYUP WILL FAIL BASED ON EVALUATED CRITERIA\n');
-    else
-        fprintf(fid, ['\nLAYUP WILL NOT FAIL BASED ON EVALUATED CRITER',...
-            'IA\n']);
-    end
-
     fprintf(fid, ['\nNotes about failure/damage initiation assessment ',...
         'output:\n\t- Assessment criteria report the worst section poi',...
         'nt for each ply\n\t- The ply is marked as UNSAFE if at least ',...

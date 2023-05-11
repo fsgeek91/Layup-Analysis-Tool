@@ -6,7 +6,7 @@ function [] = internal_plot(OUTPUT_FIGURE, outputLocation, nPlies,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 10-May-2023 10:16:13 UTC
+%   Last modified 11-May-2023 13:34:37 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -221,7 +221,18 @@ if isempty(CRITERION_BUFFER) == false
 
     % Other options
     grid minor
-    xlabel(sprintf('%s value', upper(OUTPUT_OPTIMISED{2})), 'FontSize', fontY)
+    if (strcmpi(OUTPUT_OPTIMISED{2.0}, 'tsaih') == true ||...
+            strcmpi(OUTPUT_OPTIMISED{2.0}, 'tsaiw') == true ||...
+            strcmpi(OUTPUT_OPTIMISED{2.0}, 'azzit') == true)
+        if OUTPUT_OPTIMISED{3.0} == 1.0
+            xLabelString = sprintf('%s reserve factor', upper(OUTPUT_OPTIMISED{2.0}));
+        else
+            xLabelString = sprintf('%s value', upper(OUTPUT_OPTIMISED{2.0}));
+        end
+    else
+        xLabelString = sprintf('%s value', upper(OUTPUT_OPTIMISED{2.0}));
+    end
+    xlabel(xLabelString, 'FontSize', fontY)
     ylabel('Number of occurrences', 'FontSize', fontX)
     title(figureTitle, 'FontSize', fontTitle)
     set(gca, 'FontSize', fontTicks)
