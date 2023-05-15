@@ -131,7 +131,7 @@ function [varargout] = main(varargin)
 %   factor.
 %
 %   Note: For Hashin's theory, R is not evaluated; output for these
-%   criteria is given directly as the damage initiation criterion index.
+%   criteria is quoted as the damage initiation criterion index.
 %
 %   OUTPUT_DEF(4) is a 1x4 cell array specifying settings for the stacking
 %   sequence optimiser, OUTPUT_OPTIMISED. OUTPUT_OPTIMISED(1) is the
