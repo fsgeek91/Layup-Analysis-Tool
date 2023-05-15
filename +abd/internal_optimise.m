@@ -4,7 +4,7 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
 %   Last modified 15-May-2023 07:15:38 UTC
 %
 
@@ -309,8 +309,7 @@ classdef internal_optimise < handle
                     else
                         fprintf(['[ABD ERROR] OUTPUT_OPTIMISED(1) must',...
                             ' be one of the following parameters:\nMST',...
-                            'RS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT,',...
-                            ' HSNFCCRT, HSNMTCRT or HSNMCCRT\n']);
+                            'RS, TSAIH, TSAIW, AZZIT, MSTRN or HASHIN\n']);
                     end
 
                     % Reset the error flag and RETURN
@@ -365,6 +364,7 @@ classdef internal_optimise < handle
             % Process the second argument
             argument = OUTPUT_OPTIMISED{2.0};
 
+            % Get the parameter type
             switch lower(argument)
                 case 'reserve'
                     output{3.0} = 1.0;

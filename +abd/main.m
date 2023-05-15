@@ -115,17 +115,31 @@ function [varargout] = main(varargin)
 %   the built-in SMOOTHDATA function to smooth the output at the ply
 %   boundaries.
 %
-%   OUTPUT_DEF(3) is a flag to request the strength calculation for each
-%   ply, OUTPUT_STRENGTH. The strength calculation requires strength
-%   properties defined by FAIL_STRESS and FAIL_STRAIN.
+%   OUTPUT_DEF(3) is a 1x2 cell array specifying settings for the strength
+%   assessment, OUTPUT_STRENGTH. OUTPUT_STRENGTH(1) is a flag to enable or
+%   disable the strength assessment; OUTPUT_STRENGTH(2) is the failure
+%   assessment parameter ('RESERVE' or 'VALUE'). The strength calculation
+%   requires strength properties defined by FAIL_STRESS, FAIL_STRAIN and
+%   HASHIN.
+%
+%   Note: For stress-based failure criteria, the inverse of the strength
+%   reserve factor [1/R] is the scaling factor by which the load matrix
+%   must be multiplied to hit the failure surface. The Tsai-Hill, Tsai-Wu
+%   and Azzi-Tsai-Hill failure criteria can be expressed in terms of the
+%   strength reserve factor or the criteiron value; for all other failure
+%   criteria, the criterion value is identical to the strength reserve
+%   factor.
+%
+%   Note: For Hashin's theory, R is not evaluated; output for these
+%   criteria is given directly as the damage initiation criterion index.
 %
 %   OUTPUT_DEF(4) is a 1x4 cell array specifying settings for the stacking
-%   sequence optimiser. OUTPUT_OPTIMISED(1) is the failure criterion for
-%   the optimisation ('MSTRS', 'TSAIH', 'TSAIW', 'AZZIT', 'MSTRN' or
-%   'HASHIN'); OUTPUT_OPTIMISED(2) is the failure assessment parameter
-%   ('RESERVE' or 'VALUE'); OUTPUT_OPTIMISED(3) is the objective function
-%   ('MINMAX' or 'MINMEAN'); OUTPUT_OPTIMISED(4) is the angular step size
-%   for the stacking sequence permutations.
+%   sequence optimiser, OUTPUT_OPTIMISED. OUTPUT_OPTIMISED(1) is the
+%   failure criterion for the optimisation ('MSTRS', 'TSAIH', 'TSAIW',
+%   'AZZIT', 'MSTRN' or 'HASHIN'); OUTPUT_OPTIMISED(2) is the failure
+%   assessment parameter ('RESERVE' or 'VALUE'); OUTPUT_OPTIMISED(3) is the
+%   objective function ('MINMAX' or 'MINMEAN'); OUTPUT_OPTIMISED(4) is the
+%   angular step size for the stacking sequence permutations.
 %
 %   OUTPUT_DEF(5) is a string specifying the results location,
 %   OUTPUT_LOCATION. Use 'DEFAULT' to save results under a new folder in
@@ -201,18 +215,15 @@ function [varargout] = main(varargin)
 %
 %   Failure/damage initiation analysis output variable identifiers:
 %       - MSTRS, Maximum stress theory failure measure
-%       - TSAIH, Tsai-Hill theory failure measure
-%       - TSAIW, Tsai-Wu theory failure measure
-%       - AZZIT, Azzi-Tsai-Hill theory failure measure
+%       - TSAIH, Tsai-Hill theory failure measure (reserve/value)
+%       - TSAIW, Tsai-Wu theory failure measure (reserve/value)
+%       - AZZIT, Azzi-Tsai-Hill theory failure measure (reserve/value)
 %       - MSTRN, Maximum strain theory failure measure
 %       - HSNFTCRT, Hashin’s fibre tensile damage initiation criterion
 %       - HSNFCCRT, Hashin’s fibre compression damage initiation criterion
 %       - HSNMTCRT, Hashin’s matrix tensile damage initiation criterion
 %       - HSNMCCRT, Hashin’s matrix compression damage initiation criterion
 %       - SFAILRATIO, The section failure ratio across all plies [%/100]
-%
-%   Note: Failure criteria Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill are
-%   expressed as the strength reserve factor.
 %
 %   OPT_SEQ. A 1x6 cell of the results of the stacking sequence
 %   optimisation.
@@ -254,7 +265,7 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
 %   Last modified 15-May-2023 07:15:38 UTC
 
 %% - DO NOT EDIT BELOW LINE
@@ -291,6 +302,16 @@ if error == true
     return
 end
 
+%% PROCESS OUTPUT_STRENGTH
+[error, OUTPUT_STRENGTH] =...
+    ...
+    abd.internal_strength.getSettings(OUTPUT_STRENGTH);
+
+% An error occurred, so RETURN
+if error == true
+    return
+end
+
 %% GET MATERIAL DATA (MECHANICAL)
 [error, ~, E11, E22, G12, V12, A11, A22, B11, B22] =...
     ...
@@ -303,7 +324,7 @@ if error == true
 end
 
 %% GET MATERIAL DATA (STRENGTH)
-if OUTPUT_STRENGTH == true
+if OUTPUT_STRENGTH{1.0} == true
     % Get fail stress properties
     [error, noFailStress, XT, XC, YT, YC, S, C, B] =...
         ...
@@ -419,7 +440,7 @@ if isempty(OUTPUT_OPTIMISED{1.0}) == false
     [error, OUTPUT_OPTIMISED] =...
         ...
         abd.internal_optimise.getSettings(OUTPUT_OPTIMISED, noFailStress,...
-        noFailStrain, noHashin, OUTPUT_STRENGTH);
+        noFailStrain, noHashin, OUTPUT_STRENGTH{1.0});
 
     % An error occurred, so RETURN
     if error == true
@@ -491,7 +512,7 @@ end
 ABD(abs(ABD) < tolerance) = 0.0;
 
 %% PERFORM STRENGTH CALCULATION ON PLY STRESSES
-if (OUTPUT_STRENGTH == true) && (printTensor == 1.0)
+if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
     [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT,...
         HSNMCCRT, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC,...
         YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY] =...
@@ -499,7 +520,7 @@ if (OUTPUT_STRENGTH == true) && (printTensor == 1.0)
         abd.internal_strength.main(noFailStress, noFailStrain, noHashin,...
         XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC, YET, YEC,...
         SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, S_ply_aligned, nPlies,...
-        nPlies_points, SECTION_POINTS);
+        nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0});
 
     if OUTPUT_OPTIMISED{1.0} == true
         %% FIND THE OPTIMUM STACKING SEQUENCE
@@ -529,7 +550,7 @@ else
     CRITERION_BUFFER = [];
 
     % Suppress strength output
-    OUTPUT_STRENGTH = false;
+    OUTPUT_STRENGTH{1.0} = false;
 end
 
 %% OUTPUT TO VARARGOUT

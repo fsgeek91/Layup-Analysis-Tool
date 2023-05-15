@@ -4,7 +4,7 @@ function [EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB] =...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
 %   Last modified 15-May-2023 07:15:38 UTC
 %
 

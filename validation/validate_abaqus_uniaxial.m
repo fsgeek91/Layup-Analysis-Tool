@@ -4,7 +4,7 @@
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
 %   Last modified 11-May-2023 13:34:37 UTC
 
 %% 1: MATERIAL DATA
@@ -166,8 +166,18 @@ OUTPUT_PLY = 'DEFAULT';
 %}
 OUTPUT_FIGURE = 'DEFAULT';
 
-% OUTPUT_STRENGTH  Evaluate failure criteria at each ply
-OUTPUT_STRENGTH = true;
+% OUTPUT_STRENGTH  Evaluate static failure/damage initiation criteria
+%{
+    First argument (strength assessment):
+    status: false; true
+
+    Second argument (failure parameter):
+    '<param>': Reserve (strength reserve factor); Value (criterion value)
+
+    Note: The setting of the failure parameter only applies to the
+    Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria.
+%}
+OUTPUT_STRENGTH = {true, 'RESERVE'};
 
 % OUTPUT_OPTIMISED  Compute the optimised stacking sequence
 %{
@@ -180,10 +190,7 @@ OUTPUT_STRENGTH = true;
     Hashin;
 
     Second argument (failure parameter):
-    '<param>': Reserve (reserve factor); Value (criterion value)
-
-    Note: The reserve factor applies only to Tsai-Hill, Tsai-Wu and
-    Azzi-Tsai-Hill failure criteria.
+    '<param>': Reserve (strength reserve factor); Value (criterion value)
 
     Third argument (objective function):
     '<fun>': MinMax (minimise the maximum criterion value); MinMean

@@ -3,7 +3,7 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
 %   Last modified 15-May-2023 07:15:38 UTC
 %
 
@@ -20,7 +20,7 @@ classdef internal_strength < handle
                 main(noFailStress, noFailStrain, noHashin, XT, XC, YT,...
                 YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC,...
                 SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, stress, nPlies,...
-                nPlies_points, SECTION_POINTS)
+                nPlies_points, SECTION_POINTS, parameter)
 
             % Spread material data over section points
             if noFailStress == false
@@ -78,20 +78,20 @@ classdef internal_strength < handle
                 % Failure calculation: TSAIH
                 TSAIH =...
                     ...
-                    abd.internal_strength.getTsaih(1.0, stress, XT, XC,...
-                    YT, YC, S);
+                    abd.internal_strength.getTsaih(parameter, stress,...
+                    XT, XC, YT, YC, S);
 
                 % Failure calculation: TSAIW
                 TSAIW =...
                     ...
-                    abd.internal_strength.getTsaiw(1.0, stress, XT, XC,...
-                    YT, YC, S, C12, B12);
+                    abd.internal_strength.getTsaiw(parameter, stress,...
+                    XT, XC, YT, YC, S, C12, B12);
 
                 % Failure calculation: AZZIT
                 AZZIT =...
                     ...
-                    abd.internal_strength.getAzzit(1.0, nPlies_points,...
-                    stress, XT, XC, YT, YC, S);
+                    abd.internal_strength.getAzzit(parameter,...
+                    nPlies_points, stress, XT, XC, YT, YC, S);
             end
 
             % Failure calculation: MSTRN
@@ -108,6 +108,63 @@ classdef internal_strength < handle
                     ...
                     abd.internal_strength.getHashin(nPlies_points,...
                     stress, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY);
+            end
+        end
+
+        %% GET DATA FROM OUTPUT_STRENGTH
+        function [error, output] = getSettings(OUTPUT_STRENGTH)
+            % Initialise output
+            error = false;
+            output = cell(1.0, 2.0);
+
+            if iscell(OUTPUT_STRENGTH) == false
+                % Convert to cell if necessary
+                OUTPUT_STRENGTH = {OUTPUT_STRENGTH};
+            end
+
+            if (all(cellfun(@isempty, OUTPUT_STRENGTH)) == true) ||...
+                    (length(OUTPUT_STRENGTH) ~= 2.0)
+                % Incorrect number of arguments
+                fprintf(['[ABD ERROR] The setting OUTPUT_STRENGTH requ',...
+                    'ires two arguments:\n{''<flag>'', ''<parameter>''',...
+                    '}\n']);
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            end
+
+            % Process the first argument
+            argument = OUTPUT_STRENGTH{1.0};
+
+            % Check validity of the argument
+            if isempty(argument) == true
+                output{1.0} = false;
+            elseif (islogical(argument) == false) &&...
+                    (argument ~= 0.0) && (argument ~= 1.0)
+                % Incorrect argument type
+                fprintf(['[ABD ERROR] OUTPUT_STRENGTH(1) must be a log',...
+                    'ical: {false | true}\n']);
+
+                    % Reset the error flag and RETURN
+                    error = true;
+                    return
+            else
+                % Everything is OK
+                output{1.0} = argument;
+            end
+
+            % Process the second argument
+            argument = OUTPUT_STRENGTH{2.0};
+
+            % Get the parameter type
+            switch lower(argument)
+                case 'reserve'
+                    output{2.0} = 1.0;
+                case 'value'
+                    output{2.0} = 2.0;
+                otherwise
+                    output{2.0} = 1.0;
             end
         end
     end

@@ -12,7 +12,7 @@ function [] = internal_outputToFile(dateString, outputLocation,...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
+%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
 %   Last modified 15-May-2023 07:15:38 UTC
 %
 
@@ -184,7 +184,7 @@ fprintf(fid, ['\n=====================================================',...
     '======================\n']);
 
 %% Print critical ply summary
-if outputStrength == 1.0
+if outputStrength{1.0} == 1.0
     fprintf(fid, '\nFAILURE CRITERIA ASSESSMENT RESULTS\n');
     fprintf(fid, '\nCritical ply summary (all criteria):\n');
     fprintf(fid, 'CRITERION     PLY           SYMMETRIC?\n');
@@ -243,15 +243,27 @@ if outputStrength == 1.0
 end
 
 %% Print results of failure criteria analysis (stress-based)
-if (outputStrength == 1.0) && (noFailStress == false)
+if (outputStrength{1.0} == 1.0) && (noFailStress == false)
+    % Get the parameter string
+    if outputStrength{2.0} == 1.0
+        parameter = '(R)';
+    else
+        parameter = '(V)';
+    end
+
+    % Get maximum criterion values
     FAIL_STRESS_ALL = [MAX_MSTRS_VAL, MAX_TSAIH_VAL, MAX_TSAIW_VAL,...
         MAX_AZZIT_VAL];
     FAIL_STRESS_ALL_MAX = max(FAIL_STRESS_ALL, [], 2.0);
 
+    % Print table header
     fprintf(fid, ['\nAssessment summary for stress-based fialure crite',...
         'ria\nOutput location: Worst section point\n']);
-    fprintf(fid, ['PLY           MSTRS         TSAIH         TSAIW    ',...
-        '     AZZIT         (WORST)       STATUS\n']);
+    fprintf(fid, ['PLY           MSTRS         TSAIH%s      TSAIW%s   ',...
+        '   AZZIT%s      (WORST)       STATUS\n'], parameter, parameter,...
+        parameter);
+
+    % Print ply-wise results
     for i = 1.0:nPlies
         if FAIL_STRESS_ALL_MAX(i) >= 1.0
             fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n',...
@@ -274,13 +286,20 @@ if (outputStrength == 1.0) && (noFailStress == false)
     %}
     fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n',...
         SFAILRATIO_STRESS);
+
+    % Print footer (parameter descriptor)
+    fprintf(fid, ['\n(R): Strength reserve factor\n(V): Criterion valu',...
+        'e\n']);
 end
 
 %% Print results of failure criteria analysis (strain-based)
-if (outputStrength == 1.0) && (noFailStrain == false)
+if (outputStrength{1.0} == 1.0) && (noFailStrain == false)
+    % Print table header
     fprintf(fid, ['\nAssessment summary for strain-based failure crite',...
         'ria\nOutput location: Worst section point\n']);
     fprintf(fid, 'PLY           MSTRN         STATUS\n');
+
+    % Print ply-wise results
     for i = 1.0:nPlies
         if MSTRN(i) >= 1.0
             fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_MSTRN_VAL(i),...
@@ -318,15 +337,19 @@ if (SFAILRATIO_STRESS(1.0) ~= -1.0) || (SFAILRATIO_STRAIN(1.0) ~= -1.0)
 end
 
 %% Print results of damage initiation criteria analysis (HASHIN)
-if (outputStrength == 1.0) && (noHashin == false)
+if (outputStrength{1.0} == 1.0) && (noHashin == false)
+    % Get maximum criterion values
     HASHIN_ALL = [MAX_HSNFTCRT_VAL, MAX_HSNFCCRT_VAL, MAX_HSNMTCRT_VAL,...
         MAX_HSNMCCRT_VAL];
     HASHIN_ALL_MAX = max(HASHIN_ALL, [], 2.0);
 
+    % Print table header
     fprintf(fid, ['\nAssessment summary for Hashin''s damage initiatio',...
         'n criteria\nOutput location: Worst section point\n']);
     fprintf(fid, ['PLY           HSNFTCRT      HSNFCCRT      HSNMTCRT ',...
         '     HSNMCCRT      (WORST)       STATUS\n']);
+
+    % Print ply-wise results
     for i = 1.0:nPlies
         if HASHIN_ALL_MAX(i) >= 1.0
             fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n',...
@@ -369,7 +392,8 @@ if SFAILRATIO_HASHIN(1.0) ~= -1.0
 end
 
 %% Print failure assessment summary
-if (outputStrength == 1.0) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
+if (outputStrength{1.0} == 1.0) &&...
+        (any(~[noFailStress, noFailStrain, noHashin]) == true)
     fprintf(fid, ['\nNotes about failure/damage initiation assessment ',...
         'output:\n\t- Assessment criteria report the worst section poi',...
         'nt for each ply\n\t- The ply is marked as UNSAFE if at least ',...
@@ -436,10 +460,11 @@ elseif isempty(BEST_SEQUENCE) == false
             strcmpi(optiCriterion, 'azzit') == true)
         if OUTPUT_OPTIMISED{3.0} == 1.0
             % Criterion uses strength reserve factor
-            criterionString = [criterionString, ' (reserve)'];
+            criterionString = [criterionString,...
+                ' (strength reserve factor)'];
         else
             % Criterion uses computed value
-            criterionString = [criterionString, ' (value)'];
+            criterionString = [criterionString, ' (criterion value)'];
         end
     end
     fprintf(fid, 'Criterion: %s', criterionString);
