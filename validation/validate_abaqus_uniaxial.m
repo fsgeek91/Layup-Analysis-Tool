@@ -126,8 +126,11 @@ PLY_THICKNESS = [0.1, 0.2, 0.1];
 % SYMMETRIC_LAYUP  Make the calculated section symmetric
 SYMMETRIC_LAYUP = false;
 
-% SECTION_POINTS  Number of stress/strain calculation points per ply
+% SECTION_POINTS  Number of stress/strain sample points per ply
 %{
+    Note: The layup section is integrated once before the stress analysis.
+    Section points are treated as sample points.
+
     Note: Section points are evenly distributed over the layup. The total
     number of section points is SECTION_POINTS*length(STACKING_SEQUENCE).
 %}
