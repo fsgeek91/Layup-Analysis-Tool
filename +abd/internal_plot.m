@@ -6,7 +6,7 @@ function [] = internal_plot(OUTPUT_FIGURE, outputLocation, nPlies,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -49,8 +49,8 @@ if nPlies < 51.0
     step = 1.0;
 
     for i = 1:nPlies + 1.0
-        line([min(min(E_ply_xy)), max(max(E_ply_xy))], [z_plies_norm(i), z_plies_norm(i)],...
-            'Color', 'green', 'LineStyle', '--')
+        line([min(min(E_ply_xy)), max(max(E_ply_xy))], [z_plies_norm(i),...
+            z_plies_norm(i)], 'Color', 'green', 'LineStyle', '--')
 
         step = step + increment;
     end
@@ -93,15 +93,17 @@ if nPlies < 51.0
     step = 1.0;
 
     for i = 1:nPlies + 1.0
-        line([min(min(E_ply_aligned)), max(max(E_ply_aligned))], [z_plies_norm(i), z_plies_norm(i)],...
-            'Color', 'green', 'LineStyle', '--')
+        line([min(min(E_ply_aligned)), max(max(E_ply_aligned))],...
+            [z_plies_norm(i), z_plies_norm(i)], 'Color', 'green',...
+            'LineStyle', '--')
 
         step = step + increment;
     end
 end
 
 % Other options
-legend([p1, p2, p3], '\epsilon_f_i_b_r_e', '\epsilon_t_r_a_n_s_v_e_r_s_e', '\gamma_p_l_y')
+legend([p1, p2, p3], '\epsilon_f_i_b_r_e', ['\epsilon_t_r_a_n_s_v_e_r_',...
+    's_e'], '\gamma_p_l_y')
 grid minor
 xlabel('Strain [mm/mm]', 'FontSize', fontX);
 ylabel('Thickness fraction [mm/mm]', 'FontSize', fontY);
@@ -137,8 +139,8 @@ if nPlies < 51.0
     step = 1.0;
 
     for i = 1:nPlies + 1.0
-        line([min(min(S_ply_xy)), max(max(S_ply_xy))], [z_plies_norm(i), z_plies_norm(i)],...
-            'Color', 'green', 'LineStyle', '--')
+        line([min(min(S_ply_xy)), max(max(S_ply_xy))], [z_plies_norm(i),...
+            z_plies_norm(i)], 'Color', 'green', 'LineStyle', '--')
 
         step = step + increment;
     end
@@ -181,15 +183,17 @@ if nPlies < 51.0
     step = 1.0;
 
     for i = 1:nPlies + 1.0
-        line([min(min(S_ply_aligned)), max(max(S_ply_aligned))], [z_plies_norm(i), z_plies_norm(i)],...
-            'Color', 'green', 'LineStyle', '--')
+        line([min(min(S_ply_aligned)), max(max(S_ply_aligned))],...
+            [z_plies_norm(i), z_plies_norm(i)], 'Color', 'green',...
+            'LineStyle', '--')
 
         step = step + increment;
     end
 end
 
 % Other options
-legend([p1, p2, p3], '\sigma_f_i_b_r_e', '\sigma_t_r_a_n_s_v_e_r_s_e', '\tau_p_l_y')
+legend([p1, p2, p3], '\sigma_f_i_b_r_e', '\sigma_t_r_a_n_s_v_e_r_s_e',...
+    '\tau_p_l_y')
 grid minor
 xlabel('Stress [N/mm2]', 'FontSize', fontX)
 ylabel('Thickness fraction [mm/mm]', 'FontSize', fontY)
@@ -213,7 +217,8 @@ abd.internal_makeVisible([dir, '.fig'], abd.internal_getMATLABVersion)
 if isempty(CRITERION_BUFFER) == false
     % Create the figure
     f5 = figure('visible', 'off');
-    figureTitle = sprintf('Optimiser criterion for all stacking permutations');
+    figureTitle = sprintf(['Optimiser criterion for all stacking permu',...
+        'tations']);
 
     % Plot the crierion
     histogram(CRITERION_BUFFER);
@@ -225,9 +230,11 @@ if isempty(CRITERION_BUFFER) == false
             strcmpi(OUTPUT_OPTIMISED{2.0}, 'tsaiw') == true ||...
             strcmpi(OUTPUT_OPTIMISED{2.0}, 'azzit') == true)
         if OUTPUT_OPTIMISED{3.0} == 1.0
-            xLabelString = sprintf('%s reserve factor', upper(OUTPUT_OPTIMISED{2.0}));
+            xLabelString = sprintf('%s reserve factor',...
+                upper(OUTPUT_OPTIMISED{2.0}));
         else
-            xLabelString = sprintf('%s value', upper(OUTPUT_OPTIMISED{2.0}));
+            xLabelString = sprintf('%s value',...
+                upper(OUTPUT_OPTIMISED{2.0}));
         end
     else
         xLabelString = sprintf('%s value', upper(OUTPUT_OPTIMISED{2.0}));
@@ -249,7 +256,8 @@ if isempty(CRITERION_BUFFER) == false
 
     % Make the figure visible
     try
-        abd.internal_makeVisible([dir, '.fig'], abd.internal_getMATLABVersion)
+        abd.internal_makeVisible([dir, '.fig'],...
+            abd.internal_getMATLABVersion)
     catch
         %{
             The contents of the figure are probably too large. Accept the

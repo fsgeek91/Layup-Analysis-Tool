@@ -4,7 +4,7 @@ classdef internal_strength < handle
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -33,6 +33,7 @@ classdef internal_strength < handle
                 B12 = abd.internal_spreadProperties(B12, nPlies, SECTION_POINTS);
             end
 
+            % Spread material data over section points
             if noFailStrain == false
                 E11 = abd.internal_spreadProperties(E11, nPlies, SECTION_POINTS);
                 E22 = abd.internal_spreadProperties(E22, nPlies, SECTION_POINTS);
@@ -45,6 +46,7 @@ classdef internal_strength < handle
                 SE = abd.internal_spreadProperties(SE, nPlies, SECTION_POINTS);
             end
 
+            % Spread material data over section points
             if noHashin == false
                 ALPHA = abd.internal_spreadProperties(ALPHA, nPlies, SECTION_POINTS);
                 XHT = abd.internal_spreadProperties(XHT, nPlies, SECTION_POINTS);
@@ -117,17 +119,20 @@ classdef internal_strength < handle
             S2 = stress(2.0, :);
             T12 = stress(3.0, :);
 
-            % Tension-compression split
+            % Tension-compression split (longitudinal)
             X(S1 >= 0.0) = XT(S1 >= 0.0);
             X(S1 < 0.0) = XC(S1 < 0.0);
 
+            % Tension-compression split (transverse)
             Y(S2 >= 0.0) = YT(S2 >= 0.0);
             Y(S2 < 0.0) = YC(S2 < 0.0);
 
+            % Compute individual strength terms
             MS11 = abs(S1./X);
             MS22 = abs(S2./Y);
             MS12 = abs(T12./S);
 
+            % Get criterion from overall maximum
             MSTRS = max([MS11', MS22', MS12'], [], 2.0)';
         end
 
@@ -138,16 +143,17 @@ classdef internal_strength < handle
             S2 = stress(2.0, :);
             T12 = stress(3.0, :);
 
-            % Tension-compression split
+            % Tension-compression split (longitudinal)
             X(S1 >= 0.0) = XT(S1 >= 0.0);
             X(S1 < 0.0) = XC(S1 < 0.0);
 
+            % Tension-compression split (transverse)
             Y(S2 >= 0.0) = YT(S2 >= 0.0);
             Y(S2 < 0.0) = YC(S2 < 0.0);
 
             % Compute the parameter based on user setting
             if parameter == 1.0
-                % Reserve factor (failure index)
+                % Strength reserve factor (failure index)
                 TSAIH = sqrt(((S1.^2.0./X.^2.0) -...
                              ((S1.*S2)./X.^2.0) +...
                              (S2.^2.0./Y.^2.0) +...
@@ -191,7 +197,7 @@ classdef internal_strength < handle
                 A = (F11.*S1.*S1) + (F22.*S2.*S2) + (F66.*T12.*T12) + (2.0.*F12.*S1.*S2);
                 B = (F1.*S1) + (F2.*S2);
 
-                % Reserve factor (failure index)
+                % Strength reserve factor (failure index)
                 TSAIW = abs(1.0./min([(-B + sqrt(B.^2.0 + (4.0.*A)))./(2.0.*A);...
                     (-B - sqrt(B.^2.0 + (4.0.*A)))./(2.0.*A)], [], 1.0));
             else
@@ -200,6 +206,7 @@ classdef internal_strength < handle
                     (F22.*S2.^2.0) + (F66.*T12.^2.0) + 2.0.*(F12.*S1.*S2);
             end
 
+            % Reset NaN values of TSAIW to zero
             TSAIW(isnan(TSAIW) == true) = 0.0;
         end
 
@@ -215,15 +222,16 @@ classdef internal_strength < handle
             X = zeros(1.0, nPlies_points);
             Y = zeros(1.0, nPlies_points);
 
-            % Tension-compression split
+            % Tension-compression split (longitudinal)
             X(S1 >= 0.0) = XT(S1 >= 0.0);
             X(S1 < 0.0) = XC(S1 < 0.0);
 
+            % Tension-compression split (transverse)
             Y(S2 >= 0.0) = YT(S2 >= 0.0);
             Y(S2 < 0.0) = YC(S2 < 0.0);
 
             if parameter == 1.0
-                % Reserve factor (failure index)
+                % Strength reserve factor (failure index)
                 AZZIT = sqrt((S1.^2.0./X.^2.0) -...
                              (abs((S1.*S2))./X.^2.0) +...
                              (S2.^2.0./Y.^2.0) +...
@@ -254,17 +262,20 @@ classdef internal_strength < handle
             strain_22 = -V12.*(S1./E11) + (S2./E22);
             strain_12 = T12./G12;
 
-            % Tension-compression split
+            % Tension-compression split (longitudinal)
             XE(S1 >= 0.0) = XET(S1 >= 0.0);
             XE(S1 < 0.0) = XEC(S1 < 0.0);
 
+            % Tension-compression split (transverse)
             YE(S2 >= 0.0) = YET(S2 >= 0.0);
             YE(S2 < 0.0) = YEC(S2 < 0.0);
 
+            % Compute individual strength terms
             ME11 = strain_11./XE;
             ME22 = strain_22./YE;
             ME12 = abs(strain_12./SE);
 
+            % Get criterion from overall maximum
             MSTRN = max([ME11; ME22; ME12]);
         end
 

@@ -4,14 +4,16 @@ function [symmetricAbd] = internal_getSymmetry(ABD, tolerance)
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
 %%
+% Initialise output
 symmetricAbd = true;
 
+% Loop over ABD elements to check for symmetry
 for i = 4.0:6.0
     for j = 1.0:3.0
         if (abs(ABD(i, j)) > tolerance) || (abs(ABD(j, i)) > tolerance)

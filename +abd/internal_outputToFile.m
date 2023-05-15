@@ -13,7 +13,7 @@ function [] = internal_outputToFile(dateString, outputLocation,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -430,13 +430,15 @@ elseif isempty(BEST_SEQUENCE) == false
             % This condition should never be reached!
     end
 
-    % Modify the criterion string
+    % Modify the criterion string (if applicable)
     if (strcmpi(optiCriterion, 'tsaih') == true ||...
             strcmpi(optiCriterion, 'tsaiw') == true ||...
             strcmpi(optiCriterion, 'azzit') == true)
         if OUTPUT_OPTIMISED{3.0} == 1.0
+            % Criterion uses strength reserve factor
             criterionString = [criterionString, ' (reserve)'];
         else
+            % Criterion uses computed value
             criterionString = [criterionString, ' (value)'];
         end
     end

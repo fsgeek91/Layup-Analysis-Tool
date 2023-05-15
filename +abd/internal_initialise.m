@@ -9,7 +9,7 @@ function [enableTensor, printTensor, materialDataMechanical,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -20,17 +20,20 @@ enableTensor = true;
 printTensor = 1.0;
 
 switch nargin
-    case 3.0
+    case 3.0 % ABD only
+        % Material data
         materialData = USER_INPUTS{1.0};
         materialDataMechanical = materialData(1.0);
         materialDataFailStress = materialData(2.0);
         materialDataFailStrain = materialData(3.0);
         materialDataHashin = materialData(4.0);
 
+        % Layup data
         [theta, t_ply, symmetricPly, SECTION_POINTS] =...
             deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0},...
             USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
 
+        % Output data
         [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED,...
             OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0},...
             USER_INPUTS{3.0}{2.0}, USER_INPUTS{3.0}{3.0},...
@@ -38,47 +41,57 @@ switch nargin
 
         % Disable tensor output
         enableTensor = false;
-    case 4.0
+    case 4.0 % ABD + Load matrix
+        % Material data
         materialData = USER_INPUTS{1.0};
         materialDataMechanical = materialData(1.0);
         materialDataFailStress = materialData(2.0);
         materialDataFailStrain = materialData(3.0);
         materialDataHashin = materialData(4.0);
 
+        % Layup data
         [theta, t_ply, symmetricPly, SECTION_POINTS] =...
             deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0},...
             USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
 
+        % Output data
         [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED,...
             OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0},...
             USER_INPUTS{3.0}{2.0}, USER_INPUTS{3.0}{3.0},...
             USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0});
 
+        % Load matrix data
         [Nxx, Nyy, Nxy, Mxx, Myy, Mxy] = deal(USER_INPUTS{4.0}(1.0),...
             USER_INPUTS{4.0}(2.0), USER_INPUTS{4.0}(3.0),...
             USER_INPUTS{4.0}(4.0), USER_INPUTS{4.0}(5.0), USER_INPUTS{4.0}(6.0));
-    case 5.0
+    case 5.0 % ABD + Load matrix + Thermo/hydro
+        % Material data
         materialData = USER_INPUTS{1.0};
         materialDataMechanical = materialData(1.0);
         materialDataFailStress = materialData(2.0);
         materialDataFailStrain = materialData(3.0);
         materialDataHashin = materialData(4.0);
 
+        % Layup data
         [theta, t_ply, symmetricPly, SECTION_POINTS] =...
             deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0},...
             USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
 
+        % Output data
         [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED,...
             OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0},...
             USER_INPUTS{3.0}{2.0}, USER_INPUTS{3.0}{3.0},...
             USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0});
 
+        % Load matrix data
         [Nxx, Nyy, Nxy, Mxx, Myy, Mxy] = deal(USER_INPUTS{4.0}(1.0),...
             USER_INPUTS{4.0}(2.0), USER_INPUTS{4.0}(3.0),...
             USER_INPUTS{4.0}(4.0), USER_INPUTS{4.0}(5.0), USER_INPUTS{4.0}(6.0));
 
+        % Thermo/hydro load data
         [deltaT, deltaM] = deal(USER_INPUTS{5.0}(1.0), USER_INPUTS{5.0}(2.0));
     otherwise
+        % NARGIN is invalid, so RETURN
         fprintf(['[ABD ERROR] An invalid number of arguments was speci',...
             'fied\n']);
         return
@@ -86,8 +99,10 @@ end
 
 %% Process output location
 if strcmpi(OUTPUT_LOCATION, 'default') == true
+    % Save results under OUTPUT folder inside user's PWD
     OUTPUT_LOCATION = [pwd, '\output'];
 elseif strcmpi(OUTPUT_LOCATION, 'qft') == true
+    % Save results under QFT folder structure inside user's PWD
     OUTPUT_LOCATION = [pwd, '\Project\output'];
 end
 end

@@ -5,7 +5,7 @@ function [error, noStrength, varargout] =...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -64,6 +64,8 @@ if symmetricPly == false
         %}
         fprintf(['[ABD ERROR] The number of material definitions does ',...
             'not match the number of plies\n']);
+
+        % Reset the error flag and RETURN
         error = true;
         return
     elseif nMaterials == 1.0
@@ -84,6 +86,7 @@ elseif (symmetricPly == true) && (nMaterials > 1.0)
         fprintf(['[ABD ERROR] The number of materials does not match t',...
             'he number of plies in the layup definition\n']);
 
+        % Reset the error flag and RETURN
         error = true;
         return
     end
@@ -98,6 +101,8 @@ if (all(cellfun(@isempty, data)) == true) && (mode ~= 1.0)
         FAIL_STRESS and FAIL_STRAIN properties. RETURN now and check that
         at least FAIL_STRESS or FAIL_STRAIN properties are specified
     %}
+
+    % Reset the flag and RETURN
     noStrength = true;
     return
 elseif any(cellfun(@isempty, data)) == true
@@ -107,6 +112,8 @@ elseif any(cellfun(@isempty, data)) == true
     %}
     fprintf(['[ABD ERROR] One or more plies are missing material prope',...
         'rties\n']);
+
+    % Reset the error flag and RETURN
     error = true;
     return
 end
@@ -126,6 +133,8 @@ switch mode
             if length(currentMaterial) ~= 8.0
                 fprintf(['[ABD ERROR] Incorrect number of properties s',...
                     'pecified in %s\n'], tag);
+
+                % Reset the error flag and RETURN
                 error = true;
                 return
             end
@@ -161,6 +170,8 @@ switch mode
             if length(currentMaterial) ~= 7.0
                 fprintf(['[ABD ERROR] Incorrect number of properties s',...
                     'pecified in %s\n'], tag);
+
+                % Reset the error flag and RETURN
                 error = true;
                 return
             end
@@ -194,6 +205,8 @@ switch mode
             if length(currentMaterial) ~= 5.0
                 fprintf(['[ABD ERROR] Incorrect number of properties s',...
                     'pecified in %s\n'], tag);
+
+                % Reset the error flag and RETURN
                 error = true;
                 return
             end

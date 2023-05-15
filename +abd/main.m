@@ -255,7 +255,7 @@ function [varargout] = main(varargin)
 %   clearly indicated in its own subfolder.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -379,27 +379,7 @@ end
 tolerance = 1e-6;
 
 %% GET THICKNESS FRACTIONS
-% Buffer for thickness fractions
-z = zeros(1.0, nPlies + 1.0);
-
-% Check for invalid thickness values
-if any(t_ply <= 0.0) == true
-    fprintf(['[ABD ERROR] Zero or negative ply thickness values are no',...
-        't allowed\n']);
-    return
-end
-
-% Get the total ply thickness
-t = sum(t_ply);
-
-% Compute thickness fraction values
-z(1.0) = -t/2.0;
-for i = 2.0:nPlies + 1.0
-    z(i) = z(i - 1.0) + t_ply(i-1);
-end
-
-% Reset near-zero values to zero
-z(abs(z) < tolerance) = 0.0;
+[z, t] = abd.internal_getThickness(nPlies, t_ply, tolerance);
 
 %% PROCESS SECTION_POINTS
 [error, z_points, theta_points, nPlies_points, A11_points, A22_points,...

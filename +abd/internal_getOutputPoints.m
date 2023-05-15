@@ -7,7 +7,7 @@ function [error, OUTPUT_PLY_POINTS, plyBuffer, OUTPUT_ENVELOPE,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -40,14 +40,18 @@ end
 
 if isnumeric(OUTPUT_PLY) == 1.0
     %% Process numeric definition
-    invalidCondition = OUTPUT_PLY <= 0.0 | mod(OUTPUT_PLY, 1.0) ~= 0.0 | OUTPUT_PLY > length(z_points);
-    OUTPUT_PLY(OUTPUT_PLY <= 0.0 | mod(OUTPUT_PLY, 1.0) ~= 0.0 | OUTPUT_PLY > length(z_points)) = [];
+    invalidCondition = OUTPUT_PLY <= 0.0 | mod(OUTPUT_PLY, 1.0) ~= 0.0 |...
+        OUTPUT_PLY > length(z_points);
+    OUTPUT_PLY(OUTPUT_PLY <= 0.0 | mod(OUTPUT_PLY, 1.0) ~= 0.0 |...
+        OUTPUT_PLY > length(z_points)) = [];
 
+    % Number of section points must be a positive integer
     if (any(invalidCondition) == true) && (isempty(OUTPUT_PLY) == false)
         fprintf(['[ABD WARNING] Invalid section point numbers found in',...
             ' OUTPUT_PLY have been removed\n'])
     end
 
+    % Update the section point list
     OUTPUT_PLY_POINTS = OUTPUT_PLY;
 elseif ischar(OUTPUT_PLY) == 1.0
     %% Process string definition
@@ -68,6 +72,8 @@ elseif ischar(OUTPUT_PLY) == 1.0
                     (strcmpi(OUTPUT_PLY, 'default') == true)
                 fprintf(['[ABD ERROR] At least two section points are ',...
                     'required for output to locations TOP and BOTTOM\n'])
+
+                % Reset the error flag and RETURN
                 error = true;
                 return
             end
@@ -79,16 +85,21 @@ elseif ischar(OUTPUT_PLY) == 1.0
             if (strcmpi(OUTPUT_PLY, 'middle') == true)
                 fprintf(['[ABD ERROR] Output to location MIDDLE is not',...
                     ' available when SECTION_POINTS = 2.0\n'])
+
+                % Reset the error flag and RETURN
                 error = true;
                 return
             end
         otherwise
+            % Do not check other values of SECTION_POINTS
     end
 
     switch OUTPUT_PLY
         case 'default' % Top and bottom faces
+            % Get z-points at ply boundaries
             OUTPUT_PLY_POINTS = find(ismember(z_points, z) == true);
         case 'top' % Top face only
+            % Get z-points at ply boundaries (ignore bottom faces)
             OUTPUT_PLY_POINTS = nPlies_points/nPlies:nPlies_points/nPlies:nPlies_points;
         case 'middle' % Middle face only
             % Get z-values at midspan of each ply
@@ -126,6 +137,7 @@ elseif ischar(OUTPUT_PLY) == 1.0
                 outputApproximate = true;
             end
         case 'bottom' % Bottom face only
+            % Get z-points at ply boundaries (ignore top faces)
             OUTPUT_PLY_POINTS = 1.0:nPlies_points/nPlies:nPlies_points;
         case 'all' % All section points
             OUTPUT_PLY_POINTS = 1.0:nPlies_points;
@@ -160,12 +172,19 @@ elseif ischar(OUTPUT_PLY) == 1.0
             OUTPUT_ENVELOPE = true;
             ENVELOPE_MODE = 3.0;
         otherwise
-            fprintf('[ABD ERROR] Invalid parameter in OUTPUT_PLY: ''%s''\n', OUTPUT_PLY)
+            % An invalid parameter was specified
+            fprintf(['[ABD ERROR] Invalid parameter in OUTPUT_PLY: ''%',...
+                's''\n'], OUTPUT_PLY)
+
+            % Reset the error flag and RETURN
             error = true;
             return
     end
 else
+    % An invalid parameter was specified
     fprintf('[ABD ERROR] Invalid value of OUTPUT_PLY\n')
+
+    % Reset the error flag and RETURN
     error = true;
     return
 end
@@ -179,6 +198,8 @@ if isempty(OUTPUT_PLY_POINTS) == true
         'ther change the\n            section points for output with O',...
         'UTPUT_PLY, or increase the\n            number of section poi',...
         'nts for the calculation with\n            SECTION_POINTS\n'])
+
+    % Reset the error flag and RETURN
     error = true;
     return
 end

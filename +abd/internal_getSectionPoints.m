@@ -7,7 +7,7 @@ function [error, z_points, theta, nPlies_points, A11, A22, B11, B22,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.4 Copyright Louis Vallance 2023
-%   Last modified 11-May-2023 13:34:37 UTC
+%   Last modified 15-May-2023 07:15:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -22,11 +22,13 @@ thickness = [];
 
 if (DEFINITION <= 0.0) || (mod(DEFINITION, 1.0) ~= 0.0) ||...
         (isnan(DEFINITION) == true) || (isinf(DEFINITION) == true)
+    % Number of section points must be a positive integer
     fprintf(['[ABD ERROR] Invalid value of %s. The number of section p',...
         'oints\nmust be a positive integer\n'], TAG);
     error = true;
     return
 else
+    % Reset output
     z_points = zeros(1.0, nPlies*DEFINITION);
     theta_i = z_points;
     A11_i = z_points;
@@ -38,6 +40,7 @@ else
 
     switch DEFINITION
         case 1.0
+            % One section point per ply: Use mid-span as ply location
             for i = 1:nPlies
                 z_points(i) = mean([z(i), z(i + 1.0)]);
             end
@@ -45,7 +48,12 @@ else
             % Record the plies containing the current section points
             plyBuffer = 1.0:nPlies;
         otherwise
+            % N section points per ply: Evenly distribute points over layup
             for i = 1.0:nPlies
+                %{
+                    Create the evenly distributed section point list for
+                    the current ply
+                %}
                 z_points(index:index + (DEFINITION - 1.0)) =...
                     linspace(z(i), z(i + 1.0), DEFINITION);
 
@@ -59,6 +67,7 @@ else
                 % Record the plies containing the current section points
                 plyBuffer(index:index + (DEFINITION - 1.0)) = i;
 
+                % Update the loop index
                 index = index + DEFINITION;
             end
 
@@ -79,5 +88,6 @@ if nPlies_points == 1.0
     % Indicate that there is only one section point in total
     thickness = 0.5;
 else
+    % Get the normalised thickness list (for plotting)
     thickness = z_points/max(z_points);
 end
