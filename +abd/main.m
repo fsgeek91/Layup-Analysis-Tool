@@ -1,8 +1,10 @@
 function [varargout] = main(varargin)
 %ABD.MAIN    Analyse a user-defined composite layup.
-%   [VARARGOUT] = ABD.MAIN(VARARGIN) computes the ABD matrix based on an
-%   n-layer composite layup and plane stress material properties. The
-%   following output is produced:
+%   [VARARGOUT] = ABD.MAIN(VARARGIN) computes the ABD matrix from an
+%   n-layer composite layup definition, and evaluates the layup strength
+%   based on a range of failure and damage initiation criteria.
+%
+%   The following output is produced:
 %
 %   - A, B and D matrices (and their inverses)
 %   - Induced midplane strains and curvatures
@@ -87,8 +89,10 @@ function [varargout] = main(varargin)
 %   stacking and ply thickness definitions are automatically reflected on
 %   the other side of the symmetry plane.
 %
-%   LAYUP(4) is an integer specifying the number of section points (per
-%   ply) for stress/strain computation, SECTION_POINTS.
+%   LAYUP(4) is an integer specifying the number of stress/strain section
+%   points per ply, SECTION_POINTS. Since the layup section is integrated
+%   once before the stress analysis, section points are treated as sample
+%   points.
 %
 %   OUTPUT_DEF. A 1x5 cell array specifying the ply output location, MATLAB
 %   figures, strength calculation, stacking sequence optimisation and the

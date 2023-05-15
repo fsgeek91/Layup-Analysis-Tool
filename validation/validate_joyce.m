@@ -119,7 +119,7 @@ PLY_THICKNESS = 1.0;
 % SYMMETRIC_LAYUP  Make the calculated section symmetric
 SYMMETRIC_LAYUP = false;
 
-% SECTION_POINTS  Number of stress/strain sample points per ply
+% SECTION_POINTS  Number of stress/strain section points per ply
 %{
     Note: The layup section is integrated once before the stress analysis.
     Section points are treated as sample points.
@@ -162,7 +162,8 @@ OUTPUT_FIGURE = [];
 % OUTPUT_STRENGTH  Evaluate static failure/damage initiation criteria
 %{
     First argument (strength assessment):
-    status: false; true
+    status: false (do not evaluate); true (evaluate based on available
+    material data)
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)
