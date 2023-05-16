@@ -18,7 +18,7 @@ function [varargout] = main(varargin)
 %   Notes:
 %   - Support for unidirectional fibre-reinforced composites only
 %   - Strains are assumed to vary linearly through the layup thickness
-%   (z-direction)
+%     (z-direction)
 %   - Linear, orthotropic elasticity is assumed
 %
 %   Units:
@@ -53,13 +53,13 @@ function [varargout] = main(varargin)
 %   properties.
 %
 %   MATERIAL(1) is a 1xn cell array specifying the mechanical material
-%   properties E11, E22, G12, V12, A11, A22, B11 and B22 for each ply.
+%   properties, E11, E22, G12, V12, A11, A22, B11 and B22 for each ply.
 %
 %   MATERIAL(2) is a 1xn cell array specifying the strength properties for
-%   stress-based failure criteria XT, XC, YT, YC, S, C and B for each ply.
+%   stress-based failure criteria, XT, XC, YT, YC, S, C and B for each ply.
 %
 %   MATERIAL(3) is a 1xn cell array specifying the strength properties for
-%   strain-based failure criteria XET, XEC, YET, YEC and SE for each ply.
+%   strain-based failure criteria, XET, XEC, YET, YEC and SE for each ply.
 %
 %   MATERIAL(4) is a 1xn cell array specifying the strength properties for
 %   the Hashin damage initiation criteria ALPHA, XHT, XHC, YHT, YHC, SHX
@@ -69,15 +69,15 @@ function [varargout] = main(varargin)
 %   properties, specify n sets of properties corresponding to the n ply
 %   definitions given by LAYUP.
 %
-%   LAYUP. A 1x4 cell specifying the layup orientation, the laminate
-%   thickness, stacking symmetry and the number of section points.
+%   LAYUP. A 1x4 cell specifying the layup orientations, laminate
+%   thickness values, stacking symmetry and the number of section points.
 %
 %   LAYUP(1) is a 1xn array defining the layup stacking sequence,
 %   STACKING_SEQUENCE.
 %
 %   LAYUP(2) is a 1xn array containing the ply thickness values,
-%   PLY_THICKNESS: n = 1 for a constant thickness laminate; for variables
-%   thickness laminates, specify the thickness of each ply such that
+%   PLY_THICKNESS: n = 1 for a constant thickness laminate; for variable
+%   thickness laminates, specify the thickness of each ply, where 
 %   n = length(STACKING_SEQUENCE).
 %
 %   LAYUP(3) is a flag to make the calculated section symmetric,
@@ -130,7 +130,7 @@ function [varargout] = main(varargin)
 %   reserve factor [1/R] is the scaling factor by which the load matrix
 %   must be multiplied to hit the failure surface. The Tsai-Hill, Tsai-Wu
 %   and Azzi-Tsai-Hill failure criteria can be expressed in terms of the
-%   strength reserve factor or the criteiron value; for all other failure
+%   strength reserve factor or the criterion value; for all other failure
 %   criteria, the criterion value is identical to the strength reserve
 %   factor.
 %
@@ -153,14 +153,14 @@ function [varargout] = main(varargin)
 %
 %   [..] = ABD.MAIN(.., LOAD).
 %
-%   LOAD. A 1x6 array specifying the applied load N11, N22, N12, M11, M22
+%   LOAD. A 1x6 array specifying the applied load, N11, N22, N12, M11, M22
 %   and M12.
 %
 %   Include thermal/hydroscopic loads:
 %
 %   [..] = ABD.MAIN(.., THERM_HYDRO).
 %
-%   THERM_HYDRO. A 1x2 array specifying the thermal and hydroscopic load
+%   THERM_HYDRO. A 1x2 array specifying the thermal and hydroscopic load,
 %   DELTA_T and DELTA_M, respectively.
 %
 %   Optional output arguments:
