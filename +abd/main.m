@@ -180,19 +180,19 @@ function [varargout] = main(varargin)
 %
 %   E_PLY(1) is a 3xn array of the ply strains in X-Y coordinates.
 %
-%   E_PLY(2) is a 3xn array of the ply strains in the ply directions.
+%   E_PLY(2) is a 3xn array of the ply strains in ply coordinates.
 %
 %   E_PLY(3) is a 3xn array of the stress-free ply strains due to thermal
 %   process in X-Y coordinates.
 %
 %   E_PLY(4) is a 3xn array of the stress-free ply strains due to thermal
-%   process in the ply directions.
+%   process in ply coordinates.
 %
 %   E_PLY(5) is a 3xn array of the stress-free ply strains due to moisture
 %   process in X-Y coordinates.
 %
 %   E_PLY(6) is a 3xn array of the stress-free ply strains due to moisture
-%   process in the ply directions.
+%   process in ply coordinates.
 %
 %   Note: For stress-free thermal/moisture strains, contractions have
 %   positive values.
@@ -202,7 +202,7 @@ function [varargout] = main(varargin)
 %
 %   S_PLY(1) is a 3xn array of the ply stresses in X-Y coordinates.
 %
-%   S_PLY(2) is a 3xn array of the ply stresses in the ply directions.
+%   S_PLY(2) is a 3xn array of the ply stresses in ply coordinates.
 %
 %   EQ_MODULI. A 1x2 cell array of the equivalent moduli in tension and
 %   bending.
@@ -251,10 +251,10 @@ function [varargout] = main(varargin)
 %
 %   MATLAB figures:
 %
-%   EP. MATLAB figure of E_PLY in X-Y coordinates and the ply directions
+%   EP. MATLAB figure of E_PLY in X-Y coordinates and ply coordinates
 %   for all section points.
 %
-%   SP. MATLAB figure of S_PLY in X-Y coordinates and the ply directions
+%   SP. MATLAB figure of S_PLY in X-Y coordinates and ply coordinates
 %   for all section points.
 %
 %   CB, Optimiser criterion for all stacking permutations.
