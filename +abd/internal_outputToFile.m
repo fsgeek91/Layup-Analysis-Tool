@@ -27,9 +27,11 @@ fid = fopen([outputLocation, '\analysis_results.txt'], 'w+');
 fprintf(fid, 'Layup Analysis Tool\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
-% Print the units
+% Print the units and CSYS conventions
 if printTensor == 1.0
-    fprintf(fid, 'Stress units - [N/mm2]; Strain units - [mm/mm]\n\n');
+    fprintf(fid, ['Stress units - [N/mm2]; Strain units - [mm/mm]\n[xx',...
+        ', yy, xy] - Global (x-y) CSYS\n[11, 22, 12] - Layup (longitud',...
+        'inal-transverse) CSYS\n\n']);
 end
 
 %% Initialise variables
