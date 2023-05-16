@@ -5,8 +5,8 @@ function [] = internal_plot(OUTPUT_FIGURE, outputLocation, nPlies,...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
-%   Last modified 16-May-2023 08:17:27 UTC
+%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
+%   Last modified 16-May-2023 18:10:34 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -21,7 +21,7 @@ fontTicks = 12.0;
 lineWidth = 1.5;
 
 % Get the plot domain
-z_points_norm = z_points/max(z_points);
+z_points_norm = z_points/max(z);
 z_plies_norm = z/max(z);
 increment = floor(length(unique(z_points))/nPlies);
 

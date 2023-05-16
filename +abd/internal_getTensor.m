@@ -8,8 +8,8 @@ function [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned,...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
-%   Last modified 16-May-2023 08:17:27 UTC
+%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
+%   Last modified 16-May-2023 18:10:34 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

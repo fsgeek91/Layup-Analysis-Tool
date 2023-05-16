@@ -6,8 +6,8 @@ function [error, z_points, theta, nPlies_points, A11, A22, B11, B22,...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
-%   Last modified 16-May-2023 08:17:27 UTC
+%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
+%   Last modified 16-May-2023 18:10:34 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -88,6 +88,6 @@ if nPlies_points == 1.0
     % Indicate that there is only one section point in total
     thickness = 0.5;
 else
-    % Get the normalised thickness list (for plotting)
-    thickness = z_points/max(z_points);
+    % Get the normalised thickness list (for tensor output)
+    thickness = z_points/max(z);
 end

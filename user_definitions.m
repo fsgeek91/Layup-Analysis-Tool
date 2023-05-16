@@ -4,8 +4,8 @@
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
-%   Last modified 16-May-2023 08:17:27 UTC
+%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
+%   Last modified 16-May-2023 18:10:34 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -154,10 +154,15 @@ OUTPUT_PLY = 'DEFAULT';
 
 % OUTPUT_FIGURE  MATLAB figure of stress and strain
 %{
+    First argument:
     '<mode>': [] (do not create figures); Default (no smoothing); Smooth
     (smooth output at ply boundaries)
+
+    Second argument:
+    '<layout>': Compact (single figure for all tensor components); Split
+    (one figure per tensor component)
 %}
-OUTPUT_FIGURE = 'DEFAULT';
+OUTPUT_FIGURE = {'DEFAULT', 'COMPACT'};
 
 % OUTPUT_STRENGTH  Evaluate static failure/damage initiation criteria
 %{
