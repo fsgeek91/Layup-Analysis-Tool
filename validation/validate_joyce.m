@@ -121,8 +121,8 @@ SYMMETRIC_LAYUP = false;
 
 % SECTION_POINTS  Number of stress/strain section points per ply
 %{
-    Note: The layup section is integrated once before the stress analysis.
-    Section points are treated as sample points.
+    Note: The layup section is integrated once before the stress analysis;
+    section points are thus treated as sample points.
 
     Note: Section points are evenly distributed over the layup. The total
     number of section points is SECTION_POINTS*length(STACKING_SEQUENCE).
