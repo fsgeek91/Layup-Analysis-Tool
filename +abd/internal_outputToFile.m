@@ -13,7 +13,7 @@ function [] = internal_outputToFile(dateString, outputLocation,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.5 Copyright Louis Vallance 2023
-%   Last modified 15-May-2023 07:15:38 UTC
+%   Last modified 16-May-2023 08:17:27 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -107,7 +107,7 @@ end
 
 if printTensor == true
     fprintf(fid, ['\nNote: The layup section is integrated once before',...
-        ' the stress analysis\n']);
+        ' the stress analysis.\n']);
 end
 
 fprintf(fid, ['\n=====================================================',...
@@ -476,9 +476,19 @@ elseif isempty(BEST_SEQUENCE) == false
         fprintf(fid, '\nObjective function: MinMean');
     end
 
+    % Print the formatted stacking sequence string
+    seqStr = BEST_SEQUENCE{1.0};
+    seqStrFormatted = '[';
+    for i = 1:length(seqStr)
+        seqStrFormatted = [seqStrFormatted,...
+            sprintf('%g, ', seqStr(i))]; %#ok<AGROW>
+    end
+    seqStrFormatted(end - 1.0:end) = [];
+    seqStrFormatted = [seqStrFormatted, ']'];
+
     % Print the optimised stacking sequence
     fprintf(fid, '\nOptimised stacking sequence: %s',...
-        sprintf('%g ', BEST_SEQUENCE{1.0}));
+        sprintf('%s', seqStrFormatted));
 
     % Print the critical value
     fprintf(fid, '\nCritical value: %g', BEST_SEQUENCE{2.0});
