@@ -160,7 +160,7 @@ OUTPUT_PLY = 'DEFAULT';
 
     Second argument:
     '<layout>': Split (one figure per tensor component); Compact (single
-    figure for all tensor components); 
+    figure for all tensor components);
 %}
 OUTPUT_FIGURE = {'DEFAULT', 'SPLIT'};
 
