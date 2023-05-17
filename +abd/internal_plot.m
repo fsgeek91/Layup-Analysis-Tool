@@ -1,5 +1,5 @@
 classdef internal_plot < handle
-%   Plot a MATLAB figure of the ply strain.
+%   Plot MATLAB figures of output variables.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
