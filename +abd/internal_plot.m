@@ -84,16 +84,20 @@ classdef internal_plot < handle
             %% CB, Optimised criterion buffer
             if isempty(CRITERION_BUFFER) == false
                 % Create the figure
-                f5 = figure('visible', 'off');
+                f = figure('visible', 'off');
+
+                % Set the figure title
                 figureTitle = sprintf(['Optimiser criterion for all st',...
                     'acking permutations']);
 
-                % Plot the crierion
+                % Plot the criterion
                 histogram(CRITERION_BUFFER);
                 hold on
 
-                % Other options
+                % Activate the grid
                 grid minor
+
+                % Set the x-label string
                 if (strcmpi(OUTPUT_OPTIMISED{2.0}, 'tsaih') == true ||...
                         strcmpi(OUTPUT_OPTIMISED{2.0}, 'tsaiw') == true ||...
                         strcmpi(OUTPUT_OPTIMISED{2.0}, 'azzit') == true)
@@ -105,33 +109,28 @@ classdef internal_plot < handle
                             upper(OUTPUT_OPTIMISED{2.0}));
                     end
                 else
-                    xLabelString = sprintf('%s value', upper(OUTPUT_OPTIMISED{2.0}));
+                    xLabelString = sprintf('%s value',...
+                        upper(OUTPUT_OPTIMISED{2.0}));
                 end
+
+                % Set axis labels
                 xlabel(xLabelString, 'FontSize', fontY)
                 ylabel('Number of occurrences', 'FontSize', fontX)
+
+                % Set the figure title
                 title(figureTitle, 'FontSize', fontTitle)
                 set(gca, 'FontSize', fontTicks)
 
+                % Try to tighten the axes
                 try
                     axis tight
                 catch
                     % Don't tighten the axis
                 end
-
-                % Set the figure path
-                dir = [outputLocation, '\CB, ', figureTitle];
-                saveas(f5, dir, 'fig')
-
-                % Make the figure visible
-                try
-                    abd.internal_makeVisible([dir, '.fig'],...
-                        abd.internal_getMATLABVersion)
-                catch
-                    %{
-                        The contents of the figure are probably too large.
-                        Accept the conequences and move on
-                    %}
-                end
+                
+                % Save the MATLAB figure to a file
+                abd.internal_plot.save(outputLocation, '\CB, ',...
+                    figureTitle, f)
             end
         end
 
@@ -146,15 +145,18 @@ classdef internal_plot < handle
             % Initialise figure handle buffer
             H = zeros(1.0, 3.0);
 
-            % Plot the strains
+            % Configure the plot layout
             if strcmpi(PLOT_STYLE, 'compact') == true
+                % Single figure
                 N = ones(1.0, 3.0);
                 P = 1.0;
             else
+                % Tiled figures
                 N = 1.0:3.0;
                 P = 3.0;
             end
 
+            % Plot each tensor component in turn
             for plotNumber = 1.0:3.0
                 % Set the current plot space
                 subplot(1.0, P, N(plotNumber))
@@ -162,13 +164,14 @@ classdef internal_plot < handle
                 % Get the current domain
                 DOMAIN = VARIABLE(plotNumber, :);
 
+                % Plot the current variable
+                H(plotNumber) = plot(DOMAIN, RANGE,...
+                    'LineWidth', lineWidth);
                 hold on
 
-                % Plot the current variable
-                H(plotNumber) = plot(DOMAIN, RANGE, 'LineWidth', lineWidth);
-
                 % Plot the ply boundaries
-                abd.internal_plot.boundaries(nPlies, DOMAIN, z_plies_norm, increment)
+                abd.internal_plot.boundaries(nPlies, DOMAIN,...
+                    z_plies_norm, increment)
 
                 % Set the legend and figure title
                 if (P == 1.0) && (plotNumber == 3.0)
@@ -177,10 +180,14 @@ classdef internal_plot < handle
 
                     % Set the figure title
                     title(figureTitle, 'FontSize', fontTitle)
+
+                    % Set font tick size for all plots
                     set(gca, 'FontSize', fontTicks)
                 elseif P == 3.0
                     % Set the figure title
                     title(plotTitle{plotNumber}, 'FontSize', fontTitle)
+
+                    % Set font tick size for the current plot
                     set(gca, 'FontSize', fontTicks)
                 end
 
@@ -191,6 +198,7 @@ classdef internal_plot < handle
                 xlabel('Strain [mm/mm]', 'FontSize', fontX);
                 ylabel('Thickness fraction [mm/mm]', 'FontSize', fontY);
 
+                % Try to tighten the axes
                 try
                     axis tight
                 catch
@@ -225,8 +233,15 @@ classdef internal_plot < handle
             saveas(f, dir, 'fig')
 
             % Make the figure visible
-            abd.internal_makeVisible([dir, '.fig'],...
-                abd.internal_getMATLABVersion)
+            try
+                abd.internal_makeVisible([dir, '.fig'],...
+                    abd.internal_getMATLABVersion)
+            catch
+                %{
+                    The contents of the figure are probably too large.
+                    Accept the conequences and move on
+                %}
+            end
         end
 
         %% GET DATA FROM OUTPUT_FIGURE
