@@ -113,11 +113,16 @@ function [varargout] = main(varargin)
 %   When OUTPUT_PLY is a 1xn array, it specifies a user-defined section
 %   point list.
 %
-%   OUTPUT_DEF(2) is a flag to request MATLAB figures of stress/strain
-%   output for the layup, OUTPUT_FIGURE. The parameter 'DEFAULT' creates
-%   figures from the raw stress/strain data; the parameter 'SMOOTH' uses
-%   the built-in SMOOTHDATA function to smooth the output at the ply
-%   boundaries.
+%   OUTPUT_DEF(2) is a 1x2 cell array specifying settings for MATLAB figure
+%   output, OUTPUT_FIGURE. OUTPUT_FIGURE(1) is a parameter specifying the
+%   figure type ('', 'DEFAULT' or 'SMOOTH'). The parameter 'DEFAULT'
+%   creates figures from the raw stress/strain data; the parameter 'SMOOTH'
+%   uses the built-in SMOOTHDATA function to smooth the output at the ply
+%   boundaries; an empty assignment disables MATLAB figure output;
+%   OUTPUT_FIGURE(2) is a parameter specifying the figure layout ('SPLIT'
+%   or 'COMPACT'). The parameter 'SPLIT' creates a separate plot for each
+%   tensor component; the parameter 'COMPACT' overlays each tensor
+%   component in a single plot.
 %
 %   OUTPUT_DEF(3) is a 1x2 cell array specifying settings for the strength
 %   assessment, OUTPUT_STRENGTH. OUTPUT_STRENGTH(1) is a flag to enable or
@@ -270,7 +275,7 @@ function [varargout] = main(varargin)
 %   clearly indicated in its own subfolder.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 16-May-2023 18:10:34 UTC
+%   Last modified 17-May-2023 07:40:13 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -300,6 +305,16 @@ varargout{8.0} = [];
 [t_ply, theta, nPlies, error] =...
     ...
     abd.internal_mirror(symmetricPly, t_ply, theta);
+
+% An error occurred, so RETURN
+if error == true
+    return
+end
+
+%% PROCESS OUTPUT_FIGURE
+[error, OUTPUT_FIGURE] =...
+    ...
+    abd.internal_plot.getSettings(OUTPUT_FIGURE);
 
 % An error occurred, so RETURN
 if error == true
@@ -587,10 +602,11 @@ if exist(outputLocation, 'dir') == false
 end
 
 %% PLOT STRAINS AND STRESSES IN A MATLAB FIGURE
-if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (nPlies_points > 1.0)
-    abd.internal_plot(OUTPUT_FIGURE, outputLocation, nPlies, E_ply_xy,...
-        S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points,...
-        CRITERION_BUFFER, OUTPUT_OPTIMISED)
+if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) &&...
+        (nPlies_points > 1.0)
+    abd.internal_plot.main(OUTPUT_FIGURE{1.0}, OUTPUT_FIGURE{2.0},...
+        outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned,...
+        S_ply_aligned, z, z_points, CRITERION_BUFFER, OUTPUT_OPTIMISED)
 end
 
 %% WRITE RESULTS TO A TEXT FILE
@@ -603,8 +619,8 @@ abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH,...
     noFailStress, noFailStrain, noHashin, SECTION_POINTS,...
     OUTPUT_PLY_POINTS, plyBuffer, thickness, OUTPUT_ENVELOPE,...
     ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED,...
-    OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy,...
-    E_midplane)
+    OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
+    bxy, E_midplane)
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));

@@ -5,7 +5,7 @@
 %   See also abd.main.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 16-May-2023 18:10:34 UTC
+%   Last modified 17-May-2023 07:40:13 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -159,10 +159,10 @@ OUTPUT_PLY = 'DEFAULT';
     (smooth output at ply boundaries)
 
     Second argument:
-    '<layout>': Compact (single figure for all tensor components); Split
-    (one figure per tensor component)
+    '<layout>': Split (one figure per tensor component); Compact (single
+    figure for all tensor components); 
 %}
-OUTPUT_FIGURE = {'DEFAULT', 'COMPACT'};
+OUTPUT_FIGURE = {'DEFAULT', 'SPLIT'};
 
 % OUTPUT_STRENGTH  Evaluate static failure/damage initiation criteria
 %{
