@@ -261,7 +261,7 @@ if (outputStrength{1.0} == 1.0) && (noFailStress == false)
     % Print table header
     fprintf(fid, ['\nAssessment summary for stress-based fialure crite',...
         'ria\nOutput location: Worst section point\n']);
-    fprintf(fid, ['PLY           MSTRS         TSAIH%s      TSAIW%s   ',...
+    fprintf(fid, ['PLY           MSTRS(V)      TSAIH%s      TSAIW%s   ',...
         '   AZZIT%s      (WORST)       STATUS\n'], parameter, parameter,...
         parameter);
 
@@ -288,10 +288,6 @@ if (outputStrength{1.0} == 1.0) && (noFailStress == false)
     %}
     fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n',...
         SFAILRATIO_STRESS);
-
-    % Print footer (parameter descriptor)
-    fprintf(fid, ['\n(R): Strength reserve factor\n(V): Criterion valu',...
-        'e\n']);
 end
 
 %% Print results of failure criteria analysis (strain-based)
@@ -299,7 +295,7 @@ if (outputStrength{1.0} == 1.0) && (noFailStrain == false)
     % Print table header
     fprintf(fid, ['\nAssessment summary for strain-based failure crite',...
         'ria\nOutput location: Worst section point\n']);
-    fprintf(fid, 'PLY           MSTRN         STATUS\n');
+    fprintf(fid, 'PLY           MSTRN(V)      STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
@@ -322,6 +318,13 @@ if (outputStrength{1.0} == 1.0) && (noFailStrain == false)
     %}
     fprintf(fid, 'SFAILRATIO    %-14g\n',...
         SFAILRATIO_STRAIN);
+end
+
+%% Print parameter descriptor
+if ((outputStrength{1.0} == 1.0) && (noFailStress == false)) ||...
+        ((outputStrength{1.0} == 1.0) && (noFailStrain == false))
+    fprintf(fid, ['\n(R): Strength reserve factor\n(V): Criterion valu',...
+        'e\n']);
 end
 
 %% Print summary of failure criteria assessments

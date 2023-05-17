@@ -131,13 +131,13 @@ function [varargout] = main(varargin)
 %   requires strength properties defined by FAIL_STRESS, FAIL_STRAIN and
 %   HASHIN.
 %
-%   Note: For stress-based failure criteria, the inverse of the strength
-%   reserve factor [1/R] is the scaling factor by which the load matrix
-%   must be multiplied to hit the failure surface. The Tsai-Hill, Tsai-Wu
-%   and Azzi-Tsai-Hill failure criteria can be expressed in terms of the
-%   strength reserve factor or the criterion value; for all other failure
-%   criteria, the criterion value is identical to the strength reserve
-%   factor.
+%   Note: For stress-based and strain-based failure criteria, the inverse
+%   of the strength reserve factor [1/R] is the scaling factor by which the
+%   load matrix must be multiplied to hit the failure surface. The
+%   Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria can be expressed
+%   in terms of the strength reserve factor or the criterion value; for all
+%   other failure criteria, the criterion value is identical to the
+%   strength reserve factor.
 %
 %   Note: For Hashin's theory, R is not evaluated; output for these
 %   criteria is quoted as the damage initiation criterion index.
