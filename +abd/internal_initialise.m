@@ -92,8 +92,8 @@ switch nargin
         [deltaT, deltaM] = deal(USER_INPUTS{5.0}(1.0), USER_INPUTS{5.0}(2.0));
     otherwise
         % NARGIN is invalid, so RETURN
-        fprintf(['[ABD ERROR] An invalid number of arguments was speci',...
-            'fied\n']);
+        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] An invalid number of arg',...
+            'uments was specified\n']);
         return
 end
 

@@ -62,8 +62,8 @@ if symmetricPly == false
             must equal the number of plies if more than one material was
             specified
         %}
-        fprintf(['[ABD ERROR] The number of material definitions does ',...
-            'not match the number of plies\n']);
+        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of material d',...
+            'efinitions does not\nmatch the number of plies\n']);
 
         % Reset the error flag and RETURN
         error = true;
@@ -83,8 +83,9 @@ elseif (symmetricPly == true) && (nMaterials > 1.0)
         data = [data, flip(data)];
     elseif nMaterials ~= nPlies
         % The number of specified materials is invalid
-        fprintf(['[ABD ERROR] The number of materials does not match t',...
-            'he number of plies in the layup definition\n']);
+        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of materials ',...
+            'does not match the\nnumber of plies in the layup definiti',...
+            'on\n']);
 
         % Reset the error flag and RETURN
         error = true;
@@ -110,8 +111,8 @@ elseif any(cellfun(@isempty, data)) == true
         At least one ply is missing material properties, so RETURN with an
         error
     %}
-    fprintf(['[ABD ERROR] One or more plies are missing material prope',...
-        'rties\n']);
+    fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] One or more plies are missin',...
+        'g material\nproperties\n']);
 
     % Reset the error flag and RETURN
     error = true;
@@ -131,8 +132,8 @@ switch mode
 
             % Property count check
             if length(currentMaterial) ~= 8.0
-                fprintf(['[ABD ERROR] Incorrect number of properties s',...
-                    'pecified in %s\n'], tag);
+                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Incorrect number',...
+                    'of properties specified in %s\n'], tag);
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -168,8 +169,8 @@ switch mode
 
             % Property count check
             if length(currentMaterial) ~= 7.0
-                fprintf(['[ABD ERROR] Incorrect number of properties s',...
-                    'pecified in %s\n'], tag);
+                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Incorrect number',...
+                    ' of properties specified in %s\n'], tag);
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -203,8 +204,8 @@ switch mode
 
             % Property count check
             if length(currentMaterial) ~= 5.0
-                fprintf(['[ABD ERROR] Incorrect number of properties s',...
-                    'pecified in %s\n'], tag);
+                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Incorrect number',...
+                    ' of properties specified in %s\n'], tag);
 
                 % Reset the error flag and RETURN
                 error = true;

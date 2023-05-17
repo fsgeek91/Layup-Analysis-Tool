@@ -47,8 +47,8 @@ if isnumeric(OUTPUT_PLY) == 1.0
 
     % Number of section points must be a positive integer
     if (any(invalidCondition) == true) && (isempty(OUTPUT_PLY) == false)
-        fprintf(['[ABD WARNING] Invalid section point numbers found in',...
-            ' OUTPUT_PLY have been removed\n'])
+        fprintf(['[LAYUP-ANALYSIS-TOOL WARNING] Invalid section point ',...
+            'numbers found in\nOUTPUT_PLY have been removed\n'])
     end
 
     % Update the section point list
@@ -70,8 +70,9 @@ elseif ischar(OUTPUT_PLY) == 1.0
             if (strcmpi(OUTPUT_PLY, 'top') == true) ||...
                     (strcmpi(OUTPUT_PLY, 'bottom') == true) ||...
                     (strcmpi(OUTPUT_PLY, 'default') == true)
-                fprintf(['[ABD ERROR] At least two section points are ',...
-                    'required for output to locations TOP and BOTTOM\n'])
+                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] At least two sec',...
+                    'tion points are required for\noutput to locations',...
+                    ' TOP and BOTTOM\n'])
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -83,8 +84,9 @@ elseif ischar(OUTPUT_PLY) == 1.0
                 points are requested
             %}
             if (strcmpi(OUTPUT_PLY, 'middle') == true)
-                fprintf(['[ABD ERROR] Output to location MIDDLE is not',...
-                    ' available when SECTION_POINTS = 2.0\n'])
+                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Output to locati',...
+                    'on MIDDLE is not available\nwhen SECTION_POINTS =',...
+                    ' 2.0\n'])
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -173,8 +175,8 @@ elseif ischar(OUTPUT_PLY) == 1.0
             ENVELOPE_MODE = 3.0;
         otherwise
             % An invalid parameter was specified
-            fprintf(['[ABD ERROR] Invalid parameter in OUTPUT_PLY: ''%',...
-                's''\n'], OUTPUT_PLY)
+            fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Invalid parameter in',...
+                ' OUTPUT_PLY: ''%s''\n'], OUTPUT_PLY)
 
             % Reset the error flag and RETURN
             error = true;
@@ -182,7 +184,7 @@ elseif ischar(OUTPUT_PLY) == 1.0
     end
 else
     % An invalid parameter was specified
-    fprintf('[ABD ERROR] Invalid value of OUTPUT_PLY\n')
+    fprintf('[LAYUP-ANALYSIS-TOOL ERROR] Invalid value of OUTPUT_PLY\n')
 
     % Reset the error flag and RETURN
     error = true;
@@ -194,10 +196,10 @@ if isempty(OUTPUT_PLY_POINTS) == true
         The user-selected section point output has resulted in no result
         locations, so exit with an error
     %}
-    fprintf(['[ABD ERROR] There are no locations for result output. Ei',...
-        'ther change the\n            section points for output with O',...
-        'UTPUT_PLY, or increase the\n            number of section poi',...
-        'nts for the calculation with\n            SECTION_POINTS\n'])
+    fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] There are no locations for r',...
+        'esult output.\nEither change the section points for output wi',...
+        'th OUTPUT_PLY, or increase\nthe number of section points for ',...
+        'the calculation with SECTION_POINTS\n'])
 
     % Reset the error flag and RETURN
     error = true;

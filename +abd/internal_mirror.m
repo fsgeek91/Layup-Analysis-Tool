@@ -23,8 +23,9 @@ if symmetricPly == false
             values must equal the number of plies if more than one
             thickness value was specified
         %}
-        fprintf(['[ABD ERROR] The number of ply thickness values does ',...
-            'not match the number of plies in the layup definition\n']);
+        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of ply thickn',...
+            'ess values does not\nmatch the number of plies in the lay',...
+            'up definition\n']);
 
         % Reset the error flag and RETURN
         error = true;
@@ -44,8 +45,9 @@ elseif (symmetricPly == true) && (length(t_ply) > 1.0)
         % There is no need to mirror the ply thickness list
     elseif length(t_ply) ~= length(theta) 
         % The number of specified thickness values is invalid
-        fprintf(['[ABD ERROR] The number of ply thickness values does ',...
-            'not match the number of plies in the layup definition\n']);
+        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of ply thickn',...
+            'ess values does not\nmatch the number of plies in the lay',...
+            'up definition\n']);
 
         % Reset the error flag and RETURN
         error = true;

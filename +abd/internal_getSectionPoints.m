@@ -23,8 +23,8 @@ thickness = [];
 if (DEFINITION <= 0.0) || (mod(DEFINITION, 1.0) ~= 0.0) ||...
         (isnan(DEFINITION) == true) || (isinf(DEFINITION) == true)
     % Number of section points must be a positive integer
-    fprintf(['[ABD ERROR] Invalid value of %s. The number of section p',...
-        'oints\nmust be a positive integer\n'], TAG);
+    fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Invalid value of %s. The num',...
+        'ber of section points\nmust be a positive integer\n'], TAG);
     error = true;
     return
 else

@@ -18,8 +18,8 @@ t = [];
 
 % Check for invalid thickness values
 if any(t_ply <= 0.0) == true
-    fprintf(['[ABD ERROR] Zero or negative ply thickness values are no',...
-        't allowed\n']);
+    fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Zero or negative ply thickne',...
+        'ss values are not\nallowed\n']);
     return
 end
 

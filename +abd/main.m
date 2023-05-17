@@ -69,8 +69,8 @@ function [varargout] = main(varargin)
 %   properties, specify n sets of properties corresponding to the n ply
 %   definitions given by LAYUP.
 %
-%   LAYUP. A 1x4 cell specifying the layup orientations, laminate
-%   thickness values, stacking symmetry and the number of section points.
+%   LAYUP. A 1x4 cell specifying the layup orientations, laminate thickness
+%   values, stacking symmetry and the number of section points.
 %
 %   LAYUP(1) is a 1xn array defining the layup stacking sequence,
 %   STACKING_SEQUENCE.
@@ -94,9 +94,9 @@ function [varargout] = main(varargin)
 %   once before the stress analysis, section points are treated as sample
 %   points.
 %
-%   OUTPUT_DEF. A 1x5 cell array specifying the ply output location, MATLAB
-%   figures, strength calculation, stacking sequence optimisation and the
-%   results output location.
+%   OUTPUT_DEF. A 1x5 cell array specifying the ply output location,
+%   MATLAB figures, strength calculation, stacking sequence optimisation
+%   and the results output location.
 %
 %   OUTPUT_DEF(1) is the section output request, OUTPUT_PLY. When
 %   OUTPUT_PLY is a string, it specifies the output location of each ply:
@@ -216,8 +216,8 @@ function [varargout] = main(varargin)
 %
 %   EQ_MODULI(2) = EXB, EYB, GXYB, NUXYB, NUYXB.
 %
-%   Note: The equivalent moduli are only calculated for symmetric laminate
-%   stacking sequences.
+%   Note: The equivalent moduli are only calculated for symmetric
+%   laminate stacking sequences.
 %
 %   CFAILURE. A structure of the failure/damage initiation measure
 %   components for all section points.
@@ -294,10 +294,10 @@ varargout{8.0} = [];
 
 %% GET USER INPUTS FROM VARARGIN
 [enableTensor, printTensor, materialDataMechanical,...
-    materialDataFailStress, materialDataFailStrain, materialDataHashin,...
-    theta, t_ply, symmetricPly, SECTION_POINTS, OUTPUT_PLY,...
-    OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION,...
-    Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM] =...
+    materialDataFailStress, materialDataFailStrain,...
+    materialDataHashin, theta, t_ply, symmetricPly, SECTION_POINTS,...
+    OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED,...
+    OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM] =...
     ...
     abd.internal_initialise(nargin, varargin);
 
@@ -405,8 +405,9 @@ if OUTPUT_STRENGTH{1.0} == true
             of FAIL_STRESS, FAIL_STRAIN or HASHIN must be defined for the
             layup!
         %}
-        fprintf(['[ABD ERROR] The strength calculation requies at leas',...
-            't FAIL_STRESS, FAIL_STRAIN or HASHIN material properties\n']);
+        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The strength calculation',...
+            ' requires at least\nFAIL_STRESS, FAIL_STRAIN or HASHIN ma',...
+            'terial properties\n']);
         return
     end
 else
@@ -458,8 +459,8 @@ end
 if isempty(OUTPUT_OPTIMISED{1.0}) == false
     [error, OUTPUT_OPTIMISED] =...
         ...
-        abd.internal_optimise.getSettings(OUTPUT_OPTIMISED, noFailStress,...
-        noFailStrain, noHashin, OUTPUT_STRENGTH{1.0});
+        abd.internal_optimise.getSettings(OUTPUT_OPTIMISED,...
+        noFailStress, noFailStrain, noHashin, OUTPUT_STRENGTH{1.0});
 
     % An error occurred, so RETURN
     if error == true

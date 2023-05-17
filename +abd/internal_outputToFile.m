@@ -44,10 +44,10 @@ fprintf(fid, 'Composite layup summary:\n');
 
 if (enableTensor == 1.0) && (printTensor == 1.0)
     % Print layup summary header
-    fprintf(fid, ['PLY    THICKNESS    ORIENTATION    MAX. FIBRE    MAX',...
-        '. TRANSVERSE    MAX. SHEAR    \n']);
-    fprintf(fid, ['                                   STRESS        STR',...
-        'ESS             STRESS        \n']);
+    fprintf(fid, ['PLY    THICKNESS    ORIENTATION    MAX. FIBRE    MA',...
+        'X. TRANSVERSE    MAX. SHEAR    \n']);
+    fprintf(fid, ['                                   STRESS        ST',...
+        'RESS             STRESS        \n']);
 
     % Initialise the section point index
     spIndex = 1.0;
@@ -528,6 +528,6 @@ fprintf(fid, '\nEND OF FILE');
 fclose(fid);
 
 % Print notice to MATLAB command window
-fprintf('[ABD] Results have been written to:\n''%s''\n',...
+fprintf('[LAYUP-ANALYSIS-TOOL] Results have been written to:\n''%s''\n',...
     [outputLocation, '\analysis_results.txt']);
 end
