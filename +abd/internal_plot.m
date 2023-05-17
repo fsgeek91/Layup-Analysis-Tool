@@ -254,7 +254,7 @@ classdef internal_plot < handle
             % Process the first argument
             argument = OUTPUT_FIGURE{1.0};
 
-            if ischar(argument) == false
+            if (isempty(argument) == false) && (ischar(argument) == false)
                 % Incorrect variable type
                 fprintf(['[ABD ERROR] The setting OUTPUT_FIGURE(1) mus',...
                     't be a string: {''DEFAULT'' | ''SMOOTH''}\n']);
@@ -262,7 +262,8 @@ classdef internal_plot < handle
                 % Reset the error flag and RETURN
                 error = true;
                 return
-            elseif (strcmpi(argument, 'default') == false) &&...
+            elseif (isempty(argument) == false) &&...
+                    (strcmpi(argument, 'default') == false) &&...
                     (strcmpi(argument, 'smooth') == false)
                 % Incorrect mode tag
                 fprintf(['[ABD ERROR] The setting OUTPUT_FIGURE(1) mus',...

@@ -115,7 +115,7 @@ function [varargout] = main(varargin)
 %
 %   OUTPUT_DEF(2) is a 1x2 cell array specifying settings for MATLAB figure
 %   output, OUTPUT_FIGURE. OUTPUT_FIGURE(1) is a parameter specifying the
-%   figure type ('', 'DEFAULT' or 'SMOOTH'). The parameter 'DEFAULT'
+%   figure type ([], 'DEFAULT' or 'SMOOTH'). The parameter 'DEFAULT'
 %   creates figures from the raw stress/strain data; the parameter 'SMOOTH'
 %   uses the built-in SMOOTHDATA function to smooth the output at the ply
 %   boundaries; an empty assignment disables MATLAB figure output;
