@@ -186,7 +186,7 @@ fprintf(fid, ['\n=====================================================',...
     '======================\n']);
 
 %% Print critical ply summary
-if outputStrength{1.0} == 1.0
+if outputStrength{1.0} == true
     fprintf(fid, '\nFAILURE CRITERIA ASSESSMENT RESULTS\n');
     fprintf(fid, '\nCritical ply summary (all criteria):\n');
     fprintf(fid, 'CRITERION     PLY           SYMMETRIC?\n');
@@ -245,7 +245,7 @@ if outputStrength{1.0} == 1.0
 end
 
 %% Print results of failure criteria analysis (stress-based)
-if (outputStrength{1.0} == 1.0) && (noFailStress == false)
+if (outputStrength{1.0} == true) && (noFailStress == false)
     % Get the parameter string
     if outputStrength{2.0} == 1.0
         parameter = '(R)';
@@ -259,7 +259,7 @@ if (outputStrength{1.0} == 1.0) && (noFailStress == false)
     FAIL_STRESS_ALL_MAX = max(FAIL_STRESS_ALL, [], 2.0);
 
     % Print table header
-    fprintf(fid, ['\nAssessment summary for stress-based fialure crite',...
+    fprintf(fid, ['\nAssessment summary for stress-based failure crite',...
         'ria\nOutput location: Worst section point\n']);
     fprintf(fid, ['PLY           MSTRS(V)      TSAIH%s      TSAIW%s   ',...
         '   AZZIT%s      (WORST)       STATUS\n'], parameter, parameter,...
@@ -291,7 +291,7 @@ if (outputStrength{1.0} == 1.0) && (noFailStress == false)
 end
 
 %% Print results of failure criteria analysis (strain-based)
-if (outputStrength{1.0} == 1.0) && (noFailStrain == false)
+if (outputStrength{1.0} == true) && (noFailStrain == false)
     % Print table header
     fprintf(fid, ['\nAssessment summary for strain-based failure crite',...
         'ria\nOutput location: Worst section point\n']);
@@ -321,8 +321,8 @@ if (outputStrength{1.0} == 1.0) && (noFailStrain == false)
 end
 
 %% Print parameter descriptor
-if ((outputStrength{1.0} == 1.0) && (noFailStress == false)) ||...
-        ((outputStrength{1.0} == 1.0) && (noFailStrain == false))
+if ((outputStrength{1.0} == true) && (noFailStress == false)) ||...
+        ((outputStrength{1.0} == true) && (noFailStrain == false))
     fprintf(fid, ['\n(R): Strength reserve factor\n(V): Criterion valu',...
         'e\n']);
 end
@@ -342,7 +342,7 @@ if (SFAILRATIO_STRESS(1.0) ~= -1.0) || (SFAILRATIO_STRAIN(1.0) ~= -1.0)
 end
 
 %% Print results of damage initiation criteria analysis (HASHIN)
-if (outputStrength{1.0} == 1.0) && (noHashin == false)
+if (outputStrength{1.0} == true) && (noHashin == false)
     % Get maximum criterion values
     HASHIN_ALL = [MAX_HSNFTCRT_VAL, MAX_HSNFCCRT_VAL, MAX_HSNMTCRT_VAL,...
         MAX_HSNMCCRT_VAL];
@@ -397,7 +397,7 @@ if SFAILRATIO_HASHIN(1.0) ~= -1.0
 end
 
 %% Print failure assessment summary
-if (outputStrength{1.0} == 1.0) &&...
+if (outputStrength{1.0} == true) &&...
         (any(~[noFailStress, noFailStrain, noHashin]) == true)
     fprintf(fid, ['\nNotes about failure/damage initiation assessment ',...
         'output:\n\t- Assessment criteria report the worst section poi',...
