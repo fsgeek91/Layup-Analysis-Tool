@@ -86,7 +86,7 @@ TIP:
     Shear influence parameter;
     Lamina tensile/compressive strength (longitudinal);
     Lamina tensile/compressive strength (transverse);
-    Lamina in-plane/transverse shear strength;
+    Lamina in-plane/transverse shear strength.
 
     HASHIN = {[ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](1),
               ...,
@@ -160,7 +160,7 @@ OUTPUT_PLY = 'DEFAULT';
 
     Second argument:
     '<layout>': Split (one figure per tensor component); Compact (single
-    figure for all tensor components);
+    figure for all tensor components)
 %}
 OUTPUT_FIGURE = {'DEFAULT', 'SPLIT'};
 
@@ -186,7 +186,7 @@ OUTPUT_STRENGTH = {false, 'RESERVE'};
     First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-    Hashin;
+    Hashin
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)
