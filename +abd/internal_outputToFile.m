@@ -13,7 +13,7 @@ function [] = internal_outputToFile(dateString, outputLocation,...
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Last modified 16-Aug-2023 05:51:23 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -514,11 +514,17 @@ elseif isempty(BEST_SEQUENCE) == false
     fprintf(fid, ['\n=================================================',...
         '==========================\n']);
 elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) &&...
-        (OUTPUT_OPTIMISED{1.0} == true)) && (printTensor ~= -1.0)
+        (OUTPUT_OPTIMISED{1.0} == true))
     % Print message about no optimisation output
-    fprintf(fid, ['\nNote: Stacking optimisation was not performed. En',...
-        'able the strength\ncalculation with OUTPUT_STRENGTH = true\n']);
-
+    if printTensor ~= -1.0
+        fprintf(fid, ['\nNote: Stacking sequence optimisation results ',...
+            'are unavailable. The strength\ncalculation must first be ',...
+            'enabled with OUTPUT_STRENGTH = {true, <param>}.\n']);
+    else
+        fprintf(fid, ['\nNote: Stacking sequence optimisation results ',...
+            'are unavailable. A load matrix\ndefinition is required us',...
+            'ing NXX/NYY/NXY and MXX/MYY/MXY.\n']);
+    end
     fprintf(fid, ['\n=================================================',...
         '==========================\n']);
 end

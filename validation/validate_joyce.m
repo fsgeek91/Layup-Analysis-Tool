@@ -6,7 +6,7 @@
 %   See also abd.main.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Last modified 16-Aug-2023 05:51:23 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -181,12 +181,14 @@ OUTPUT_STRENGTH = {false, 'RESERVE'};
 % OUTPUT_OPTIMISED  Compute the optimised stacking sequence
 %{
     Note: The stacking optimisation properties are taken from the number of
-    plies and section points in the layup definition.
+    plies and section points in the layup definition. The optimisation
+    requires a load matrix definition (see Section 3) and the results of a
+    strength evaluation using OUTPUT_STRENGTH = {true, <param>}.
 
     First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-    Hashin;
+    Hashin
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)

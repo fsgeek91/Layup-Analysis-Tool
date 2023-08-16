@@ -2,19 +2,43 @@ function [enableTensor, printTensor, materialDataMechanical,...
     materialDataFailStress, materialDataFailStrain, materialDataHashin,...
     theta, t_ply, symmetricPly, SECTION_POINTS, OUTPUT_PLY,...
     OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION,...
-    Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM] =...
+    Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
     internal_initialise(nargin, USER_INPUTS)
 %   Gather variables from user inputs.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Last modified 16-Aug-2023 05:51:23 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
 %%
+% Initialise output
+materialDataMechanical = [];
+materialDataFailStress = [];
+materialDataFailStrain = [];
+materialDataHashin = [];
+theta = [];
+t_ply = [];
+symmetricPly = [];
+SECTION_POINTS = [];
+OUTPUT_PLY = [];
+OUTPUT_FIGURE = [];
+OUTPUT_STRENGTH = [];
+OUTPUT_OPTIMISED = [];
+OUTPUT_LOCATION = [];
+Nxx = [];
+Nyy = [];
+Nxy = [];
+Mxx = [];
+Myy = [];
+Mxy = [];
+deltaT = [];
+deltaM = [];
+error = false;
+
 % Flag to enable tensor output
 enableTensor = true;
 printTensor = 1.0;
@@ -94,6 +118,7 @@ switch nargin
         % NARGIN is invalid, so RETURN
         fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] An invalid number of arg',...
             'uments was specified\n']);
+        error = true;
         return
 end
 
