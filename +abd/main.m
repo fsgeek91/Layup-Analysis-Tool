@@ -129,17 +129,22 @@ function [varargout] = main(varargin)
 %   OUTPUT_DEF(3) is a 1x2 cell array specifying settings for the strength
 %   assessment, OUTPUT_STRENGTH. OUTPUT_STRENGTH(1) is a flag to enable or
 %   disable the strength assessment; OUTPUT_STRENGTH(2) is the failure
-%   assessment parameter ('RESERVE' or 'VALUE'). The strength calculation
-%   requires strength properties defined by FAIL_STRESS, FAIL_STRAIN and
-%   HASHIN.
+%   assessment parameter:
+%   
+%     RESERVE: Strength reserve factor, R. For stress-based and
+%     strain-based failure criteria, the inverse of the strength reserve
+%     factor [1/R] is the scaling factor by which the load matrix must be
+%     multiplied to hit the failure surface.
+%     VALUE: Criterion value, V. The value of the index obtained directly
+%     from the failure criterion.
+%   
+%   The strength calculation requires strength properties defined by
+%   FAIL_STRESS, FAIL_STRAIN and HASHIN.
 %
-%   Note: For stress-based and strain-based failure criteria, the inverse
-%   of the strength reserve factor [1/R] is the scaling factor by which the
-%   load matrix must be multiplied to hit the failure surface. The
-%   Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria can be expressed
-%   in terms of the strength reserve factor or the criterion value; for all
-%   other failure criteria, the criterion value is identical to the
-%   strength reserve factor.
+%   Note: The Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria can be
+%   expressed in terms of the strength reserve factor or the criterion
+%   value; for all other failure criteria, the criterion value is identical
+%   to the strength reserve factor.
 %
 %   Note: For Hashin's theory, R is not evaluated; output for these
 %   criteria is quoted as the damage initiation criterion index.
