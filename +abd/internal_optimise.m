@@ -5,7 +5,7 @@ classdef internal_optimise < handle
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Last modified 16-Aug-2023 05:51:23 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -31,6 +31,8 @@ classdef internal_optimise < handle
                 BEST_SEQUENCE(6) = Best tensor structure
             %}
             BEST_SEQUENCE = cell(1.0, 6.0);
+            CRITERION_BUFFER = [];
+            MIN_CRITERION = [];
 
             % Get data from OUTPUT_OPTIMISED
             [enabled, failureCriterion, parameter, objective,...
