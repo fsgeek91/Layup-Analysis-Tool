@@ -115,9 +115,17 @@ switch nargin
         % Thermo/hydro load data
         [deltaT, deltaM] = deal(USER_INPUTS{5.0}(1.0), USER_INPUTS{5.0}(2.0));
     otherwise
-        % NARGIN is invalid, so RETURN
+        % Report error to the user
         fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] An invalid number of arg',...
             'uments was specified\n']);
+
+        if nargin == 0.0
+            % The user probably ran main.abd by mistake
+            fprintf(['-> To perform a layup analysis, run the input fi',...
+                'le ''user_definitions.m '' directly']);
+        end
+
+        % Set the error flag and RETURN
         error = true;
         return
 end
