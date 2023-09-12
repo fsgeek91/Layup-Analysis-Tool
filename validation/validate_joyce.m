@@ -6,7 +6,7 @@
 %   See also abd.main.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 16-Aug-2023 05:51:23 UTC
+%   Last modified 12-Sep-2023 12:08:20 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -160,7 +160,10 @@ OUTPUT_PLY = 'DEFAULT';
 
     Second argument:
     '<layout>': Split (one figure per tensor component); Compact (single
-    figure for all tensor components);
+    figure for all tensor components)
+
+    Note: MATLAB figures are generated when at least one load matrix
+    component is specified with NXX/NYY/NXY or MXX/MYY/MXY.
 %}
 OUTPUT_FIGURE = {'DEFAULT', 'SPLIT'};
 
