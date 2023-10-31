@@ -4,7 +4,7 @@ classdef internal_plot < handle
 %   DO NOT RUN THIS FUNCTION.
 %
 %   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Last modified 31-Oct-2023 15:06:55 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -216,6 +216,20 @@ classdef internal_plot < handle
                 Do not plot ply boundaries if there are greater than 50
                 plies in the layup
             %}
+            if any(abs(diff(DOMAIN)) > 1e-17) == false
+                %{
+                    If the value of each element in DOMAIN is identical,
+                    adjust the endpoints of DOMAIN to force rendering of
+                    the ply boundaries
+                %}
+                % Get arbitrary element from DOMAIN
+                DOMAIN_ELEMENT = DOMAIN(1.0);
+
+                % Adjust endpoints by a small fraction of DOMAIN_ELEMENT
+                DOMAIN(1.0) = DOMAIN_ELEMENT - 1e-12*DOMAIN_ELEMENT;
+                DOMAIN(end) = DOMAIN_ELEMENT + 1e-12*DOMAIN_ELEMENT;
+            end
+
             if nPlies < 51.0
                 for i = 1:nPlies + 1.0
                     line([min(min(DOMAIN)), max(max(DOMAIN))],...
