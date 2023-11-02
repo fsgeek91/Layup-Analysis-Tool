@@ -213,15 +213,16 @@ classdef internal_plot < handle
         %% PLOT THE PLY BOUNDARIES
         function [] = boundaries(nPlies, DOMAIN, RANGE)
             %{
-                Do not plot ply boundaries if there are greater than 50
-                plies in the layup
+                Add horizontal dashed lines to the plot indicating the
+                boundary between each ply in the layup
+            %}
+
+            %{
+                If the value of each element in DOMAIN is identical, adjust
+                the endpoints of DOMAIN to force rendering of the ply
+                boundaries
             %}
             if any(abs(diff(DOMAIN)) > 1e-17) == false
-                %{
-                    If the value of each element in DOMAIN is identical,
-                    adjust the endpoints of DOMAIN to force rendering of
-                    the ply boundaries
-                %}
                 % Get arbitrary element from DOMAIN
                 DOMAIN_ELEMENT = DOMAIN(1.0);
 
@@ -230,6 +231,10 @@ classdef internal_plot < handle
                 DOMAIN(end) = DOMAIN_ELEMENT + 1e-12*DOMAIN_ELEMENT;
             end
 
+            %{
+                Do not plot ply boundaries if there are greater than 50
+                plies in the layup
+            %}
             if nPlies < 51.0
                 for i = 1:nPlies + 1.0
                     line([min(min(DOMAIN)), max(max(DOMAIN))],...
