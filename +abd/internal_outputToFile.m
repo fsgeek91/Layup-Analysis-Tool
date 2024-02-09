@@ -6,7 +6,7 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
@@ -427,6 +427,5 @@ fprintf(fid, '\nEND OF FILE');
 fclose(fid);
 
 % Print notice to MATLAB command window
-fprintf('[NOTICE] Results have been written to:\n''%s''\n',...
-    [outputLocation,  filesep, 'analysis_results.txt']);
+fprintf('[NOTICE] Results have been written to:\n''%s''\n', [outputLocation,  filesep, 'analysis_results.txt']);
 end

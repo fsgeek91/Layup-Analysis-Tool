@@ -1,10 +1,10 @@
-function [error, z_points, theta, nPlies_points, A11, A22, B11, B22, plyBuffer, thickness]...
-    = internal_getSectionPoints(DEFINITION, TAG, nPlies, theta, z, A11, A22, B11, B22, tolerance)
+function [error, z_points, theta, nPlies_points, A11, A22, B11, B22, plyBuffer, thickness] =...
+    internal_getSectionPoints(DEFINITION, TAG, nPlies, theta, z, A11, A22, B11, B22, tolerance)
 %   Get list of section points from user definition.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 %
 

@@ -281,7 +281,7 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 
 %% - DO NOT EDIT BELOW LINE
@@ -572,6 +572,14 @@ varargout{7.0} = struct('MSTRS', MSTRS, 'TSAIH', TSAIH, 'TSAIW', TSAIW, 'AZZIT',
 varargout{8.0} = BEST_SEQUENCE;
 
 %% CREATE OUTPUT DIRECTORY
+% Create the root output folder if it does not already exist
+if exist(OUTPUT_LOCATION, 'dir') ~= 7.0
+    mkdir(OUTPUT_LOCATION)
+end
+
+% Add the root output folder to the MATLAB path
+addpath(OUTPUT_LOCATION)
+
 % Get the date string for the output folder
 dateString = char(datetime('now'));
 for i = 1:length(dateString)
@@ -580,8 +588,11 @@ for i = 1:length(dateString)
     end
 end
 
+% Construct the output location path
 outputLocation = [OUTPUT_LOCATION, [filesep, 'abd_results_', dateString]];
-if exist(outputLocation, 'dir') == false
+
+% Create the folder if it does not already exist
+if exist(outputLocation, 'dir') ~= 7.0
     mkdir(outputLocation)
 end
 

@@ -1,9 +1,9 @@
-function [matlabVersion] = internal_getMATLABVersion()
+function [versionData] = internal_getMATLABVersion()
 %   Get the user's MATLAB version.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
@@ -11,8 +11,11 @@ function [matlabVersion] = internal_getMATLABVersion()
 %_______________________________________________________________________
 %%
 % Initialize output
-matlabVersion = {[], []};
+versionData = {[], []};
+
+% Get the MATLAB release data
+releaseData = char(matlabRelease.Release);
 
 % Save the version year as string and double
-matlabVersion(1.0) = {versionNumber.Release(3.0:7.0)};
-matlabVersion(2.0) = {str2double(versionNumber.Release(3.0:6.0))};
+versionData(1.0) = {releaseData(2.0:end)};
+versionData(2.0) = {str2double(releaseData(2.0:5.0))};
