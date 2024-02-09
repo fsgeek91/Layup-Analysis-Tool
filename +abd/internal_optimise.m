@@ -4,7 +4,7 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
@@ -88,7 +88,7 @@ classdef internal_optimise < handle
                     abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
 
                 % Compute A, B and D matrices
-                [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
+                [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
                     ...
                     abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, nargin, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints);
 
@@ -195,7 +195,7 @@ classdef internal_optimise < handle
                 abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
 
             % Compute A, B and D matrices
-            [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
+            [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
                 ...
                 abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, nargin, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints);
 

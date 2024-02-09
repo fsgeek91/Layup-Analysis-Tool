@@ -281,7 +281,7 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 
 %% - DO NOT EDIT BELOW LINE
@@ -534,7 +534,7 @@ if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
 
     if OUTPUT_OPTIMISED{1.0} == true
         %% FIND THE OPTIMUM STACKING SEQUENCE
-        [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION] =...
+        [BEST_SEQUENCE, CRITERION_BUFFER, ~] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22,...

@@ -4,7 +4,7 @@ function [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] =...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 %
 

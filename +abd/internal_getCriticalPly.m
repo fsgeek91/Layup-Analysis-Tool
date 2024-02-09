@@ -1,10 +1,9 @@
-function [varargout] = internal_getCriticalPly(DATA, symmetricAbd,...
-    plyBuffer, nPlies)
+function [varargout] = internal_getCriticalPly(DATA, symmetricAbd, plyBuffer, nPlies)
 %   Get the worst ply from the static failure assessment.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
@@ -19,7 +18,7 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd,...
     failure value are not ignored due to small rounding errors
 %}
 % Get the number of columns to process individually
-[rows, cols] = size(DATA);
+[~, cols] = size(DATA);
 
 % Initialise VARARGOUT
 varargout = cell(1.0, 3.0*cols + 1.0);
@@ -41,7 +40,7 @@ for i = 1.0:cols
     DATA_i = DATA(:, i);
 
     % Get the unique values within tolerance
-    [C, IA, IC] = uniquetol(DATA_i, 1e-6);
+    [C, ~, IC] = uniquetol(DATA_i, 1e-6);
 
     % Replace elements with adjusted values
     DATA_i = C(IC);

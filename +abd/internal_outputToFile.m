@@ -6,7 +6,7 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.1 Copyright Louis Vallance 2024
+%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
 %   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
@@ -284,7 +284,7 @@ if (outputStrength{1.0} == true) && (noHashin == false)
         if HASHIN_ALL_MAX(i) >= 1.0
             fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_HSNFTCRT_VAL(i), MAX_HSNFCCRT_VAL(i), MAX_HSNMTCRT_VAL(i), MAX_HSNMCCRT_VAL(i), HASHIN_ALL_MAX(i),...
                 'UNSAFE');
-        elseif MAX_MSTRS_VAL(i) == -1.0
+        elseif MAX_HSNFTCRT_VAL(i) == -1.0
             % There is no data for the current ply
             fprintf(fid, '%-14.0fNO RESULTS\n', i);
         else
