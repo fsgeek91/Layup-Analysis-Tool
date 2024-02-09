@@ -1,13 +1,11 @@
-function [error, z_points, theta, nPlies_points, A11, A22, B11, B22,...
-    plyBuffer, thickness]...
-    = internal_getSectionPoints(DEFINITION, TAG, nPlies, theta, z, A11,...
-    A22, B11, B22, tolerance)
+function [error, z_points, theta, nPlies_points, A11, A22, B11, B22, plyBuffer, thickness]...
+    = internal_getSectionPoints(DEFINITION, TAG, nPlies, theta, z, A11, A22, B11, B22, tolerance)
 %   Get list of section points from user definition.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -20,11 +18,9 @@ nPlies_points = nPlies;
 plyBuffer = [];
 thickness = [];
 
-if (DEFINITION <= 0.0) || (mod(DEFINITION, 1.0) ~= 0.0) ||...
-        (isnan(DEFINITION) == true) || (isinf(DEFINITION) == true)
+if (DEFINITION <= 0.0) || (mod(DEFINITION, 1.0) ~= 0.0) || (isnan(DEFINITION) == true) || (isinf(DEFINITION) == true)
     % Number of section points must be a positive integer
-    fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Invalid value of %s. The num',...
-        'ber of section points\nmust be a positive integer\n'], TAG);
+    fprintf('[ERROR] Invalid value of %s. The number of section points\nmust be a positive integer\n', TAG);
     error = true;
     return
 else

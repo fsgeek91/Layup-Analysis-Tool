@@ -4,8 +4,8 @@ function [error, noStrength, varargout] =...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -62,8 +62,7 @@ if symmetricPly == false
             must equal the number of plies if more than one material was
             specified
         %}
-        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of material d',...
-            'efinitions does not\nmatch the number of plies\n']);
+        fprintf('[ERROR] The number of material definitions does not\nmatch the number of plies\n');
 
         % Reset the error flag and RETURN
         error = true;
@@ -83,9 +82,7 @@ elseif (symmetricPly == true) && (nMaterials > 1.0)
         data = [data, flip(data)];
     elseif nMaterials ~= nPlies
         % The number of specified materials is invalid
-        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of materials ',...
-            'does not match the\nnumber of plies in the layup definiti',...
-            'on\n']);
+        fprintf('[ERROR] The number of materials does not match the\nnumber of plies in the layup definition\n');
 
         % Reset the error flag and RETURN
         error = true;
@@ -111,8 +108,7 @@ elseif any(cellfun(@isempty, data)) == true
         At least one ply is missing material properties, so RETURN with an
         error
     %}
-    fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] One or more plies are missin',...
-        'g material\nproperties\n']);
+    fprintf('[ERROR] One or more plies are missing material\nproperties\n');
 
     % Reset the error flag and RETURN
     error = true;
@@ -132,8 +128,7 @@ switch mode
 
             % Property count check
             if length(currentMaterial) ~= 8.0
-                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Incorrect number',...
-                    'of properties specified in %s\n'], tag);
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -141,11 +136,8 @@ switch mode
             end
 
             % Assign values for the material property buffers
-            [D1(i), D2(i), D3(i), D4(i), D5(i), D6(i), D7(i), D8(i)] =...
-                deal(currentMaterial(1.0), currentMaterial(2.0),...
-                currentMaterial(3.0), currentMaterial(4.0),...
-                currentMaterial(5.0), currentMaterial(6.0),...
-                currentMaterial(7.0), currentMaterial(8.0));
+            [D1(i), D2(i), D3(i), D4(i), D5(i), D6(i), D7(i), D8(i)] = deal(currentMaterial(1.0), currentMaterial(2.0), currentMaterial(3.0), currentMaterial(4.0),...
+                currentMaterial(5.0), currentMaterial(6.0), currentMaterial(7.0), currentMaterial(8.0));
         end
 
         % Assign values to VARARGOUT
@@ -169,8 +161,7 @@ switch mode
 
             % Property count check
             if length(currentMaterial) ~= 7.0
-                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Incorrect number',...
-                    ' of properties specified in %s\n'], tag);
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -178,11 +169,8 @@ switch mode
             end
 
             % Assign values for the material property buffers
-            [D1(i), D2(i), D3(i), D4(i), D5(i), D6(i), D7(i)] =...
-                deal(currentMaterial(1.0), currentMaterial(2.0),...
-                currentMaterial(3.0), currentMaterial(4.0),...
-                currentMaterial(5.0), currentMaterial(6.0),...
-                currentMaterial(7.0));
+            [D1(i), D2(i), D3(i), D4(i), D5(i), D6(i), D7(i)] = deal(currentMaterial(1.0), currentMaterial(2.0), currentMaterial(3.0), currentMaterial(4.0), currentMaterial(5.0),...
+                currentMaterial(6.0), currentMaterial(7.0));
         end
 
         % Assign values to VARARGOUT
@@ -204,8 +192,7 @@ switch mode
 
             % Property count check
             if length(currentMaterial) ~= 5.0
-                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] Incorrect number',...
-                    ' of properties specified in %s\n'], tag);
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -213,10 +200,7 @@ switch mode
             end
 
             % Assign values for the material property buffers
-            [D1(i), D2(i), D3(i), D4(i), D5(i)] =...
-                deal(currentMaterial(1.0), currentMaterial(2.0),...
-                currentMaterial(3.0), currentMaterial(4.0),...
-                currentMaterial(5.0));
+            [D1(i), D2(i), D3(i), D4(i), D5(i)] = deal(currentMaterial(1.0), currentMaterial(2.0), currentMaterial(3.0), currentMaterial(4.0), currentMaterial(5.0));
         end
 
         % Assign values to VARARGOUT

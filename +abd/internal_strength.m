@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -13,14 +13,10 @@ classdef internal_strength < handle
 
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR STRENGTH CALCULATION
-        function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT,...
-                HSNMTCRT, HSNMCCRT, XT, XC, YT, YC, S, C12, B12, E11,...
-                E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC,...
-                YHT, YHC, SHX, SHY] =...
-                main(noFailStress, noFailStrain, noHashin, XT, XC, YT,...
-                YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC,...
-                SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, stress, nPlies,...
-                nPlies_points, SECTION_POINTS, parameter)
+        function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT,...
+                XHC, YHT, YHC, SHX, SHY] =...
+                main(noFailStress, noFailStrain, noHashin, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, stress,...
+                nPlies, nPlies_points, SECTION_POINTS, parameter)
 
             % Spread material data over section points
             if noFailStress == false
@@ -72,42 +68,36 @@ classdef internal_strength < handle
                 % Failure calculation: MSTRS
                 MSTRS =...
                     ...
-                    abd.internal_strength.getMstrs(stress, XT, XC, YT,...
-                    YC, S);
+                    abd.internal_strength.getMstrs(stress, XT, XC, YT, YC, S);
 
                 % Failure calculation: TSAIH
                 TSAIH =...
                     ...
-                    abd.internal_strength.getTsaih(parameter, stress,...
-                    XT, XC, YT, YC, S);
+                    abd.internal_strength.getTsaih(parameter, stress, XT, XC, YT, YC, S);
 
                 % Failure calculation: TSAIW
                 TSAIW =...
                     ...
-                    abd.internal_strength.getTsaiw(parameter, stress,...
-                    XT, XC, YT, YC, S, C12, B12);
+                    abd.internal_strength.getTsaiw(parameter, stress, XT, XC, YT, YC, S, C12, B12);
 
                 % Failure calculation: AZZIT
                 AZZIT =...
                     ...
-                    abd.internal_strength.getAzzit(parameter,...
-                    nPlies_points, stress, XT, XC, YT, YC, S);
+                    abd.internal_strength.getAzzit(parameter, nPlies_points, stress, XT, XC, YT, YC, S);
             end
 
             % Failure calculation: MSTRN
             if noFailStrain == false
                 MSTRN = ...
                     ...
-                    abd.internal_strength.getMstrn(nPlies_points,...
-                    stress, E11, E22, V12, G12, XET, XEC, YET, YEC, SE);
+                    abd.internal_strength.getMstrn(nPlies_points, stress, E11, E22, V12, G12, XET, XEC, YET, YEC, SE);
             end
 
             % Failure calculation: HASHIN
             if noHashin == false
                 [HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT] = ...
                     ...
-                    abd.internal_strength.getHashin(nPlies_points,...
-                    stress, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY);
+                    abd.internal_strength.getHashin(nPlies_points, stress, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY);
             end
         end
 
@@ -122,12 +112,9 @@ classdef internal_strength < handle
                 OUTPUT_STRENGTH = {OUTPUT_STRENGTH};
             end
 
-            if (all(cellfun(@isempty, OUTPUT_STRENGTH)) == true) ||...
-                    (length(OUTPUT_STRENGTH) ~= 2.0)
+            if (all(cellfun(@isempty, OUTPUT_STRENGTH)) == true) || (length(OUTPUT_STRENGTH) ~= 2.0)
                 % Incorrect number of arguments
-                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The setting OUTP',...
-                    'UT_STRENGTH requires two\narguments: {''<flag>'',',...
-                    ' ''<parameter>''}\n']);
+                fprintf('[ERROR] The setting OUTPUT_STRENGTH requires two\narguments: {''<flag>'', ''<parameter>''}\n');
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -140,11 +127,9 @@ classdef internal_strength < handle
             % Check validity of the argument
             if isempty(argument) == true
                 output{1.0} = false;
-            elseif (islogical(argument) == false) &&...
-                    (argument ~= 0.0) && (argument ~= 1.0)
+            elseif (islogical(argument) == false) && (argument ~= 0.0) && (argument ~= 1.0)
                 % Incorrect argument type
-                fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] OUTPUT_STRENGTH(',...
-                    '1) must be a logical:\n{false | true}\n']);
+                fprintf('[ERROR] OUTPUT_STRENGTH(1) must be a logical:\n{false | true}\n');
 
                     % Reset the error flag and RETURN
                     error = true;
@@ -225,8 +210,7 @@ classdef internal_strength < handle
         end
 
         %% FAILURE CRITERION: TSAI-WU
-        function [TSAIW] = getTsaiw(parameter, stress,XT, XC, YT, YC, S,...
-                C12, B12)
+        function [TSAIW] = getTsaiw(parameter, stress,XT, XC, YT, YC, S, C12, B12)
             % Get stresses for each section point
             S1 = stress(1.0, :);
             S2 = stress(2.0, :);
@@ -268,8 +252,7 @@ classdef internal_strength < handle
         end
 
         %% FAILURE CRITERION: AZZI-TSAI-HILL
-        function [AZZIT] = getAzzit(parameter, nPlies_points, stress,...
-                XT, XC, YT, YC, S)
+        function [AZZIT] = getAzzit(parameter, nPlies_points, stress, XT, XC, YT, YC, S)
             % Get stresses for each section point
             S1 = stress(1.0, :);
             S2 = stress(2.0, :);
@@ -303,8 +286,7 @@ classdef internal_strength < handle
         end
 
         %% FAILURE CRITERION: MAXIMUM STRAIN
-        function [MSTRN] = getMstrn(nPlies_points, stress, E11, E22,...
-                V12, G12, XET, XEC, YET, YEC, SE)
+        function [MSTRN] = getMstrn(nPlies_points, stress, E11, E22, V12, G12, XET, XEC, YET, YEC, SE)
             % Get stresses for each section point
             S1 = stress(1.0, :);
             S2 = stress(2.0, :);
@@ -337,8 +319,7 @@ classdef internal_strength < handle
         end
 
         %% FAILURE CRITERION: HASHIN
-        function [HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT] = getHashin(...
-                nPlies_points, stress, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY)
+        function [HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT] = getHashin(nPlies_points, stress, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY)
             % Get stresses for each section point
             S1 = stress(1.0, :);
             S2 = stress(2.0, :);

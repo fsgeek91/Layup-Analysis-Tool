@@ -4,8 +4,8 @@ function [t_ply, theta, nPlies, error] = internal_mirror(symmetricPly,...
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -23,9 +23,7 @@ if symmetricPly == false
             values must equal the number of plies if more than one
             thickness value was specified
         %}
-        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of ply thickn',...
-            'ess values does not\nmatch the number of plies in the lay',...
-            'up definition\n']);
+        fprintf('[ERROR] The number of ply thickness values does not\nmatch the number of plies in the layup definition\n');
 
         % Reset the error flag and RETURN
         error = true;
@@ -45,9 +43,7 @@ elseif (symmetricPly == true) && (length(t_ply) > 1.0)
         % There is no need to mirror the ply thickness list
     elseif length(t_ply) ~= length(theta) 
         % The number of specified thickness values is invalid
-        fprintf(['[LAYUP-ANALYSIS-TOOL ERROR] The number of ply thickn',...
-            'ess values does not\nmatch the number of plies in the lay',...
-            'up definition\n']);
+        fprintf('[ERROR] The number of ply thickness values does not\nmatch the number of plies in the layup definition\n');
 
         % Reset the error flag and RETURN
         error = true;

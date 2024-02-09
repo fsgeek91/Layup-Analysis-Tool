@@ -3,8 +3,8 @@ function [] = internal_makeVisible(file, matlabVersion)
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -12,8 +12,7 @@ function [] = internal_makeVisible(file, matlabVersion)
 %%
 if (strcmpi(matlabVersion{1.0}, '2014b') == 1.0) || (matlabVersion{2.0} > 2014.0)
     top = load(file, '-mat', 'hgM_070000');
-    top.hgM_070000.GraphicsObjects.Format3Data.CreateFcn =...
-        'set(gcf, ''visible'', ''on'')';
+    top.hgM_070000.GraphicsObjects.Format3Data.CreateFcn = 'set(gcf, ''visible'', ''on'')';
     save(file, '-struct', 'top', '-append')
 else
     f = load(file, '-mat');

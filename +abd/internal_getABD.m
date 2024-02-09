@@ -1,13 +1,11 @@
-function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM,...
-    NyyM, NxyM, MxxM, MyyM, MxyM] = internal_getABD(nPlies, Q11t, Q12t,...
-    Q16t, Q22t, Q26t, Q66t, z, nargin, deltaT, deltaM, axx, ayy, axy,...
-    bxx, byy, bxy, SECTION_POINTS)
+function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
+    internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, nargin, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, SECTION_POINTS)
 %   Get the A, B and D matrices.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.6 Copyright Louis Vallance 2023
-%   Last modified 17-May-2023 07:40:13 UTC
+%   Layup Analysis Tool 2.7 Copyright Louis Vallance 2024
+%   Last modified 09-Feb-2024 09:10:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -82,8 +80,7 @@ for i = 1.0:nPlies
     iz = iz + 1.0;
 
     % Add Qijt for the current ply over all section points for that ply
-    Qijt(:, :, spIndex:spIndex + (SECTION_POINTS - 1.0)) =...
-        repmat(Qijt_ply, [1.0, 1.0, SECTION_POINTS]);
+    Qijt(:, :, spIndex:spIndex + (SECTION_POINTS - 1.0)) = repmat(Qijt_ply, [1.0, 1.0, SECTION_POINTS]);
 
     % Update the section point loop index
     spIndex = spIndex + SECTION_POINTS;
