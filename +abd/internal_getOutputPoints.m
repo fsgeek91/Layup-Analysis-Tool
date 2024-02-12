@@ -1,11 +1,11 @@
 function [error, OUTPUT_PLY_POINTS, plyBuffer, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, plyBuffer_sfailratio] =...
-    internal_getOutputPoints(OUTPUT_PLY, z, z_points, nPlies, nPlies_points, plyBuffer, SECTION_POINTS, tolerance)
+    internal_getOutputPoints(OUTPUT_PLY, z, z_points, nPlies, nPlies_points, plyBuffer, SECTION_POINTS, tolerance, enableTensor)
 %   Get list of section points for stress/strain output.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
-%   Last modified 09-Feb-2024 09:10:19 UTC
+%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
+%   Last modified 12-Feb-2024 14:08:48 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -63,10 +63,16 @@ elseif ischar(OUTPUT_PLY) == 1.0
                 and BOTTOM faces is not supported
             %}
             if (strcmpi(OUTPUT_PLY, 'top') == true) || (strcmpi(OUTPUT_PLY, 'bottom') == true) || (strcmpi(OUTPUT_PLY, 'default') == true)
-                fprintf('[ERROR] At least two section points are required for\noutput to locations TOP and BOTTOM\n')
+                if enableTensor == true
+                    fprintf('[ERROR] At least two section points are required for\noutput to locations TOP and BOTTOM\n')
 
-                % Reset the error flag and RETURN
-                error = true;
+                    % Reset the error flag and RETURN
+                    error = true;
+                else
+                    OUTPUT_PLY_POINTS = [];
+                    plyBuffer = [];
+                end
+                
                 return
             end
         case 2.0
@@ -75,10 +81,16 @@ elseif ischar(OUTPUT_PLY) == 1.0
                 points are requested
             %}
             if (strcmpi(OUTPUT_PLY, 'middle') == true)
-                fprintf('[ERROR] Output to location MIDDLE is not available\nwhen SECTION_POINTS = 2.0\n')
+                if enableTensor == true
+                    fprintf('[ERROR] Output to location MIDDLE is not available\nwhen SECTION_POINTS = 2.0\n')
 
-                % Reset the error flag and RETURN
-                error = true;
+                    % Reset the error flag and RETURN
+                    error = true;
+                else
+                    OUTPUT_PLY_POINTS = [];
+                    plyBuffer = [];
+                end
+                
                 return
             end
         otherwise
@@ -164,18 +176,30 @@ elseif ischar(OUTPUT_PLY) == 1.0
             ENVELOPE_MODE = 3.0;
         otherwise
             % An invalid parameter was specified
-            fprintf('[ERROR] Invalid parameter in OUTPUT_PLY: ''%s''\n', OUTPUT_PLY)
+            if enableTensor == true
+                fprintf('[ERROR] Invalid parameter in OUTPUT_PLY: ''%s''\n', OUTPUT_PLY)
 
-            % Reset the error flag and RETURN
-            error = true;
+                % Reset the error flag and RETURN
+                error = true;
+            else
+                OUTPUT_PLY_POINTS = [];
+                plyBuffer = [];
+            end
+            
             return
     end
 else
     % An invalid parameter was specified
-    fprintf('[ERROR] Invalid value of OUTPUT_PLY\n')
+    if enableTensor == true
+        fprintf('[ERROR] Invalid value of OUTPUT_PLY\n')
 
-    % Reset the error flag and RETURN
-    error = true;
+        % Reset the error flag and RETURN
+        error = true;
+    else
+        OUTPUT_PLY_POINTS = [];
+        plyBuffer = [];
+    end
+    
     return
 end
 

@@ -3,8 +3,8 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd, plyBuffer, nP
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
-%   Last modified 09-Feb-2024 09:10:19 UTC
+%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
+%   Last modified 12-Feb-2024 14:08:48 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -18,7 +18,7 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd, plyBuffer, nP
     failure value are not ignored due to small rounding errors
 %}
 % Get the number of columns to process individually
-[~, cols] = size(DATA);
+cols = width(DATA);
 
 % Initialise VARARGOUT
 varargout = cell(1.0, 3.0*cols + 1.0);

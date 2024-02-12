@@ -5,8 +5,8 @@ function [enableTensor, printTensor, materialDataMechanical, materialDataFailStr
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
-%   Last modified 09-Feb-2024 09:10:19 UTC
+%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
+%   Last modified 12-Feb-2024 14:08:48 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -76,6 +76,9 @@ switch nargin
         % Load matrix data
         [Nxx, Nyy, Nxy, Mxx, Myy, Mxy] = deal(USER_INPUTS{4.0}(1.0), USER_INPUTS{4.0}(2.0), USER_INPUTS{4.0}(3.0), USER_INPUTS{4.0}(4.0), USER_INPUTS{4.0}(5.0),...
             USER_INPUTS{4.0}(6.0));
+
+        % Thermo/hydro load data
+        [deltaT, deltaM] = deal(0.0, 0.0);
     case 5.0 % ABD + Load matrix + Thermo/hydro
         % Material data
         materialData = USER_INPUTS{1.0};
@@ -109,6 +112,16 @@ switch nargin
         % Set the error flag and RETURN
         error = true;
         return
+end
+
+%% Process OUTPUT_OPTIMISED
+if iscell(OUTPUT_OPTIMISED) == false
+    OUTPUT_OPTIMISED = {OUTPUT_OPTIMISED};
+end
+
+if cellfun(@isempty, OUTPUT_OPTIMISED) == true
+    % Set default values if necessary
+    OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 10.0};
 end
 
 %% Process output location

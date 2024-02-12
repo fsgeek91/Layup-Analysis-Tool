@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
-%   Last modified 09-Feb-2024 09:10:19 UTC
+%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
+%   Last modified 12-Feb-2024 14:08:48 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -112,7 +112,12 @@ classdef internal_strength < handle
                 OUTPUT_STRENGTH = {OUTPUT_STRENGTH};
             end
 
-            if (all(cellfun(@isempty, OUTPUT_STRENGTH)) == true) || (length(OUTPUT_STRENGTH) ~= 2.0)
+            if cellfun(@isempty, OUTPUT_STRENGTH) == true
+                % Set default values if necessary
+                OUTPUT_STRENGTH = {false, 'RESERVE'};
+            end
+
+            if length(OUTPUT_STRENGTH) ~= 2.0
                 % Incorrect number of arguments
                 fprintf('[ERROR] The setting OUTPUT_STRENGTH requires two\narguments: {''<flag>'', ''<parameter>''}\n');
 

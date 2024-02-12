@@ -1,11 +1,14 @@
-%   User definitions for ABD.MAIN().
+%USER_DEFINITIONS    Helper script for Layup Analysis Tool.
+%   Fill out this script with your layup definitions and analysis settings.
+%   Read the tips above each option for usage hints.
 %
-%   RUN THIS SCRIPT TO PERFORM THE LAYUP ANALYSIS.
+%   Select "Run" from the Run section of the Editor, or hit the F5 key to
+%   start an analysis.
 %
-%   See also abd.main.
+%   See also abd.main, examples.
 %
-%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
-%   Last modified 09-Feb-2024 09:10:19 UTC
+%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
+%   Last modified 12-Feb-2024 14:08:48 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties

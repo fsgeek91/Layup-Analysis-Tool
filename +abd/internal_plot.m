@@ -3,8 +3,8 @@ classdef internal_plot < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.2 Copyright Louis Vallance 2024
-%   Last modified 09-Feb-2024 09:10:19 UTC
+%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
+%   Last modified 12-Feb-2024 14:08:48 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -235,7 +235,12 @@ classdef internal_plot < handle
                 OUTPUT_FIGURE = {OUTPUT_FIGURE};
             end
 
-            if (all(cellfun(@isempty, OUTPUT_FIGURE)) == true) || (length(OUTPUT_FIGURE) ~= 2.0)
+            if cellfun(@isempty, OUTPUT_FIGURE) == true
+                % Set default values if necessary
+                OUTPUT_FIGURE = {'DEFAULT', 'SPLIT'};
+            end
+
+            if length(OUTPUT_FIGURE) ~= 2.0
                 % Incorrect number of arguments
                 fprintf('[ERROR] The setting OUTPUT_FIGURE requires two\narguments: {''<mode>'', ''<layout>''}\n');
 
