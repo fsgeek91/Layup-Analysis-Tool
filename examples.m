@@ -24,6 +24,8 @@
 %   Finding Stiffness Matrices A, B and D (eFunda):
 %   https://tinyurl.com/4tvscjk7
 %
+%   See also abd.main, user_definitions.
+%
 %   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
 %   Last modified 12-Feb-2024 14:08:48 UTC
 %

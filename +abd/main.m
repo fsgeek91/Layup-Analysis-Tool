@@ -321,7 +321,7 @@ function [varargout] = main(varargin)
 %
 %   CB, Optimiser criterion for all stacking permutations.
 %
-%   See also abd.user_definitions, examples.
+%   See also examples, user_definitions.
 %
 %==========================================================================
 %
