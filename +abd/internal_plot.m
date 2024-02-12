@@ -99,7 +99,7 @@ classdef internal_plot < handle
                 end
                 
                 % Save the MATLAB figure to a file
-                abd.internal_plot.save(outputLocation, '\CB, ', figureTitle, f)
+                abd.internal_plot.save(outputLocation, [filesep, 'CB, '], figureTitle, f)
             end
         end
 
