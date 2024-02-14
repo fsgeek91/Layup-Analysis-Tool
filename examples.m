@@ -76,7 +76,7 @@
     {'BOTTOM', {[], 'SPLIT'}, {true, 'RESERVE'}, [], 'DEFAULT'},...
     [0, 150, 0, -100, 0, 0]);
 %__________________________________________________________________________
-%   USE CASE IV - Layup optimisation:
+%   USE CASE IV - Stacking sequence optimisation:
 %
 %   Stacking sequence optimisation of the layup example from USE CASE III
 %   using the Tsai-Wu failure criterion (reserve); return results of the

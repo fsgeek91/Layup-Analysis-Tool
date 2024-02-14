@@ -115,14 +115,20 @@ end
 fprintf(fid, '\n===========================================================================\n');
 
 %% Print effective thermal and hydroscopic properties
-fprintf(fid, '\nEffective thermal/hydroscopic constants:\n');
-fprintf(fid, 'PLY   axx           ayy           axy           bxx           byy           bxy           \n');
-for i = 1.0:nPlies
-    s = find(plyBuffer == i, 1.0);
-    fprintf(fid, '%-6.0f%-14g%-14g%-14g%-14g%-14g%-14g\n', i, axx(s), ayy(s), axy(s), bxx(s), byy(s), bxy(s));
-end
+if any(any([axx; ayy; axy; bxx; byy; bxy])) == true
+    %{
+        Print the effective thermal and hydroscopic properties only if they
+        are not all ZERO
+    %}
+    fprintf(fid, '\nEffective thermal/hydroscopic constants:\n');
+    fprintf(fid, 'PLY   axx           ayy           axy           bxx           byy           bxy           \n');
+    for i = 1.0:nPlies
+        s = find(plyBuffer == i, 1.0);
+        fprintf(fid, '%-6.0f%-14g%-14g%-14g%-14g%-14g%-14g\n', i, axx(s), ayy(s), axy(s), bxx(s), byy(s), bxy(s));
+    end
 
-fprintf(fid, '\n===========================================================================\n');
+    fprintf(fid, '\n===========================================================================\n');
+end
 
 %% Print stress/strain tensors
 if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (nSectionPoints == 1.0)
@@ -144,9 +150,8 @@ if printTensor == 1.0
 elseif printTensor == -1.0
     % Print message about zero load
     fprintf(fid, '\nNote: There is zero load in the layup. Stress/strain tensor information has\nnot been printed.\n');
+    fprintf(fid, '\n===========================================================================\n');
 end
-
-fprintf(fid, '\n===========================================================================\n');
 
 %% Print critical ply summary
 if outputStrength{1.0} == true
@@ -383,6 +388,9 @@ elseif isempty(BEST_SEQUENCE) == false
     else
         fprintf(fid, '\nObjective function: MinMean');
     end
+
+    % Print the precision
+    fprintf(fid, '\nPrecision: %g degrees', OUTPUT_OPTIMISED{5.0}(2.0) - OUTPUT_OPTIMISED{5.0}(1.0));
 
     % Print the formatted stacking sequence string
     seqStr = BEST_SEQUENCE{1.0};

@@ -57,7 +57,7 @@ function [varargout] = main(varargin)
 %   MATERIAL(1) is a 1xn cell array specifying the mechanical material
 %   properties, E11, E22, G12, V12, A11, A22, B11 and B22 for each ply.
 %
-%   MATERIAL(2:4) are empty assignments: []
+%   MATERIAL(2:4) are empty ( [] )
 %
 %   Note: n = 1 for constant material properties; for ply-wise material
 %   properties, specify n sets of properties corresponding to the n ply
@@ -83,13 +83,13 @@ function [varargout] = main(varargin)
 %   stacking and ply thickness definitions are automatically reflected on
 %   the other side of the symmetry plane.
 %
-%   LAYUP(4) is an empty assignment: []
+%   LAYUP(4) is empty ( [] )
 %
 %   OUTPUT_DEF. A 1x5 cell array specifying the ply output location,
 %   MATLAB figures, strength calculation, stacking sequence optimisation
 %   and the results output location.
 %
-%   OUTPUT_DEF(1:4) are empty assignments: []
+%   OUTPUT_DEF(1:4) are empty ( [] )
 %
 %   OUTPUT_DEF(5) is a string specifying the results location,
 %   OUTPUT_LOCATION. Use 'DEFAULT' to save results under a new folder in
@@ -134,7 +134,7 @@ function [varargout] = main(varargin)
 %   tensor component; the parameter 'COMPACT' overlays each tensor
 %   component in a single plot.
 %
-%   OUTPUT_DEF(3:4) are empty assignments: []
+%   OUTPUT_DEF(3:4) are empty ( [] )
 %
 %   LOAD. A 1x6 array specifying the applied load, N11, N22, N12, M11, M22
 %   and M12.
@@ -162,7 +162,7 @@ function [varargout] = main(varargin)
 %   the Hashin damage initiation criteria ALPHA, XHT, XHC, YHT, YHC, SHX
 %   and SHY for each ply.
 %
-%   Note: Unspecified criteria are replaced by empty assignments: []
+%   Note: Unspecified criteria are left empty ( [] )
 %
 %   LAYUP(1:3) (already specified - see USE CASE I)
 %
@@ -193,13 +193,13 @@ function [varargout] = main(varargin)
 %   Note: For Hashin's theory, R is not evaluated; output for these
 %   criteria is quoted as the damage initiation criterion index.
 %
-%   OUTPUT_DEF(4) is an empty assignment: []
+%   OUTPUT_DEF(4) is empty ( [] )
 %
 %   OUTPUT_DEF(5) (already specified - see USE CASE I)
 %
 %   LOAD (already specified - see USE CASE II)
 %__________________________________________________________________________
-%   USE CASE IV - Layup optimisation:
+%   USE CASE IV - Stacking sequence optimisation:
 %
 %   [..] = ABD.MAIN(MATERIAL, LAYUP, OUTPUT_DEF, LOAD).
 %
@@ -309,7 +309,7 @@ function [varargout] = main(varargin)
 %   OPT(6) is a structure of the stress and strain tensors corresponding to
 %   the optimum stacking sequence.
 %
-%   Note: Replace unrequested outputs with an empty ( [] ) assignment.
+%   Note: Replace unrequested outputs with a tilde ( ~ ) assignment.
 %
 %   MATLAB figures:
 %
@@ -488,12 +488,6 @@ end
 
 %% INITIALISE VARIABLES
 BEST_SEQUENCE = [];
-axx = zeros(1.0, nPlies_points);
-ayy = axx;
-axy = axx;
-bxx = axx;
-byy = axx;
-bxy = axx;
 
 %% PROCESS OUTPUT_PLY
 [error, OUTPUT_PLY_POINTS, plyBuffer, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, plyBuffer_sfailratio] =...
@@ -528,11 +522,9 @@ end
     abd.internal_getTransformedQ(theta, Q11, Q12, Q66, Q22);
 
 %% GET EFFECTIVE THEMAL AND MOISTURE EXPANSION COEFFICIENTS FOR EACH PLY
-if nargin == 5.0
-    [axx, ayy, axy, bxx, byy, bxy] =...
-        ...
-        abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
-end
+[axx, ayy, axy, bxx, byy, bxy] =...
+    ...
+    abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
 
 %% COMPUTE A, B and D MATRICES
 [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...

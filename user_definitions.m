@@ -3,7 +3,7 @@
 %   Read the tips above each option for usage hints.
 %
 %   Select "Run" from the Run section of the Editor, or hit the F5 key to
-%   start an analysis.
+%   start the analysis.
 %
 %   See also abd.main, examples.
 %
