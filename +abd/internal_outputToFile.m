@@ -1,13 +1,14 @@
 function [] = internal_outputToFile(dateString, outputLocation, outputStrength, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
-    HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, noFailStress, noFailStrain, noHashin, nSectionPoints, outputPoints, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE,...
-    outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy, E_midplane)
+    HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, nSectionPoints, outputPoints,...
+    plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy,...
+    E_midplane)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
-%   Last modified 12-Feb-2024 14:08:48 UTC
+%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
+%   Last modified 14-Feb-2024 15:05:03 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

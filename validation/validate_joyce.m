@@ -5,8 +5,8 @@
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
-%   Last modified 12-Feb-2024 14:08:48 UTC
+%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
+%   Last modified 14-Feb-2024 15:05:03 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties

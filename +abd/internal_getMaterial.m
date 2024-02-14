@@ -3,8 +3,8 @@ function [error, noStrength, varargout] = internal_getMaterial(data, nPlies, sym
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
-%   Last modified 12-Feb-2024 14:08:48 UTC
+%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
+%   Last modified 14-Feb-2024 15:05:03 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -40,6 +40,19 @@ switch mode
         varargout{3.0} = [];
         varargout{4.0} = [];
         varargout{5.0} = [];
+    case 4.0 % LARC05
+        varargout{1.0} = [];
+        varargout{2.0} = [];
+        varargout{3.0} = [];
+        varargout{4.0} = [];
+        varargout{5.0} = [];
+        varargout{6.0} = [];
+        varargout{7.0} = [];
+        varargout{8.0} = [];
+        varargout{9.0} = [];
+        varargout{10.0} = [];
+        varargout{11.0} = [];
+        varargout{12.0} = [];
     otherwise
 end
 
@@ -208,6 +221,47 @@ switch mode
         varargout{3.0} = D3;
         varargout{4.0} = D4;
         varargout{5.0} = D5;
+    case 4.0
+        % Initialise material property buffers
+        D1 = zeros(1.0, nPlies); D2 = D1; D3 = D1; D4 = D1; D5 = D1;
+        D6 = D1; D7 = D1; D8 = D1; D9 = D1; D10 = D1; D11 = D1; D12 = D1;
+
+        % Populate material property buffers
+        for i = 1:nPlies
+            % Get material properties for the current ply
+            currentMaterial = data{i};
+
+            % Replace empty cells with UNDEFINED
+            currentMaterial(cellfun(@isempty, currentMaterial)) = {1e-36};
+
+            % Property count check
+            if length(currentMaterial) ~= 12.0
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            end
+
+            % Assign values for the material property buffers
+            [D1(i), D2(i), D3(i), D4(i), D5(i), D6(i), D7(i), D8(i), D9(i), D10(i), D11(i), D12(i)] = deal(currentMaterial{1.0}, currentMaterial{2.0}, currentMaterial{3.0},...
+                currentMaterial{4.0}, currentMaterial{5.0}, currentMaterial{6.0}, currentMaterial{7.0}, currentMaterial{8.0}, currentMaterial{9.0}, currentMaterial{10.0},...
+                currentMaterial{11.0}, currentMaterial{12.0});
+        end
+
+        % Assign values to VARARGOUT
+        varargout{1.0} = D1;
+        varargout{2.0} = D2;
+        varargout{3.0} = D3;
+        varargout{4.0} = D4;
+        varargout{5.0} = D5;
+        varargout{6.0} = D6;
+        varargout{7.0} = D7;
+        varargout{8.0} = D8;
+        varargout{9.0} = D9;
+        varargout{10.0} = D10;
+        varargout{11.0} = D11;
+        varargout{12.0} = D12;
     otherwise
 end
 end

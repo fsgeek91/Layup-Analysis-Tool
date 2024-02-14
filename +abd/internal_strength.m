@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
-%   Last modified 12-Feb-2024 14:08:48 UTC
+%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
+%   Last modified 14-Feb-2024 15:05:03 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -13,10 +13,10 @@ classdef internal_strength < handle
 
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR STRENGTH CALCULATION
-        function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT,...
-                XHC, YHT, YHC, SHX, SHY] =...
-                main(noFailStress, noFailStrain, noHashin, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, stress,...
-                nPlies, nPlies_points, SECTION_POINTS, parameter)
+        function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C12, B12, E11,...
+                E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER] =...
+                main(noFailStress, noFailStrain, noHashin, noLaRC05, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
+                XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER, stress, nPlies, nPlies_points, SECTION_POINTS, parameter)
 
             % Spread material data over section points
             if noFailStress == false
@@ -52,6 +52,21 @@ classdef internal_strength < handle
                 SHX = abd.internal_spreadProperties(SHX, nPlies, SECTION_POINTS);
                 SHY = abd.internal_spreadProperties(SHY, nPlies, SECTION_POINTS);
             end
+
+            % Spread material data over section points
+            if noLaRC05 == false
+                XIT = abd.internal_spreadProperties(XIT, nPlies, SECTION_POINTS);
+                XIC = abd.internal_spreadProperties(XIC, nPlies, SECTION_POINTS);
+                YIT = abd.internal_spreadProperties(YIT, nPlies, SECTION_POINTS);
+                YIC = abd.internal_spreadProperties(YIC, nPlies, SECTION_POINTS);
+                SIX = abd.internal_spreadProperties(SIX, nPlies, SECTION_POINTS);
+                SIY = abd.internal_spreadProperties(SIY, nPlies, SECTION_POINTS);
+                GL12 = abd.internal_spreadProperties(GL12, nPlies, SECTION_POINTS);
+                NL = abd.internal_spreadProperties(NL, nPlies, SECTION_POINTS);
+                NT = abd.internal_spreadProperties(NT, nPlies, SECTION_POINTS);
+                A0 = abd.internal_spreadProperties(A0, nPlies, SECTION_POINTS);
+                PHI0 = abd.internal_spreadProperties(PHI0, nPlies, SECTION_POINTS);
+            end
             
             % Initialise output
             MSTRS = [];
@@ -63,6 +78,11 @@ classdef internal_strength < handle
             HSNFCCRT = [];
             HSNMTCRT = [];
             HSNMCCRT = [];
+            LARPFCRT = [];
+            LARMFCRT = [];
+            LARKFCRT = [];
+            LARSFCRT = [];
+            LARTFCRT = [];
 
             if noFailStress == false
                 % Failure calculation: MSTRS

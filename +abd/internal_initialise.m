@@ -1,12 +1,12 @@
-function [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, theta, t_ply, symmetricPly, SECTION_POINTS,...
-    OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
+function [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
+    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
     internal_initialise(nargin, USER_INPUTS)
 %   Gather variables from user inputs.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
-%   Last modified 12-Feb-2024 14:08:48 UTC
+%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
+%   Last modified 14-Feb-2024 15:05:03 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -48,6 +48,7 @@ switch nargin
         materialDataFailStress = materialData(2.0);
         materialDataFailStrain = materialData(3.0);
         materialDataHashin = materialData(4.0);
+        materialDataLaRC05 = materialData(5.0);
 
         % Layup data
         [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
@@ -65,6 +66,7 @@ switch nargin
         materialDataFailStress = materialData(2.0);
         materialDataFailStrain = materialData(3.0);
         materialDataHashin = materialData(4.0);
+        materialDataLaRC05 = materialData(5.0);
 
         % Layup data
         [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
@@ -86,6 +88,7 @@ switch nargin
         materialDataFailStress = materialData(2.0);
         materialDataFailStrain = materialData(3.0);
         materialDataHashin = materialData(4.0);
+        materialDataLaRC05 = materialData(5.0);
 
         % Layup data
         [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});

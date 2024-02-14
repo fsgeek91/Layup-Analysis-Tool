@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
-%   Last modified 12-Feb-2024 14:08:48 UTC
+%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
+%   Last modified 14-Feb-2024 15:05:03 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -210,7 +210,7 @@ classdef internal_optimise < handle
         end
 
         %% GET DATA FROM OUTPUT_OPTIMISED
-        function [error, output] = getSettings(OUTPUT_OPTIMISED, noFailStress, noFailStrain, noHashin, OUTPUT_STRENGTH)
+        function [error, output] = getSettings(OUTPUT_OPTIMISED, noFailStress, noFailStrain, noHashin, noLaRC05, OUTPUT_STRENGTH)
             % Initialise output
             error = false;
             output = cell(1.0, 4.0);
@@ -274,6 +274,13 @@ classdef internal_optimise < handle
                 elseif (noHashin == true) && (OUTPUT_STRENGTH == true) && (strcmpi(argument, 'hashin') == true)
                     % Insufficient material data
                     fprintf('[ERROR] Requested a Hashin criterion for optimisation,\nbut HASHIN properties are not available\n');
+
+                    % Reset the error flag and RETURN
+                    error = true;
+                    return
+                elseif (noLaRC05 == true) && (OUTPUT_STRENGTH == true) && (strcmpi(argument, 'larc05') == true)
+                    % Insufficient material data
+                    fprintf('[ERROR] Requested a LaRC05 criterion for optimisation,\nbut LARC05 properties are not available\n');
 
                     % Reset the error flag and RETURN
                     error = true;

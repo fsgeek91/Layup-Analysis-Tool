@@ -331,8 +331,8 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
-%   Last modified 12-Feb-2024 14:08:48 UTC
+%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
+%   Last modified 14-Feb-2024 15:05:03 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -350,8 +350,8 @@ varargout{7.0} = [];
 varargout{8.0} = [];
 
 %% GET USER INPUTS FROM VARARGIN
-[enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, theta, t_ply, symmetricPly, SECTION_POINTS, OUTPUT_PLY,...
-    OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
+[enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
+    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
     ...
     abd.internal_initialise(nargin, varargin);
 
@@ -454,19 +454,39 @@ if OUTPUT_STRENGTH{1.0} == true
     SHX = abd.internal_correctSign(SHX, 1.0);
     SHY = abd.internal_correctSign(SHY, 1.0);
 
-    if (noFailStress == true) && (noFailStrain == true) && (noHashin == true)
+    % Get LaRC05 properties
+    [error, noLaRC05, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER] =...
+        ...
+        abd.internal_getMaterial(materialDataLaRC05, nPlies, symmetricPly, 4.0, 'LARC05');
+
+    % An error occurred, so RETURN
+    if error == true
+        return
+    end
+
+    % Correct the sign (if applicable)
+    XIT = abd.internal_correctSign(XIT, 1.0);
+    XIC = abd.internal_correctSign(XIC, 1.0);
+    YIT = abd.internal_correctSign(YIT, 1.0);
+    YIC = abd.internal_correctSign(YIC, 1.0);
+    SIX = abd.internal_correctSign(SIX, 1.0);
+    SIY = abd.internal_correctSign(SIY, 1.0);
+    GL12 = abd.internal_correctSign(GL12, 1.0);
+
+    if (noFailStress == true) && (noFailStrain == true) && (noHashin == true) && (noLaRC05 == true)
         %{
-            Since the strength calculation has been requested, at least one
-            of FAIL_STRESS, FAIL_STRAIN or HASHIN must be defined for the
-            layup!
+            Since the strength calculation has been requested, at least
+            one of FAIL_STRESS, FAIL_STRAIN, HASHIN or LARC05 must be
+            defined for the layup!
         %}
-        fprintf('[ERROR] The strength calculation requires at least\nFAIL_STRESS, FAIL_STRAIN or HASHIN material properties\n');
+        fprintf('[ERROR] The strength calculation requires at least\nFAIL_STRESS, FAIL_STRAIN, HASHIN or LARC05 material properties\n');
         return
     end
 else
     noFailStress = true;
     noFailStrain = true;
     noHashin = true;
+    noLaRC05 = true;
 end
 
 %% SET THE NEAR-ZERO TOLERANCE VALUE
@@ -503,7 +523,7 @@ end
 if isempty(OUTPUT_OPTIMISED{1.0}) == false
     [error, OUTPUT_OPTIMISED] =...
         ...
-        abd.internal_optimise.getSettings(OUTPUT_OPTIMISED, noFailStress, noFailStrain, noHashin, OUTPUT_STRENGTH{1.0});
+        abd.internal_optimise.getSettings(OUTPUT_OPTIMISED, noFailStress, noFailStrain, noHashin, noLaRC05, OUTPUT_STRENGTH{1.0});
 
     % An error occurred, so RETURN
     if error == true
@@ -570,19 +590,19 @@ ABD(abs(ABD) < tolerance) = 0.0;
 
 %% PERFORM STRENGTH CALCULATION ON PLY STRESSES
 if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
-    [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC,...
-        SHX, SHY] =...
+    [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET,...
+        XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER] =...
         ...
-        abd.internal_strength.main(noFailStress, noFailStrain, noHashin, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
-        S_ply_aligned, nPlies, nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0});
+        abd.internal_strength.main(noFailStress, noFailStrain, noHashin, noLaRC05, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
+        XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER, S_ply_aligned, nPlies, nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0});
 
     if OUTPUT_OPTIMISED{1.0} == true
         %% FIND THE OPTIMUM STACKING SEQUENCE
         [BEST_SEQUENCE, CRITERION_BUFFER, ~] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
-            B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22,...
-            V12, G12);
+            B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0,...
+            ITER, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12);
     else
         CRITERION_BUFFER = [];
     end
@@ -597,6 +617,11 @@ else
     HSNFCCRT = [];
     HSNMTCRT = [];
     HSNMCCRT = [];
+    LARPFCRT = [];
+    LARMFCRT = [];
+    LARKFCRT = [];
+    LARSFCRT = [];
+    LARTFCRT = [];
     CRITERION_BUFFER = [];
 
     % Suppress strength output
@@ -612,7 +637,7 @@ varargout{5.0} = {S_ply_xy, S_ply_aligned};
 varargout{6.0} = {[EXT, EYT, GXYT, NUXYT, NUYXT],...
                   [EXB, EYB, GXYB, NUXYB, NUYXB]};
 varargout{7.0} = struct('MSTRS', MSTRS, 'TSAIH', TSAIH, 'TSAIW', TSAIW, 'AZZIT', AZZIT, 'MSTRN', MSTRN, 'HSNFTCRT', HSNFTCRT, 'HSNFCCRT', HSNFCCRT, 'HSNMTCRT', HSNMTCRT,...
-    'HSNMCCRT', HSNMCCRT);
+    'HSNMCCRT', HSNMCCRT, 'LARPFCRT', LARPFCRT, 'LARMFCRT', LARMFCRT, 'LARKFCRT', LARKFCRT, 'LARSFCRT', LARSFCRT, 'LARTFCRT', LARTFCRT);
 varargout{8.0} = BEST_SEQUENCE;
 
 %% CREATE OUTPUT DIRECTORY
@@ -649,8 +674,9 @@ end
 %% WRITE RESULTS TO A TEXT FILE
 abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
-    HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, noFailStress, noFailStrain, noHashin, SECTION_POINTS, OUTPUT_PLY_POINTS, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE,...
-    outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy, E_midplane)
+    HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
+    plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
+    bxy, E_midplane)
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));

@@ -1,11 +1,14 @@
-%   Validation case for Abaqus. See "validate_abaqus.inp" for test model.
+%USER_DEFINITIONS    Helper script for Layup Analysis Tool.
+%   Fill out this script with your layup definitions and analysis settings.
+%   Read the tips above each option for usage hints.
 %
-%   RUN THIS SCRIPT.
+%   Select "Run" from the Run section of the Editor, or hit the F5 key to
+%   start the analysis.
 %
-%   See also abd.main.
+%   See also abd.main, examples.
 %
-%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
-%   Last modified 14-Feb-2024 15:05:03 UTC
+%   Layup Analysis Tool 2.7.3 Copyright Louis Vallance 2024
+%   Last modified 12-Feb-2024 14:08:48 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -28,14 +31,12 @@ TIP:
 
     Note: MATERIAL(1) = Bottom; MATERIAL(n) = Top.
 
-	Units:
+    Units:
     Stress - [N/mm2]
     Thermal expansion - [1/degC]
     Hydroscopic expansion - [1/mm]
 %}
-MATERIAL = {[200000, 70000, 5000, 0.3, 1e-5, 1e-5, 2e-3, 2e-3],...
-            [100000, 35000, 2500, 0.3, 1e-5, 1e-5, 2e-3, 2e-3],...
-            [200000, 70000, 5000, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]};
+MATERIAL = [2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3];
 
 % FAIL_STRESS  Strength properties for stress-based failure criteria
 %{
@@ -58,9 +59,7 @@ TIP:
     Units:
     Stress - [N/mm2]
 %}
-FAIL_STRESS = {[400, -400, 200, -200, 150, 0.5, 0],...
-               [200, -200, 100, -100, 75, 0.5, 0],...
-               [400, -400, 200, -200, 150, 0.5, 0]};
+FAIL_STRESS = [];
 
 % FAIL_STRAIN  Strength properties for strain-based failure criteria
 %{
@@ -80,9 +79,7 @@ TIP:
     Units:
     Strain - [mm/mm]
 %}
-FAIL_STRAIN = {[0.02, -0.02, 0.01, -0.01, 0.015],...
-               [0.01, -0.01, 0.005, -0.005, 0.0075],...
-               [0.02, -0.02, 0.01, -0.01, 0.015]};
+FAIL_STRAIN = [];
 
 % HASHIN  Strength properties for Hashin damage initiation criteria
 %{
@@ -92,7 +89,7 @@ TIP:
     Shear influence parameter;
     Lamina tensile/compressive strength (longitudinal);
     Lamina tensile/compressive strength (transverse);
-    Lamina in-plane/transverse shear strength;
+    Lamina in-plane/transverse shear strength.
 
     HASHIN = {[ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](1),
               ...,
@@ -103,9 +100,37 @@ TIP:
     Units:
     Stress - [N/mm2]
 %}
-HASHIN = {[0.1, 400, 400, 200, 200, 150, 150],...
-          [0.1, 200, 200, 100, 100, 75, 75],...
-          [0.1, 400, 400, 200, 200, 150, 150]};
+HASHIN = [];
+
+% LARC05  Strength properties for LaRC05 damage initiation criteria
+%{
+TIP:
+
+    Specify strength properties for n plies as a 1xn cell array:
+    Tensile/compressive strength (longitudinal);
+    Tensile/compressive strength (transverse);
+    In-plane/transverse shear strength;
+    Shear modulus in the 12-plane;
+    Longitudinal/transverse shear frictiopn coefficient;
+    Fracture plane angle for pure compression;
+    Misalignment angle at failure for pure compression;
+    Calculate misalignment angle iteratively (if applicable).
+
+    LARC05 = {{XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER}(1),
+              ...,
+              {XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER}(n)}
+
+    Note: LARC05(1) = Bottom; LARC05(n) = Top.
+    
+    Note: If YIC, SIY, NT, A0 or PHI0 are unspecified, their value will be
+    derived.
+
+    Units:
+    Stress - [N/mm2]
+%}
+LARC05 = {{1990, 1500, 38, [], 70, [], 6000, 0.082, [], [], [], false},...
+    {1990, 1500, 38, [], 70, [], 6000, 0.082, [], [], [], false},...
+    {1990, 1500, 38, [], 70, [], 6000, 0.082, [], [], [], false}};
 
 %% 2: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up) [degrees]
@@ -118,10 +143,10 @@ STACKING_SEQUENCE = [0.0, 45.0, 90.0];
 
     Note: (t1) = Bottom; (tn) = Top.
 
-	Note: When SYMMETRIC_LAYUP = true, ply thickness values are only
+    Note: When SYMMETRIC_LAYUP = true, ply thickness values are only
     required on one side of the symmetry plane.
 %}
-PLY_THICKNESS = [0.1, 0.2, 0.1];
+PLY_THICKNESS = 0.1;
 
 % SYMMETRIC_LAYUP  Make the calculated section symmetric
 SYMMETRIC_LAYUP = false;
@@ -134,11 +159,11 @@ SYMMETRIC_LAYUP = false;
     Note: Section points are evenly distributed over the layup. The total
     number of section points is SECTION_POINTS*length(STACKING_SEQUENCE).
 %}
-SECTION_POINTS = 3.0;
+SECTION_POINTS = 2.0;
 
 %% 3: LOAD MATRIX
 % Mechanical load (forces) [N]
-NXX = 100.0;
+NXX = 1.0;
 NYY = 0.0;
 NXY = 0.0;
 
@@ -152,9 +177,10 @@ DELTA_T = 0.0; % [degC]
 DELTA_M = 0.0; % [%/100 moisture weight content change]
 
 %% 4: OUTPUT DEFINITION
+% OUTPUT_PLY  Section points for stress/strain output
 %{
-    '<location>': Default (top and bottom); Top; Middle; Bottom; All;
-    EnvelopeAbsMax; EnvelopeMax; EnvelopeMin
+    '<location>': Default (top and bottom); Top; Middle (midspan/single
+    section point; Bottom; All; EnvelopeAbsMax; EnvelopeMax; EnvelopeMin
     [SP1,..., SPn]: Section point list (1 = Bottom; n = Top)
 %}
 OUTPUT_PLY = 'DEFAULT';
@@ -226,8 +252,8 @@ OUTPUT_LOCATION = 'DEFAULT';
 % Submit the layup for analysis!
 [ABD1, ABD2, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT_SEQ] =...
     ...
-    abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN}, {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH,...
-    OUTPUT_OPTIMISED, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
+    abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN, LARC05}, {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY, OUTPUT_FIGURE,...
+    OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
 
-clear MATERIAL FAIL_STRESS FAIL_STRAIN HASHIN STACKING_SEQUENCE PLY_THICKNESS SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY DELTA_T DELTA_M OUTPUT_PLY OUTPUT_FIGURE...
-    OUTPUT_STRENGTH OUTPUT_OPTIMISED OUTPUT_LOCATION
+clear MATERIAL FAIL_STRESS FAIL_STRAIN HASHIN LARC05 STACKING_SEQUENCE PLY_THICKNESS SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY DELTA_T DELTA_M OUTPUT_PLY...
+    OUTPUT_FIGURE OUTPUT_STRENGTH OUTPUT_OPTIMISED OUTPUT_LOCATION
