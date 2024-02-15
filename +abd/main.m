@@ -51,13 +51,13 @@ function [varargout] = main(varargin)
 %
 %   [..] = ABD.MAIN(MATERIAL, LAYUP, OUTPUT_DEF).
 %
-%   MATERIAL. A 1x4 cell array specifying mechanical and strength material
+%   MATERIAL. A 1x5 cell array specifying mechanical and strength material
 %   properties.
 %
 %   MATERIAL(1) is a 1xn cell array specifying the mechanical material
 %   properties, E11, E22, G12, V12, A11, A22, B11 and B22 for each ply.
 %
-%   MATERIAL(2:4) are empty ( [] )
+%   MATERIAL(2:5) are empty ( [] )
 %
 %   Note: n = 1 for constant material properties; for ply-wise material
 %   properties, specify n sets of properties corresponding to the n ply
@@ -162,6 +162,10 @@ function [varargout] = main(varargin)
 %   the Hashin damage initiation criteria ALPHA, XHT, XHC, YHT, YHC, SHX
 %   and SHY for each ply.
 %
+%   MATERIAL(5) is a 1xn cell array specifying the strength properties for
+%   the LaRC05 damage initiation criteria XIT, XIC, YIT, YIC, SIX, SIY,
+%   GL12, NL, NT, A0 and PHI0 for each ply.
+%
 %   Note: Unspecified criteria are left empty ( [] )
 %
 %   LAYUP(1:3) (already specified - see USE CASE I)
@@ -183,15 +187,15 @@ function [varargout] = main(varargin)
 %     from the failure criterion.
 %   
 %   The strength calculation requires strength properties defined by
-%   FAIL_STRESS, FAIL_STRAIN and HASHIN.
+%   FAIL_STRESS, FAIL_STRAIN, HASHIN or LARC05.
 %
 %   Note: The Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria can be
 %   expressed in terms of the strength reserve factor or the criterion
 %   value; for all other failure criteria, the criterion value is identical
 %   to the strength reserve factor.
 %
-%   Note: For Hashin's theory, R is not evaluated; output for these
-%   criteria is quoted as the damage initiation criterion index.
+%   Note: For Hashin's theory and LaRC05, R is not evaluated; output for
+%   these criteria is quoted as the damage initiation criterion index.
 %
 %   OUTPUT_DEF(4) is empty ( [] )
 %
@@ -205,7 +209,7 @@ function [varargout] = main(varargin)
 %
 %   MATERIAL(1) (already specified - see USE CASE I)
 %
-%   MATERIAL(2:4) (already specified - see USE CASE III)
+%   MATERIAL(2:5) (already specified - see USE CASE III)
 %
 %   LAYUP(1:3) (already specified - see USE CASE I)
 %
@@ -218,10 +222,11 @@ function [varargout] = main(varargin)
 %   OUTPUT_DEF(4) is a 1x4 cell array specifying settings for the stacking
 %   sequence optimiser, OUTPUT_OPTIMISED. OUTPUT_OPTIMISED(1) is the
 %   failure criterion for the optimisation ('MSTRS', 'TSAIH', 'TSAIW',
-%   'AZZIT', 'MSTRN' or 'HASHIN'); OUTPUT_OPTIMISED(2) is the failure
-%   assessment parameter ('RESERVE' or 'VALUE'); OUTPUT_OPTIMISED(3) is the
-%   objective function ('MINMAX' or 'MINMEAN'); OUTPUT_OPTIMISED(4) is the
-%   angular step size for the stacking sequence permutations.
+%   'AZZIT', 'MSTRN', 'HASHIN' or 'LARC05'); OUTPUT_OPTIMISED(2) is the
+%   failure assessment parameter ('RESERVE' or 'VALUE');
+%   OUTPUT_OPTIMISED(3) is the objective function ('MINMAX' or 'MINMEAN');
+%   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
+%   permutations.
 %
 %   OUTPUT_DEF(5) (already specified - see USE CASE I)
 %
@@ -290,6 +295,11 @@ function [varargout] = main(varargin)
 %       - HSNFCCRT, Hashin’s fibre compression damage initiation criterion
 %       - HSNMTCRT, Hashin’s matrix tensile damage initiation criterion
 %       - HSNMCCRT, Hashin’s matrix compression damage initiation criterion
+%       - LARPFCRT, LaRC05 polymer failure measure
+%       - LARMFCRT, LaRC05 matrix failure measure
+%       - LARKFCRT, LaRC05 fibre kinking failure measure
+%       - LARSFCRT, LaRC05 fibre splitting failure measure
+%       - LARTFCRT, LaRC05 fibre tensile failure measure
 %       - SFAILRATIO, The section failure ratio across all plies [%/100]
 %
 %   OPT. A 1x6 cell of the results of the stacking sequence optimisation.

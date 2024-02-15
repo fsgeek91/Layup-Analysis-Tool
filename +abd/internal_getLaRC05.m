@@ -1,4 +1,5 @@
-function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, G12, Xt, Xc, Yt,Yc, Sl, St, alpha0, phi0, nl, nt, SECTION_POINTS)
+function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, G12, Xt, Xc, Yt,Yc, Sl, St, alpha0, phi0, nl,...
+    nt, SECTION_POINTS)
 %   Perform strength calculations based on the ply stresses.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -10,7 +11,7 @@ function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05
     %%
 
 %% Initialise variables
-step = 10.0;
+step = 1.0;
 iterate = true;
 S11 = stress(1.0, :);
 S22 = stress(2.0, :);
@@ -106,12 +107,14 @@ LARKFCRT = max(FI_ki, [], 2.0)';
 LARSFCRT = max(FI_si, [], 2.0)';
 
 %% Fibre tensile failure
+% Initialise LARTFCRT buffer
+LARTFCRT = zeros(1.0, nPlies_points);
+
+% Get positive stress points
+sPos = S1 > 0.0;
+
 % Failure criterion
-if any(S1 > 0.0) == false
-    LARTFCRT = zeros(1.0, nPlies_points);
-else
-    LARTFCRT = S1(S1 > 0.0)./Xt;
-end
+LARTFCRT(sPos) = S1(sPos)./Xt(sPos);
 end
 
 %% PARFOR version of CP search for fibre matrix failure
