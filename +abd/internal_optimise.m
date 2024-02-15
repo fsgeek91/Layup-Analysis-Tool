@@ -16,7 +16,8 @@ classdef internal_optimise < handle
         %% RUN THE OPTIMISER
         function [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION] =...
                 main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, nSectionPoints, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points, B22_points, tolerance,...
-                XT, XC, YT, YC, S, C12, B12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12)
+                XT, XC, YT, YC, S, C12, B12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, deltaT, deltaM,...
+                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS)
             % Initialise output
             %{
                 BEST_SEQUENCE(1) = Optimum stacking sequence
@@ -127,6 +128,13 @@ classdef internal_optimise < handle
 
                         % Get the worst criterion of all four calculations
                         CRITERION = max([HSNFTCRT; HSNFCCRT; HSNMTCRT; HSNMCCRT], [], 1.0);
+                    case 'larc05' % LaRC05
+                        [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
+                            ...
+                            abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XIT, XIC, YIT, YIC, SIX, SIY, A0, PHI0, NL, NT, SECTION_POINTS);
+
+                        % Get the worst criterion of all four calculations
+                        CRITERION = max([LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT], [], 1.0);
                     otherwise
                         % Default to Tsai-Hill
                         CRITERION =...
@@ -244,13 +252,17 @@ classdef internal_optimise < handle
                     return
             elseif ischar(argument) == true
                 if (strcmpi(argument, 'mstrs') == false) && (strcmpi(argument, 'tsaih') == false) && (strcmpi(argument, 'tsaiw') == false) &&...
-                        (strcmpi(argument, 'azzit') == false) && (strcmpi(argument, 'mstrn') == false) && (strcmpi(argument, 'hashin') == false)
+                        (strcmpi(argument, 'azzit') == false) && (strcmpi(argument, 'mstrn') == false) && (strcmpi(argument, 'hashin') == false) &&...
+                        (strcmpi(argument, 'larc05') == false)
                     % Unregognised parameter
                     if (strcmpi(argument, 'hsnftcrt') == true) || (strcmpi(argument, 'hsnfccrt') == true) || (strcmpi(argument, 'hsnmtcrt') == true) ||...
                             (strcmpi(argument, 'hsnmccrt') == true)
-                        fprintf('[ERROR] Parameter ''HSNFTCRT'', ''HSNFCCRT'',\n''HSNMTCRT'' or ''HSNMCCRT'' is used for OUTPUT_OPTIMISED(1). Sspecify\n''HASHIN'' instead\n');
+                        fprintf('[ERROR] Parameter ''HSNFTCRT'', ''HSNFCCRT'', ''HSNMTCRT'' or ''HSNMCCRT'' is used for OUTPUT_OPTIMISED(1). Specify ''HASHIN'' instead\n');
+                    elseif (strcmpi(argument, 'larpfcrt') == true) || (strcmpi(argument, 'larmfcrt') == true) || (strcmpi(argument, 'larkfcrt') == true) ||...
+                            (strcmpi(argument, 'larsfcrt') == true) || (strcmpi(argument, 'lartfcrt') == true)
+                        fprintf('[ERROR] Parameter ''LARPFCRT'', ''LARMFCRT'', ''LARKFCRT''m ''LARSFCRT'' or ''LARTFCRT'' is used for OUTPUT_OPTIMISED(1). Specify ''LARC05'' instead\n');
                     else
-                        fprintf('[ERROR] OUTPUT_OPTIMISED(1) must be one of the\nfollowing parameters: MSTRS, TSAIH, TSAIW, AZZIT, MSTRN or HASHIN\n');
+                        fprintf('[ERROR] OUTPUT_OPTIMISED(1) must be one of the following parameters: MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HASHIN or LARC05\n');
                     end
 
                     % Reset the error flag and RETURN
@@ -259,28 +271,28 @@ classdef internal_optimise < handle
                 elseif (noFailStress == true) && (OUTPUT_STRENGTH == true) && (strcmpi(argument, 'mstrs') == true || strcmpi(argument, 'tsaih') == true ||...
                         strcmpi(argument, 'tsaiw') == true || strcmpi(argument, 'azzit') == true)
                     % Insufficient material data
-                    fprintf('[ERROR] Requested a stress-based criterion for\noptimisation, but FAIL_STRESS properties are not available\n');
+                    fprintf('[ERROR] Requested a stress-based criterion for optimisation, but FAIL_STRESS properties are not available\n');
 
                     % Reset the error flag and RETURN
                     error = true;
                     return
                 elseif (noFailStrain == true) && (OUTPUT_STRENGTH == true) && (strcmpi(argument, 'mstrn') == true)
                     % Insufficient material data
-                    fprintf('[ERROR] Requested a strain-based criterion for\noptimisation, but FAIL_STRAIN properties are not available\n');
+                    fprintf('[ERROR] Requested a strain-based criterion for optimisation, but FAIL_STRAIN properties are not available\n');
 
                     % Reset the error flag and RETURN
                     error = true;
                     return
                 elseif (noHashin == true) && (OUTPUT_STRENGTH == true) && (strcmpi(argument, 'hashin') == true)
                     % Insufficient material data
-                    fprintf('[ERROR] Requested a Hashin criterion for optimisation,\nbut HASHIN properties are not available\n');
+                    fprintf('[ERROR] Requested a Hashin criterion for optimisation, but HASHIN properties are not available\n');
 
                     % Reset the error flag and RETURN
                     error = true;
                     return
                 elseif (noLaRC05 == true) && (OUTPUT_STRENGTH == true) && (strcmpi(argument, 'larc05') == true)
                     % Insufficient material data
-                    fprintf('[ERROR] Requested a LaRC05 criterion for optimisation,\nbut LARC05 properties are not available\n');
+                    fprintf('[ERROR] Requested a LaRC05 criterion for optimisation, but LARC05 properties are not available\n');
 
                     % Reset the error flag and RETURN
                     error = true;
@@ -325,7 +337,7 @@ classdef internal_optimise < handle
             argument = OUTPUT_OPTIMISED{4.0};
 
             if (argument <= 0.0) || (argument > 90.0)
-                fprintf('[ERROR] Invalid value of OUTPUT_OPTIMISED(4). The\nangular step size must be in the range {0 < theta <= 90}\n');
+                fprintf('[ERROR] Invalid value of OUTPUT_OPTIMISED(4). The angular step size must be in the range {0 < theta <= 90}\n');
 
                 % Reset the error flag and RETURN
                 error = true;

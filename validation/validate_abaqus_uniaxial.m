@@ -107,6 +107,33 @@ HASHIN = {[0.1, 400, 400, 200, 200, 150, 150],...
           [0.1, 200, 200, 100, 100, 75, 75],...
           [0.1, 400, 400, 200, 200, 150, 150]};
 
+% LARC05  Strength properties for LaRC05 damage initiation criteria
+%{
+TIP:
+
+    Specify strength properties for n plies as a 1xn cell array:
+    Tensile/compressive strength (longitudinal);
+    Tensile/compressive strength (transverse);
+    In-plane/transverse shear strength;
+    Shear modulus in the 12-plane;
+    Longitudinal/transverse shear friction coefficient;
+    Fracture plane angle for pure compression;
+    Misalignment angle at failure for pure compression.
+
+    LARC05 = {[XIT, XIC, YIT, YIC*, SIX, SIY*, GL12, NL, NT*, A0*, PHI0*](1),
+              ...,
+              [XIT, XIC, YIT, YIC*, SIX, SIY*, GL12, NL, NT*, A0*, PHI0*](n)}
+
+    Note: LARC05(1) = Bottom; LARC05(n) = Top.
+    
+    Note: Parameters marked with an asterisk (*) are derived if a value of
+    -1 is specified.
+
+    Units:
+    Stress - [N/mm2]
+%}
+LARC05 = [];
+
 %% 2: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up) [degrees]
 STACKING_SEQUENCE = [0.0, 45.0, 90.0];
@@ -198,7 +225,7 @@ OUTPUT_STRENGTH = {true, 'RESERVE'};
     First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-    Hashin
+    Hashin; LaRC05
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)
@@ -226,8 +253,8 @@ OUTPUT_LOCATION = 'DEFAULT';
 % Submit the layup for analysis!
 [ABD1, ABD2, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT_SEQ] =...
     ...
-    abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN}, {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH,...
-    OUTPUT_OPTIMISED, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
+    abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN, LARC05}, {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY, OUTPUT_FIGURE,...
+    OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
 
-clear MATERIAL FAIL_STRESS FAIL_STRAIN HASHIN STACKING_SEQUENCE PLY_THICKNESS SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY DELTA_T DELTA_M OUTPUT_PLY OUTPUT_FIGURE...
-    OUTPUT_STRENGTH OUTPUT_OPTIMISED OUTPUT_LOCATION
+clear MATERIAL FAIL_STRESS FAIL_STRAIN HASHIN LARC05 STACKING_SEQUENCE PLY_THICKNESS SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY DELTA_T DELTA_M OUTPUT_PLY...
+    OUTPUT_FIGURE OUTPUT_STRENGTH OUTPUT_OPTIMISED OUTPUT_LOCATION

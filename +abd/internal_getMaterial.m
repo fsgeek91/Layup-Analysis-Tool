@@ -52,7 +52,6 @@ switch mode
         varargout{9.0} = [];
         varargout{10.0} = [];
         varargout{11.0} = [];
-        varargout{12.0} = [];
     otherwise
 end
 
@@ -224,18 +223,15 @@ switch mode
     case 4.0
         % Initialise material property buffers
         D1 = zeros(1.0, nPlies); D2 = D1; D3 = D1; D4 = D1; D5 = D1;
-        D6 = D1; D7 = D1; D8 = D1; D9 = D1; D10 = D1; D11 = D1; D12 = D1;
+        D6 = D1; D7 = D1; D8 = D1; D9 = D1; D10 = D1; D11 = D1;
 
         % Populate material property buffers
         for i = 1:nPlies
             % Get material properties for the current ply
             currentMaterial = data{i};
 
-            % Replace empty cells with UNDEFINED
-            currentMaterial(cellfun(@isempty, currentMaterial)) = {1e-36};
-
             % Property count check
-            if length(currentMaterial) ~= 12.0
+            if length(currentMaterial) ~= 11.0
                 fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
 
                 % Reset the error flag and RETURN
@@ -244,10 +240,16 @@ switch mode
             end
 
             % Assign values for the material property buffers
-            [D1(i), D2(i), D3(i), D4(i), D5(i), D6(i), D7(i), D8(i), D9(i), D10(i), D11(i), D12(i)] = deal(currentMaterial{1.0}, currentMaterial{2.0}, currentMaterial{3.0},...
-                currentMaterial{4.0}, currentMaterial{5.0}, currentMaterial{6.0}, currentMaterial{7.0}, currentMaterial{8.0}, currentMaterial{9.0}, currentMaterial{10.0},...
-                currentMaterial{11.0}, currentMaterial{12.0});
+            [D1(i), D2(i), D3(i), D4(i), D5(i), D6(i), D7(i), D8(i), D9(i), D10(i), D11(i)] = deal(currentMaterial(1.0), currentMaterial(2.0), currentMaterial(3.0),...
+                currentMaterial(4.0), currentMaterial(5.0), currentMaterial(6.0), currentMaterial(7.0), currentMaterial(8.0), currentMaterial(9.0), currentMaterial(10.0),...
+                currentMaterial(11.0));
         end
+
+        % Replace undefined values of D4 with D3
+        D4(D4 == -1.0) = D3(D4 == -1.0);
+
+        % Replace undefined values of D10 with default value
+        D10(D10 == -1.0) = 53.0;
 
         % Assign values to VARARGOUT
         varargout{1.0} = D1;
@@ -261,7 +263,6 @@ switch mode
         varargout{9.0} = D9;
         varargout{10.0} = D10;
         varargout{11.0} = D11;
-        varargout{12.0} = D12;
     otherwise
 end
 end

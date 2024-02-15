@@ -17,6 +17,7 @@ materialDataMechanical = [];
 materialDataFailStress = [];
 materialDataFailStrain = [];
 materialDataHashin = [];
+materialDataLaRC05 = [];
 theta = [];
 t_ply = [];
 symmetricPly = [];

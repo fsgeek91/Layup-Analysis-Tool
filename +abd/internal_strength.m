@@ -14,9 +14,11 @@ classdef internal_strength < handle
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR STRENGTH CALCULATION
         function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C12, B12, E11,...
-                E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER] =...
-                main(noFailStress, noFailStrain, noHashin, noLaRC05, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
-                XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER, stress, nPlies, nPlies_points, SECTION_POINTS, parameter)
+                E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
+                main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT,...
+                YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, stress, nPlies, nPlies_points, SECTION_POINTS, parameter)
+            % Initialise the output
+            S1 = [];    S2 = [];    S3 = [];
 
             % Spread material data over section points
             if noFailStress == false
@@ -66,6 +68,19 @@ classdef internal_strength < handle
                 NT = abd.internal_spreadProperties(NT, nPlies, SECTION_POINTS);
                 A0 = abd.internal_spreadProperties(A0, nPlies, SECTION_POINTS);
                 PHI0 = abd.internal_spreadProperties(PHI0, nPlies, SECTION_POINTS);
+
+                % GET PRINCIPAL STRESS TERMS FOR LARC05
+                if noLaRC05 == false
+                    % Get the individual tensor components from S_PLY_ALIGNED
+                    S11 = stress(1.0, :);
+                    S22 = stress(2.0, :);
+                    S12 = stress(3.0, :);
+
+                    % Get the two in-plane principal stress components
+                    S1 = 0.5.*(S11 + S22) + sqrt(0.5.*(S11 - S22).^2.0 + S12.^2.0);
+                    S2 = 0.5.*(S11 + S22) - sqrt(0.5.*(S11 - S22).^2.0 + S12.^2.0);
+                    S3 = zeros(1.0, nPlies_points);
+                end
             end
             
             % Initialise output
@@ -118,6 +133,13 @@ classdef internal_strength < handle
                 [HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT] = ...
                     ...
                     abd.internal_strength.getHashin(nPlies_points, stress, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY);
+            end
+
+            % Failure calculation: LARC05
+            if noLaRC05 == false
+                [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
+                    ...
+                    abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XIT, XIC, YIT, YIC, SIX, SIY, A0, PHI0, NL, NT, SECTION_POINTS);
             end
         end
 

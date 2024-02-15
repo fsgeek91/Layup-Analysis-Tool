@@ -31,6 +31,7 @@ end
 SFAILRATIO_STRESS = -1.0;
 SFAILRATIO_STRAIN = -1.0;
 SFAILRATIO_HASHIN = -1.0;
+SFAILRATIO_LARC05 = -1.0;
 
 %% Print layup summary
 fprintf(fid, 'Composite layup summary:\n');
@@ -193,6 +194,18 @@ if outputStrength{1.0} == true
             HSNFCCRT_SYM, MAX_HSNMTCRT, HSNMTCRT_SYM, MAX_HSNMCCRT, HSNMCCRT_SYM);
     end
 
+    if noLaRC05 == false
+        % Get the critical ply and the symmetry condition
+        [MAX_LARPFCRT, MAX_LARPFCRT_VAL, LARPFCRT_SYM, MAX_LARMFCRT, MAX_LARMFCRT_VAL, LARMFCRT_SYM, MAX_LARKFCRT, MAX_LARKFCRT_VAL, LARKFCRT_SYM, MAX_LARSFCRT, MAX_LARSFCRT_VAL,...
+            LARSFCRT_SYM, MAX_LARTFCRT, MAX_LARTFCRT_VAL, LARTFCRT_SYM, SFAILRATIO_LARC05] =...
+            ...
+            abd.internal_getCriticalPly([LARPFCRT', LARMFCRT', LARKFCRT', LARSFCRT', LARTFCRT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
+
+        % Print the result
+        fprintf(fid, 'LARPFCRT      %-14.0f%-9s\nLARMFCRT      %-14.0f%-9s\nLARKFCRT      %-14.0f%-9s\nLARSFCRT      %-14.0f%-9s\nLARTFCRT      %-14.0f%-9s\n', MAX_LARPFCRT,...
+            LARPFCRT_SYM, MAX_LARMFCRT, LARMFCRT_SYM, MAX_LARKFCRT, LARKFCRT_SYM, MAX_LARSFCRT, LARSFCRT_SYM, MAX_LARTFCRT, LARTFCRT_SYM);
+    end
+
     fprintf(fid, '\n===========================================================================\n');
 end
 
@@ -319,6 +332,50 @@ if SFAILRATIO_HASHIN(1.0) ~= -1.0
     end
 end
 
+%% Print results of damage initiation criteria analysis (LARC05)
+if (outputStrength{1.0} == true) && (noLaRC05 == false)
+    % Get maximum criterion values
+    LARC05_ALL = [MAX_LARPFCRT_VAL, MAX_LARMFCRT_VAL, MAX_LARKFCRT_VAL, MAX_LARSFCRT_VAL, MAX_LARTFCRT_VAL];
+    LARC05_ALL_MAX = max(LARC05_ALL, [], 2.0);
+
+    % Print table header
+    fprintf(fid, '\nAssessment summary for LaRC05 damage initiation criteria\nOutput location: Worst section point\n');
+    fprintf(fid, 'PLY           LARPFCRT      LARMFCRT      LARKFCRT      LARSFCRT      LARTFCRT      (WORST)       STATUS\n');
+
+    % Print ply-wise results
+    for i = 1.0:nPlies
+        if LARC05_ALL_MAX(i) >= 1.0
+            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARMFCRT_VAL(i), MAX_LARKFCRT_VAL(i), MAX_LARSFCRT_VAL(i), MAX_LARTFCRT_VAL(i),...
+                LARC05_ALL_MAX(i), 'UNSAFE');
+        elseif MAX_LARPFCRT_VAL(i) == -1.0
+            % There is no data for the current ply
+            fprintf(fid, '%-14.0fNO RESULTS\n', i);
+        else
+            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARMFCRT_VAL(i), MAX_LARKFCRT_VAL(i), MAX_LARSFCRT_VAL(i), MAX_LARTFCRT_VAL(i),...
+                LARC05_ALL_MAX(i), 'SAFE');
+        end
+    end
+
+    % Print SFAILRATIO
+    %{
+        Note: The value of SFAILRATIO considers results over ALL section
+        points
+    %}
+    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g%-14g\n', SFAILRATIO_LARC05);
+end
+
+% Print summary of assessment
+if SFAILRATIO_LARC05(1.0) ~= -1.0
+    if any(SFAILRATIO_LARC05 == 1.0) == true
+        fprintf(fid, '\nEVERY PLY IN THE LAYUP WILL BE DAMAGED BASED ON EVALUATED CRITERIA\n');
+    elseif any(SFAILRATIO_LARC05 > 0.0) == true
+        
+        fprintf(fid, '\nAT LEAST ONE PLY IN THE LAYUP WILL BE DAMAGED BASED ON EVALUATED CRITERIA\n');
+    else
+        fprintf(fid, '\nLAYUP WILL NOT BE DAMAGED BASED ON EVALUATED CRITERIA\n');
+    end
+end
+
 %% Print failure assessment summary
 if (outputStrength{1.0} == true) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
     fprintf(fid, ['\nNotes about failure/damage initiation assessment output:\n\t- Assessment criteria report the worst section point for each ply\n\t- The ply is marked as UNSAFE',...
@@ -367,6 +424,8 @@ elseif isempty(BEST_SEQUENCE) == false
             criterionString = 'Mean strain';
         case 'hashin'
             criterionString = 'Hashin (worst criterion)';
+        case 'larc05'
+            criterionString = 'LaRC05 (worst criterion)';
         otherwise
             % This condition should never be reached!
     end

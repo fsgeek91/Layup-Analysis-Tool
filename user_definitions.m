@@ -111,24 +111,23 @@ TIP:
     Tensile/compressive strength (transverse);
     In-plane/transverse shear strength;
     Shear modulus in the 12-plane;
-    Longitudinal/transverse shear frictiopn coefficient;
+    Longitudinal/transverse shear friction coefficient;
     Fracture plane angle for pure compression;
-    Misalignment angle at failure for pure compression;
-    Calculate misalignment angle iteratively (if applicable).
+    Misalignment angle at failure for pure compression.
 
-    LARC05 = {{XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER}(1),
+    LARC05 = {[XIT, XIC, YIT, YIC*, SIX, SIY*, GL12, NL, NT*, A0*, PHI0*](1),
               ...,
-              {XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, ITER}(n)}
+              [XIT, XIC, YIT, YIC*, SIX, SIY*, GL12, NL, NT*, A0*, PHI0*](n)}
 
     Note: LARC05(1) = Bottom; LARC05(n) = Top.
     
-    Note: If YIC, SIY, NT, A0 or PHI0 are unspecified, their value will be
-    derived.
+    Note: Parameters marked with an asterisk (*) are derived if a value of
+    -1 is specified.
 
     Units:
     Stress - [N/mm2]
 %}
-LARC05 = {};
+LARC05 = [];
 
 %% 2: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up) [degrees]
@@ -222,7 +221,7 @@ OUTPUT_STRENGTH = {false, 'RESERVE'};
     First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-    Hashin
+    Hashin; LaRC05
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)
