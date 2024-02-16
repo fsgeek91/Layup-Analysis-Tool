@@ -163,7 +163,7 @@ function [varargout] = main(varargin)
 %   and SHY for each ply.
 %
 %   MATERIAL(5) is a 1xn cell array specifying the strength properties for
-%   the LaRC05 damage initiation criteria XIT, XIC, YIT, YIC, SIX, SIY,
+%   the LaRC05 damage initiation criteria XLT, XLC, YLT, YLC, SLX, SLY,
 %   GL12, NL, NT, A0 and PHI0 for each ply.
 %
 %   Note: Unspecified criteria are left empty ( [] )
@@ -465,7 +465,7 @@ if OUTPUT_STRENGTH{1.0} == true
     SHY = abd.internal_correctSign(SHY, 1.0);
 
     % Get LaRC05 properties
-    [error, noLaRC05, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0] =...
+    [error, noLaRC05, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0] =...
         ...
         abd.internal_getMaterial(materialDataLaRC05, nPlies, symmetricPly, 4.0, 'LARC05');
 
@@ -475,12 +475,12 @@ if OUTPUT_STRENGTH{1.0} == true
     end
 
     % Correct the sign (if applicable)
-    XIT = abd.internal_correctSign(XIT, 1.0);
-    XIC = abd.internal_correctSign(XIC, 1.0);
-    YIT = abd.internal_correctSign(YIT, 1.0);
-    YIC = abd.internal_correctSign(YIC, 2.0);
-    SIX = abd.internal_correctSign(SIX, 1.0);
-    SIY = abd.internal_correctSign(SIY, 2.0);
+    XLT = abd.internal_correctSign(XLT, 1.0);
+    XLC = abd.internal_correctSign(XLC, 1.0);
+    YLT = abd.internal_correctSign(YLT, 1.0);
+    YLC = abd.internal_correctSign(YLC, 2.0);
+    SLX = abd.internal_correctSign(SLX, 1.0);
+    SLY = abd.internal_correctSign(SLY, 2.0);
     GL12 = abd.internal_correctSign(GL12, 1.0);
 
     if (noFailStress == true) && (noFailStrain == true) && (noHashin == true) && (noLaRC05 == true)
@@ -606,17 +606,17 @@ ABD(abs(ABD) < tolerance) = 0.0;
 %% PERFORM STRENGTH CALCULATION ON PLY STRESSES
 if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
     [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET,...
-        XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
+        XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
         ...
         abd.internal_strength.main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT,...
-        XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, S_ply_aligned, nPlies, nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0});
+        XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S_ply_aligned, nPlies, nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0});
 
     if OUTPUT_OPTIMISED{1.0} == true
         %% FIND THE OPTIMUM STACKING SEQUENCE
         [BEST_SEQUENCE, CRITERION_BUFFER, ~] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
-            B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0,...
+            B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
             deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS);
     else
         CRITERION_BUFFER = [];

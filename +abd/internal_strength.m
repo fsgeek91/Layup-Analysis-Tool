@@ -14,9 +14,9 @@ classdef internal_strength < handle
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR STRENGTH CALCULATION
         function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C12, B12, E11,...
-                E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
+                E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
                 main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT,...
-                YHC, SHX, SHY, XIT, XIC, YIT, YIC, SIX, SIY, GL12, NL, NT, A0, PHI0, stress, nPlies, nPlies_points, SECTION_POINTS, parameter)
+                YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, stress, nPlies, nPlies_points, SECTION_POINTS, parameter)
             % Initialise the output
             S1 = [];    S2 = [];    S3 = [];
 
@@ -57,12 +57,12 @@ classdef internal_strength < handle
 
             % Spread material data over section points
             if noLaRC05 == false
-                XIT = abd.internal_spreadProperties(XIT, nPlies, SECTION_POINTS);
-                XIC = abd.internal_spreadProperties(XIC, nPlies, SECTION_POINTS);
-                YIT = abd.internal_spreadProperties(YIT, nPlies, SECTION_POINTS);
-                YIC = abd.internal_spreadProperties(YIC, nPlies, SECTION_POINTS);
-                SIX = abd.internal_spreadProperties(SIX, nPlies, SECTION_POINTS);
-                SIY = abd.internal_spreadProperties(SIY, nPlies, SECTION_POINTS);
+                XLT = abd.internal_spreadProperties(XLT, nPlies, SECTION_POINTS);
+                XLC = abd.internal_spreadProperties(XLC, nPlies, SECTION_POINTS);
+                YLT = abd.internal_spreadProperties(YLT, nPlies, SECTION_POINTS);
+                YLC = abd.internal_spreadProperties(YLC, nPlies, SECTION_POINTS);
+                SLX = abd.internal_spreadProperties(SLX, nPlies, SECTION_POINTS);
+                SLY = abd.internal_spreadProperties(SLY, nPlies, SECTION_POINTS);
                 GL12 = abd.internal_spreadProperties(GL12, nPlies, SECTION_POINTS);
                 NL = abd.internal_spreadProperties(NL, nPlies, SECTION_POINTS);
                 NT = abd.internal_spreadProperties(NT, nPlies, SECTION_POINTS);
@@ -76,9 +76,16 @@ classdef internal_strength < handle
                     S22 = stress(2.0, :);
                     S12 = stress(3.0, :);
 
+                    % % Use Eigenvalues
+                    % S = [S11(1), S12(1), 0; 0, S22(1), 0; 0, 0, 0];
+                    % I = eig(S);
+                    % S1 = max(I);
+                    % S2 = median(I);
+                    % S3 = min(I);
+
                     % Get the two in-plane principal stress components
-                    S1 = 0.5.*(S11 + S22) + sqrt(0.5.*(S11 - S22).^2.0 + S12.^2.0);
-                    S2 = 0.5.*(S11 + S22) - sqrt(0.5.*(S11 - S22).^2.0 + S12.^2.0);
+                    S1 = 0.5.*(S11 + S22) + sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                    S2 = 0.5.*(S11 + S22) - sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
                     S3 = zeros(1.0, nPlies_points);
                 end
             end
@@ -139,7 +146,7 @@ classdef internal_strength < handle
             if noLaRC05 == false
                 [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                     ...
-                    abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XIT, XIC, YIT, YIC, SIX, SIY, A0, PHI0, NL, NT, SECTION_POINTS);
+                    abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS);
             end
         end
 

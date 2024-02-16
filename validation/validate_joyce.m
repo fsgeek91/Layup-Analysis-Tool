@@ -113,9 +113,9 @@ TIP:
     Fracture plane angle for pure compression;
     Misalignment angle at failure for pure compression.
 
-    LARC05 = {[XIT, XIC, YIT, YIC*, SIX, SIY*, GL12, NL, NT*, A0*, PHI0*](1),
+    LARC05 = {[XLT, XLC, YLT, YLC*, SLX, SLY*, GL12, NL*, NT*, A0*, PHI0*](1),
               ...,
-              [XIT, XIC, YIT, YIC*, SIX, SIY*, GL12, NL, NT*, A0*, PHI0*](n)}
+              [XLT, XLC, YLT, YLC*, SLX, SLY*, GL12, NL*, NT*, A0*, PHI0*](n)}
 
     Note: LARC05(1) = Bottom; LARC05(n) = Top.
     
