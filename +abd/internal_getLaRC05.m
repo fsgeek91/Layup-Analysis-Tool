@@ -155,7 +155,7 @@ parfor alphaIndex = 1.0:precision
 end
 end
 
-%% Regular version of CP search for fibre kinking/splitting failure
+%% CP search for fibre kinking/splitting failure (PHI0 computation)
 function [FI_kink, FI_split] = CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, L, phi0j, phi0sym, phic, Xc, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt, SECTION_POINTS, kink,...
     split)
 % Get the plies (first section points) which are derived
@@ -188,6 +188,7 @@ for psiIndex = 1.0:precision
     gamma0_ii = gamma0(loopIndexes);
     Xc_ii = Xc(loopIndexes);
 
+    % Calculate the initial fibre misalignment angle iteratively
     parfor j = parforIndexes
         warning('off', 'all')
 
@@ -199,6 +200,7 @@ for psiIndex = 1.0:precision
         % Solve symbolically for PHI0
         phi0j_ii(j) = solve(phi0sym == phic_i - gamma0_i*sin(2.0*phi0sym*(pi/180.0))*Xc_i, phi0sym);
     end
+    
     warning('on','all')
 
     %{
@@ -227,9 +229,9 @@ for psiIndex = 1.0:precision
 end
 end
 
-%% PARFOR version of CP search for fibre kinking/splitting failure
+%% CP search for fibre kinking/splitting failure (omits PHI0 computation)
 function [FI_kink, FI_split] = par_CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, phi0j, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt, kink, split)
-parfor psiIndex = 1.0:precision
+for psiIndex = 1.0:precision
     % Initialise CP buffer
     FI_kink_ii = zeros(1.0, length(S22));
     FI_split_ii = FI_kink_ii;
@@ -259,7 +261,7 @@ parfor psiIndex = 1.0:precision
     S2_m_pos(S2_m_pos < 0.0) = 0.0;
 
     % Failure criterion on the current plane
-    FI_kink_ii(kink) = sqrt((Tau23_m(kink) ./ (St(kink) - (nt(kink).*S2_m(kink)))).^2.0 + (Tau12_m(kink) ./ (Sl(kink) - (nl(kink).*S2_m(kink)))).^2.0 + ((S2_m_pos(kink)) ./ Yt(kink)).^2.0); %#ok<PFBNS>
+    FI_kink_ii(kink) = sqrt((Tau23_m(kink) ./ (St(kink) - (nt(kink).*S2_m(kink)))).^2.0 + (Tau12_m(kink) ./ (Sl(kink) - (nl(kink).*S2_m(kink)))).^2.0 + ((S2_m_pos(kink)) ./ Yt(kink)).^2.0);
     FI_split_ii(split) = sqrt((Tau23_m(split) ./ (St(split) - (nt(split).*S2_m(split)))).^2.0 + (Tau12_m(split) ./ (Sl(split) - (nl(split).*S2_m(split)))).^2.0 + ((S2_m_pos(split)) ./ Yt(split)).^2.0);
 
     % Collect output
