@@ -3,6 +3,17 @@
 %
 %   RUN THIS SCRIPT.
 %
+%   Units:
+%   Force [N]
+%   Length [mm]
+%   Angle [degrees]
+%   Moment [N.mm]
+%   Stress [N/mm2]
+%   Temperature [degC]
+%   Thermal expansion [1/degC]
+%   Moisture [%/100 moisture weight content change]
+%   Moisture expansion [1/mm]
+%
 %   See also abd.main.
 %
 %   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
@@ -28,11 +39,6 @@ TIP:
                 [E11, E22, G12, V12, A11, A22, B11, B22](n)}
 
     Note: MATERIAL(1) = Bottom; MATERIAL(n) = Top.
-
-	Units:
-    Stress - [N/mm2]
-    Thermal expansion - [1/degC]
-    Hydroscopic expansion - [1/mm]
 %}
 MATERIAL = [181e3, 10.3e3, 7179.0, 0.28, 1e-5, 1e-5, 2e-3, 2e-3];
 
@@ -53,9 +59,6 @@ TIP:
     Note: FAIL_STRESS(1) = Bottom; FAIL_STRESS(n) = Top.
 
     Note: If B = 0, the coupling term is computed from C.
-
-    Units:
-    Stress - [N/mm2]
 %}
 FAIL_STRESS = [];
 
@@ -73,9 +76,6 @@ TIP:
                    [XET, XEC, YET, YEC, SE](n)}
 
     Note: FAIL_STRAIN(1) = Bottom; FAIL_STRAIN(n) = Top.
-
-    Units:
-    Strain - [mm/mm]
 %}
 FAIL_STRAIN = [];
 
@@ -94,9 +94,6 @@ TIP:
               [ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](n)}
 
     Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
-
-    Units:
-    Stress - [N/mm2]
 %}
 HASHIN = [];
 
@@ -121,17 +118,14 @@ TIP:
     
     Note: Parameters marked with an asterisk (*) are derived if a value of
     -1 is specified.
-
-    Units:
-    Stress - [N/mm2]
 %}
 LARC05 = [];
 
 %% 2: LAYUP PROPERTIES
-% STACKING_SEQUENCE  Layup stacking sequence (bottom-up) [degrees]
+% STACKING_SEQUENCE  Layup stacking sequence (bottom-up)
 STACKING_SEQUENCE = 0.0;
 
-% PLY_THICKNESS  Ply thickness list [mm]
+% PLY_THICKNESS  Ply thickness list
 %{
     [t1,... , tn]: Specify thickness values per ply
     t: Specify constant ply thickness
@@ -157,19 +151,19 @@ SYMMETRIC_LAYUP = false;
 SECTION_POINTS = 2.0;
 
 %% 3: LOAD MATRIX
-% Mechanical load (forces) [N]
+% Mechanical load (forces)
 NXX = 2.0;
 NYY = -3.0;
 NXY = 4.0;
 
-% Mechanical load (moments) [N.mm]
+% Mechanical load (moments)
 MXX = 0.0;
 MYY = 0.0;
 MXY = 0.0;
 
 % Thermal/hydroscopic load
-DELTA_T = 0.0; % [degC]
-DELTA_M = 0.0; % [%/100 moisture weight content change]
+DELTA_T = 0.0;
+DELTA_M = 0.0;
 
 %% 4: OUTPUT DEFINITION
 %{
@@ -228,7 +222,7 @@ OUTPUT_STRENGTH = {false, 'RESERVE'};
     (minimise the average criterion value)
 
     Fourth argument:
-    theta: Angular step size [degrees]
+    theta: Angular step size
 %}
 OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 10.0};
 
