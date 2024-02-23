@@ -3,8 +3,8 @@ function [error, noStrength, varargout] = internal_getMaterial(data, nPlies, sym
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
-%   Last modified 14-Feb-2024 15:05:03 UTC
+%   Layup Analysis Tool 3.0.1 Copyright Louis Vallance 2024
+%   Last modified 23-Feb-2024 13:20:04 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

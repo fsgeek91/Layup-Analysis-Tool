@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.0 Copyright Louis Vallance 2024
-%   Last modified 14-Feb-2024 15:05:03 UTC
+%   Layup Analysis Tool 3.0.1 Copyright Louis Vallance 2024
+%   Last modified 23-Feb-2024 13:20:04 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -53,6 +53,11 @@ classdef internal_optimise < handle
 
             % Get the angles
             anglePermutations = thetaAll(indexPermutations);
+
+            % Transpose ANGLEPERMUTATIONS in case there is only one ply
+            if (width(indexPermutations) == 1.0) && (nPlies == 1.0)
+                anglePermutations = anglePermutations';
+            end
             
             % Get the number of permutations
             nPermutations = height(anglePermutations);
