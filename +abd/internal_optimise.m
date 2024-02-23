@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.1 Copyright Louis Vallance 2024
-%   Last modified 23-Feb-2024 13:20:04 UTC
+%   Layup Analysis Tool 3.0.2 Copyright Louis Vallance 2024
+%   Last modified 23-Feb-2024 15:37:47 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -137,6 +137,13 @@ classdef internal_optimise < handle
                         [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                             ...
                             abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS);
+
+                        %{
+                            Reset large LARMFCT values to one to prevent
+                            very large values from breaking the CB MATLAB
+                            figure
+                        %}
+                        LARMFCRT(LARMFCRT > 1.0) = 1.0;
 
                         % Get the worst criterion of all four calculations
                         CRITERION = max([LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT], [], 1.0);

@@ -341,8 +341,8 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 3.0.1 Copyright Louis Vallance 2024
-%   Last modified 23-Feb-2024 13:20:04 UTC
+%   Layup Analysis Tool 3.0.2 Copyright Louis Vallance 2024
+%   Last modified 23-Feb-2024 15:37:47 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -496,6 +496,8 @@ if OUTPUT_STRENGTH{1.0} == true
     if noLaRC05 == false
         % Check if the symbolic math toolbox is available for LaRC05
         symsAvailable = checkToolbox('Symbolic Math Toolbox');
+    else
+        symsAvailable = [];
     end
 else
     noFailStress = true;

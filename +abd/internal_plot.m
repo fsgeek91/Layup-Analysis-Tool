@@ -3,8 +3,8 @@ classdef internal_plot < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.1 Copyright Louis Vallance 2024
-%   Last modified 23-Feb-2024 13:20:04 UTC
+%   Layup Analysis Tool 3.0.2 Copyright Louis Vallance 2024
+%   Last modified 23-Feb-2024 15:37:47 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -136,12 +136,17 @@ classdef internal_plot < handle
                 hold on
 
                 % Plot the ply boundaries
-                abd.internal_plot.boundaries(nPlies, DOMAIN, z_plies_norm)
+                if strcmpi(PLOT_STYLE, 'split') == true
+                    abd.internal_plot.boundaries(nPlies, DOMAIN, z_plies_norm)
+                end
 
                 % Set the legend and figure title
                 if (P == 1.0) && (plotNumber == 3.0)
                     % Set the legend
-                    legend(H, legendStrings)
+                    L = legend(H, legendStrings);
+
+                    % Do not allow further modifications to the legend
+                    L.AutoUpdate = 'off';
 
                     % Set the figure title
                     title(figureTitle, 'FontSize', fontTitle)
@@ -169,6 +174,11 @@ classdef internal_plot < handle
                 catch
                     % Don't tighten the axis
                 end
+            end
+
+            % Plot the ply boundaries
+            if strcmpi(PLOT_STYLE, 'compact') == true
+                abd.internal_plot.boundaries(nPlies, [min(min(VARIABLE, [], 2.0)), max(max(VARIABLE, [], 2.0))], z_plies_norm)
             end
 
             % Save the MATLAB figure to a file
