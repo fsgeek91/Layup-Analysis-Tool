@@ -15,8 +15,8 @@
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 3.0.2 Copyright Louis Vallance 2024
-%   Last modified 23-Feb-2024 15:37:47 UTC
+%   Layup Analysis Tool 3.0.3 Copyright Louis Vallance 2024
+%   Last modified 24-Jun-2024 11:37:46 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -245,7 +245,7 @@ OUTPUT_LOCATION = 'DEFAULT';
 %%
 
 % Submit the layup for analysis!
-[ABD1, ABD2, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT_SEQ] =...
+[ABD1, ABD2, Q, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT_SEQ] =...
     ...
     abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN, LARC05}, {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY, OUTPUT_FIGURE,...
     OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);

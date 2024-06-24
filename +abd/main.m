@@ -234,11 +234,20 @@ function [varargout] = main(varargin)
 %__________________________________________________________________________
 %   Optional output arguments:
 %
-%   [ABD, ABD_INV, EI, EP, SP, EMTB, CFAILURE, OPT] = ABD.MAIN(..).
+%   [ABD, ABD_INV, Q, EI, EP, SP, EMTB, CFAILURE, OPT] = ABD.MAIN(..).
 %
 %   ABD. A 6x6 matrix of the computed ABD matrix.
 %
 %   ABD_INV. A 6x6 matrix of the inverse ABD matrix.
+%
+%   Q. A structure containing the stiffness matrices in X-Y coordinates and
+%   ply coordinates.
+%
+%   Q.XY is a 3x3xn array of the stiffness matrices in X-Y coordinates,
+%   where n is the number of plies in the layup.
+%
+%   Q.PLY is a 3x3xn array of the stiffness matrices in ply coordinates,
+%   where n is the number of plies in the layup.
 %
 %   EI. A 6x1 array of the midplane strains and curvatures induced in the
 %   laminate. These strains represent the deflections of the laminate about
@@ -282,7 +291,7 @@ function [varargout] = main(varargin)
 %   Note: The equivalent moduli are only calculated for symmetric
 %   laminate stacking sequences.
 %
-%   CFAILURE. A structure of the failure/damage initiation measure
+%   CFAILURE. A structure containing the failure/damage initiation measure
 %   components for all section points.
 %
 %   Failure/damage initiation analysis output variable identifiers:
@@ -316,8 +325,8 @@ function [varargout] = main(varargin)
 %
 %   OPT(5) is an exception returned in case of optimisation failure.
 %
-%   OPT(6) is a structure of the stress and strain tensors corresponding to
-%   the optimum stacking sequence.
+%   OPT(6) is a structure containing the stress and strain tensors
+%   corresponding to the optimum stacking sequence.
 %
 %   Note: Replace unrequested outputs with a tilde ( ~ ) assignment.
 %
@@ -341,8 +350,8 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 3.0.2 Copyright Louis Vallance 2024
-%   Last modified 23-Feb-2024 15:37:47 UTC
+%   Layup Analysis Tool 3.0.3 Copyright Louis Vallance 2024
+%   Last modified 24-Jun-2024 11:37:46 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -549,12 +558,12 @@ if isempty(OUTPUT_OPTIMISED{1.0}) == false
 end
 
 %% COMPUTE REDUCED STIFFNESS TERMS
-[Q11, Q22, Q66, Q12] =...
+[Q11, Q22, Q66, Q12, Qij] =...
     ...
     abd.internal_getReducedQ(E11, E22, V12, G12);
 
 %% COMPUTE TRANSFORMED REDUCED STIFFNESS MATRIX COMPONENTS
-[Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] =...
+[Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, Qt] =...
     ...
     abd.internal_getTransformedQ(theta, Q11, Q12, Q66, Q22);
 
@@ -648,14 +657,15 @@ end
 %% OUTPUT TO VARARGOUT
 varargout{1.0} = ABD;
 varargout{2.0} = inv(ABD);
-varargout{3.0} = E_midplane;
-varargout{4.0} = {E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned};
-varargout{5.0} = {S_ply_xy, S_ply_aligned};
-varargout{6.0} = {[EXT, EYT, GXYT, NUXYT, NUYXT],...
+varargout{3.0} = struct('XY', Qij, 'PLY', Qt);
+varargout{4.0} = E_midplane;
+varargout{5.0} = {E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned};
+varargout{6.0} = {S_ply_xy, S_ply_aligned};
+varargout{7.0} = {[EXT, EYT, GXYT, NUXYT, NUYXT],...
                   [EXB, EYB, GXYB, NUXYB, NUYXB]};
-varargout{7.0} = struct('MSTRS', MSTRS, 'TSAIH', TSAIH, 'TSAIW', TSAIW, 'AZZIT', AZZIT, 'MSTRN', MSTRN, 'HSNFTCRT', HSNFTCRT, 'HSNFCCRT', HSNFCCRT, 'HSNMTCRT', HSNMTCRT,...
+varargout{8.0} = struct('MSTRS', MSTRS, 'TSAIH', TSAIH, 'TSAIW', TSAIW, 'AZZIT', AZZIT, 'MSTRN', MSTRN, 'HSNFTCRT', HSNFTCRT, 'HSNFCCRT', HSNFCCRT, 'HSNMTCRT', HSNMTCRT,...
     'HSNMCCRT', HSNMCCRT, 'LARPFCRT', LARPFCRT, 'LARMFCRT', LARMFCRT, 'LARKFCRT', LARKFCRT, 'LARSFCRT', LARSFCRT, 'LARTFCRT', LARTFCRT);
-varargout{8.0} = BEST_SEQUENCE;
+varargout{9.0} = BEST_SEQUENCE;
 
 %% CREATE OUTPUT DIRECTORY
 % Create the root output folder if it does not already exist

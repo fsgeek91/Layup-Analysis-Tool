@@ -4,8 +4,8 @@ function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, Nx
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.2 Copyright Louis Vallance 2024
-%   Last modified 23-Feb-2024 15:37:47 UTC
+%   Layup Analysis Tool 3.0.3 Copyright Louis Vallance 2024
+%   Last modified 24-Jun-2024 11:37:46 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
