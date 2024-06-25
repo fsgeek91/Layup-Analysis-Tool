@@ -538,7 +538,7 @@ BEST_SEQUENCE = [];
 %% PROCESS OUTPUT_PLY
 [error, OUTPUT_PLY_POINTS, plyBuffer, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, plyBuffer_sfailratio] =...
     ...
-    abd.internal_getOutputPoints(OUTPUT_PLY, z, z_points, nPlies,nPlies_points, plyBuffer, SECTION_POINTS, tolerance, enableTensor);
+    abd.internal_getOutputPoints(OUTPUT_PLY, z, z_points, nPlies, nPlies_points, plyBuffer, SECTION_POINTS, tolerance, enableTensor);
 
 % An error occurred, so RETURN
 if error == true
@@ -560,12 +560,12 @@ end
 %% COMPUTE REDUCED STIFFNESS TERMS
 [Q11, Q22, Q66, Q12, Qij] =...
     ...
-    abd.internal_getReducedQ(E11, E22, V12, G12);
+    abd.internal_getReducedQ(nPlies, E11, E22, V12, G12);
 
 %% COMPUTE TRANSFORMED REDUCED STIFFNESS MATRIX COMPONENTS
 [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, Qt] =...
     ...
-    abd.internal_getTransformedQ(theta, Q11, Q12, Q66, Q22);
+    abd.internal_getTransformedQ(nPlies, theta, Q11, Q12, Q66, Q22);
 
 %% GET EFFECTIVE THEMAL AND MOISTURE EXPANSION COEFFICIENTS FOR EACH PLY
 [axx, ayy, axy, bxx, byy, bxy] =...

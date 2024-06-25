@@ -19,7 +19,7 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 fid = fopen([outputLocation, filesep, 'analysis_results.txt'], 'w+');
 
 % Print header
-fprintf(fid, 'Layup Analysis Tool\n');
+fprintf(fid, 'Layup Analysis Tool 3.0.3\n\nCopyright Louis Vallance 2024\nLast Modified 24-Jun-2024 11:37:46 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
 % Print the units and CSYS conventions
