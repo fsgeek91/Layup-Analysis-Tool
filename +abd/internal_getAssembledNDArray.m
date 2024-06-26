@@ -1,5 +1,5 @@
 function [Q] = internal_getAssembledNDArray(N, N1, N2, N3, S12, S16, S26)
-%   Spread ply-wise properties over section points.
+%   Concatenate N 3x3 arrays into an N-dimensional array.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
