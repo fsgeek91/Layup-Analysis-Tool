@@ -3,8 +3,8 @@ function [t_ply, theta, nPlies, error] = internal_mirror(symmetricPly, t_ply, th
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.3 Copyright Louis Vallance 2024
-%   Last modified 24-Jun-2024 11:37:46 UTC
+%   Layup Analysis Tool 3.0.4 Copyright Louis Vallance 2024
+%   Last modified 23-Sep-2024 08:11:32 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -27,7 +27,7 @@ if symmetricPly == false
         % Reset the error flag and RETURN
         error = true;
         return
-    elseif length(t_ply) == 1.0
+    elseif isscalar(t_ply) == true
         % Propagate the thickness list to the number of plies
         t_ply = linspace(t_ply, t_ply, length(theta));
     end

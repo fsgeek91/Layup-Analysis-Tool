@@ -3,8 +3,8 @@ classdef internal_plot < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.3 Copyright Louis Vallance 2024
-%   Last modified 24-Jun-2024 11:37:46 UTC
+%   Layup Analysis Tool 3.0.4 Copyright Louis Vallance 2024
+%   Last modified 23-Sep-2024 08:11:32 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -60,7 +60,7 @@ classdef internal_plot < handle
             %% CB, Optimised criterion buffer
             if isempty(CRITERION_BUFFER) == false
                 % Create the figure
-                f = figure('visible', 'off');
+                f = abd.internal_plot.createFigure();
 
                 % Set the figure title
                 figureTitle = sprintf('Optimiser criterion for all stacking permutations');
@@ -107,7 +107,7 @@ classdef internal_plot < handle
         function [] = now(figureTitle, legendStrings, plotTitle, PLOT_STYLE, VARIABLE, RANGE, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, xlabelString,...
                 outputLocation, leadString)
             % Create the figure
-            f = figure('visible', 'off');
+            f = abd.internal_plot.createFigure();
 
             % Initialise figure handle buffer
             H = zeros(1.0, 3.0);
@@ -219,19 +219,8 @@ classdef internal_plot < handle
 
         %% SAVE THE MATLAB FIGURE TO A FILE
         function [] = save(outputLocation, leadString, figureTitle, f)
-            % Set the figure path
-            dir = [outputLocation, leadString, figureTitle];
-            saveas(f, dir, 'fig')
-
-            % Make the figure visible
-            try
-                abd.internal_makeVisible([dir, '.fig'], abd.internal_getMATLABVersion)
-            catch
-                %{
-                    The contents of the figure are probably too large.
-                    Accept the conequences and move on
-                %}
-            end
+            % Save the figure
+            abd.internal_plot.saveFigure([outputLocation, leadString, figureTitle], f, 'fig');
         end
 
         %% GET DATA FROM OUTPUT_FIGURE
@@ -304,6 +293,36 @@ classdef internal_plot < handle
                 % Everything is OK
                 output{2.0} = argument;
             end
+        end
+
+        %% CREATE A MATLAB FIGURE
+        function [f] = createFigure()
+            % Get the figure visibility
+            try
+                % Try to get the user preferences object (Quick Fatigue Tool)
+                [p, ~, ~] = qpref.direct;
+
+                % Get the figure visibility
+                figureVisibility = p.qftpref_output.figureVisibility;
+            catch
+                %{
+                    There is no QFT user preference object, so use default
+                    value of 'off'
+                %}
+                figureVisibility = 'off';
+            end
+
+            % Create the MATLAB figure window
+            f = figure('visible', figureVisibility);
+
+            % Set the figure visibility
+            f.CreateFcn = 'set(gcbo, ''Visible'', ''on'')';
+        end
+
+        %% SAVE THE MATLAB FIGURE
+        function [f] = saveFigure(dir, f, figureFormat)
+            % Save the figure file
+            saveas(f, dir, figureFormat)
         end
     end
 end

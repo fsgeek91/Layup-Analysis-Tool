@@ -4,8 +4,8 @@ function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.3 Copyright Louis Vallance 2024
-%   Last modified 24-Jun-2024 11:37:46 UTC
+%   Layup Analysis Tool 3.0.4 Copyright Louis Vallance 2024
+%   Last modified 23-Sep-2024 08:11:32 UTC
 %
     
     %%
@@ -27,7 +27,7 @@ St(deriveElements) = Yc(deriveElements).*cosd(alpha0(deriveElements)).*(sind(alp
 
 % NL
 deriveElements = nl == -1.0;
-nl(deriveElements) = (Sl.*cosd(2.0.*alpha0)) ./ (Yc.*(cosd(alpha0)).^2.0);
+nl(deriveElements) = (Sl(deriveElements).*cosd(2.0.*alpha0(deriveElements))) ./ (Yc(deriveElements).*(cosd(alpha0(deriveElements))).^2.0);
 
 % NT
 deriveElements = nt == -1.0;
@@ -101,7 +101,7 @@ if (any(kink) == true) || (any(split) == true)
             PHI0 is undefined, so compute the value iteratively during
             critical plane searching
         %}
-        [FI_kink, FI_split] = CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, nPlies_points, phi0j, phi0sym, phic, Xc, S11, FI_kink, St, nt, Sl, nl,FI_split, Yt,...
+        [FI_kink, FI_split] = CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, nPlies_points, phi0j, phi0sym, phic, Xc, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt,...
             SECTION_POINTS, kink, split);
     else
         %{
@@ -118,10 +118,10 @@ if (any(kink) == true) || (any(split) == true)
     LARSFCRT = max(FI_split, [], 2.0)';
 else
     % Failure crtiterion for the critical plane (kinking)
-    LARKFCRT = 0.0;
+    LARKFCRT = zeros(1.0, nPlies_points);
 
     % Failure crtiterion for the critical plane (splitting)
-    LARSFCRT = 0.0;
+    LARSFCRT = LARKFCRT;
 end
 
 %% Fibre tensile failure
