@@ -26,8 +26,8 @@
 %
 %   See also abd.main, user_definitions.
 %
-%   Layup Analysis Tool 3.0.3 Copyright Louis Vallance 2024
-%   Last modified 24-Jun-2024 11:37:46 UTC
+%   Layup Analysis Tool 3.0.5 Copyright Louis Vallance 2025
+%   Last modified 11-Apr-2025 10:21:25 UTC
 %
 %==========================================================================
 %__________________________________________________________________________
@@ -37,7 +37,7 @@
 %   matrix and its inverse:
 [ABD, ABD_INV, ~, ~, ~, ~, ~, ~, ~] =...                                   % Output requests
     abd.main(...                                                           % Function name
-    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], []},...         % Material properties
+    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], [], []},...     % Material properties
     {[45, 90], 0.1, false, []},...                                         % Stacking sequence, ply thickness, symmetry flag
     {[], [], [], [], 'DEFAULT'});                                          % Output location
 %
@@ -46,7 +46,7 @@
 %   bending/tension moduli:
 [ABD, ABD_INV, ~, ~, ~, ~, EMTB, ~, ~] =...
     abd.main(...
-    {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [1.5e5, 5e4, 3.5e3, 0.29, 1.2e-5, 1.2e-5, 1.5e-3, 1.5e-3]}, [], [], []},...
+    {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [1.5e5, 5e4, 3.5e3, 0.29, 1.2e-5, 1.2e-5, 1.5e-3, 1.5e-3]}, [], [], [], []},...
     {[45, 90], [0.1, 0.15], true, []},...
     {[], [], [], [], 'DEFAULT'});
 %__________________________________________________________________________
@@ -58,7 +58,7 @@
 %   tensors:
 [~, ~, ~, EI, EP, SP, ~, ~, ~] =...                                        % Output requests
     abd.main(...                                                           % Function name
-    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], []},...         % Material properties
+    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], [], []},...     % Material properties
     {[45, 90], 0.1, false, 3},...                                          % Stacking sequence, ply thickness, symmetry flag, number of section points
     {'MIDDLE', {'DEFAULT', 'SPLIT'}, [], [], 'DEFAULT'},...                % Output location, MATLAB figure appearance, output location
     [0, 0, 0, 100, 0, 0]);                                                 % Load matrix
@@ -71,7 +71,7 @@
 %   figures, return failure measure components:
 [~, ~, ~, ~, ~, ~, ~, CFAILURE, ~] =...
     abd.main(...
-    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], []},...
+    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], [], []},...
     {[45, 90, 90], [0.15, 0.2, 0.2], true, 2},...
     {'BOTTOM', {[], 'SPLIT'}, {true, 'RESERVE'}, [], 'DEFAULT'},...
     [0, 150, 0, -100, 0, 0]);
@@ -82,7 +82,7 @@
 %   using the Tsai-Wu failure criterion (reserve); return results of the
 %   stacking sequence optimisation:
 [~, ~, ~, ~, ~, ~, ~, ~, OPT_SEQ] =...
-    abd.main({[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], []},...
+    abd.main({[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], [], []},...
     {[45, 90, 90], [0.15, 0.2, 0.2], true, 2},...
     {'BOTTOM', {'DEFAULT', 'SPLIT'}, {true, 'RESERVE'}, {'TSAIW', 'RESERVE', 'MINMAX', 10.0}, 'DEFAULT'},...
     [0, 150, 0, -100, 0, 0]);

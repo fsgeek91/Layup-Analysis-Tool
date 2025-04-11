@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.4 Copyright Louis Vallance 2024
-%   Last modified 23-Sep-2024 08:11:32 UTC
+%   Layup Analysis Tool 3.0.5 Copyright Louis Vallance 2025
+%   Last modified 11-Apr-2025 10:21:25 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -83,7 +83,7 @@ classdef internal_optimise < handle
                 % Compute transformed reduced stiffness matrix components
                 [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] =...
                     ...
-                    abd.internal_getTransformedQ(theta, Q11, Q12, Q66, Q22);
+                    abd.internal_getTransformedQ(nPlies, theta, Q11, Q12, Q66, Q22);
 
                 %{
                     Get effective thermal and moisture expansion
@@ -204,7 +204,7 @@ classdef internal_optimise < handle
             % Compute transformed reduced stiffness matrix components
             [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] =...
                 ...
-                abd.internal_getTransformedQ(theta, Q11, Q12, Q66, Q22);
+                abd.internal_getTransformedQ(nPlies, theta, Q11, Q12, Q66, Q22);
 
             %{
                 Get effective thermal and moisture expansion coefficients
