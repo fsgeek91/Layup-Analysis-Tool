@@ -367,6 +367,7 @@ varargout{5.0} = [];
 varargout{6.0} = [];
 varargout{7.0} = [];
 varargout{8.0} = [];
+varargout{9.0} = [];
 
 %% GET USER INPUTS FROM VARARGIN
 [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
