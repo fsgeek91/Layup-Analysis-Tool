@@ -3,8 +3,8 @@ classdef internal_plot < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.5 Copyright Louis Vallance 2025
-%   Last modified 11-Apr-2025 10:21:25 UTC
+%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
+%   Last modified 22-May-2025 13:54:47 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -138,6 +138,14 @@ classdef internal_plot < handle
                 % Plot the ply boundaries
                 if strcmpi(PLOT_STYLE, 'split') == true
                     abd.internal_plot.boundaries(nPlies, DOMAIN, z_plies_norm)
+                end
+
+                % Plot the section points
+                if (strcmpi(PLOT_STYLE, 'compact') == true) && (plotNumber == 1.0)
+                    scatter(linspace(0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))), 0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))),...
+                        length(RANGE)), RANGE, 18.0, 'rx')
+                elseif strcmpi(PLOT_STYLE, 'split') == true
+                    scatter(linspace(0.5*(min(DOMAIN) + max(DOMAIN)), 0.5*(min(DOMAIN) + max(DOMAIN)), length(RANGE)), RANGE, 18.0, 'rx')
                 end
 
                 % Set the legend and figure title

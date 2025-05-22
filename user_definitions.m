@@ -18,8 +18,8 @@
 %
 %   See also abd.main, examples.
 %
-%   Layup Analysis Tool 3.0.5 Copyright Louis Vallance 2025
-%   Last modified 11-Apr-2025 10:21:25 UTC
+%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
+%   Last modified 22-May-2025 13:54:47 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties

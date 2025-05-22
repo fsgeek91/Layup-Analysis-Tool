@@ -7,8 +7,8 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.5 Copyright Louis Vallance 2025
-%   Last modified 11-Apr-2025 10:21:25 UTC
+%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
+%   Last modified 22-May-2025 13:54:47 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -19,7 +19,7 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 fid = fopen([outputLocation, filesep, 'analysis_results.txt'], 'w+');
 
 % Print header
-fprintf(fid, 'Layup Analysis Tool 3.0.5\n\nCopyright Louis Vallance 2025\nLast Modified 11-Apr-2025 10:21:25 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 3.0.6\n\nCopyright Louis Vallance 2025\nLast modified 22-May-2025 13:54:47 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
 % Print the units and CSYS conventions
