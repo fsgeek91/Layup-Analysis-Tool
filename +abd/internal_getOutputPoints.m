@@ -64,7 +64,8 @@ elseif ischar(OUTPUT_PLY) == 1.0
             %}
             if (strcmpi(OUTPUT_PLY, 'top') == true) || (strcmpi(OUTPUT_PLY, 'bottom') == true) || (strcmpi(OUTPUT_PLY, 'default') == true)
                 if enableTensor == true
-                    fprintf('[ERROR] At least two section points are required for\noutput to locations TOP and BOTTOM\n')
+                    fprintf(['[ERROR] At least two section points are required for output to locations TOP\nand BOTTOM\n-> The available options for single section point output ar',...
+                        'e:\n   MIDDLE, ALL, ENVELOPEABSMAX, ENVELOPEMAX, ENVELOPEMIN, [SECTION-POINT-LIST]\n'])
 
                     % Reset the error flag and RETURN
                     error = true;
@@ -82,7 +83,8 @@ elseif ischar(OUTPUT_PLY) == 1.0
             %}
             if (strcmpi(OUTPUT_PLY, 'middle') == true)
                 if enableTensor == true
-                    fprintf('[ERROR] Output to location MIDDLE is not available\nwhen SECTION_POINTS = 2.0\n')
+                    fprintf(['[ERROR] Output to location MIDDLE is not available when SECTION_POINTS = 2.0\n-> The available options for two section point output are:\n   DEFAULT,',...
+                        ' TOP, BOTTOM, ALL, ENVELOPEABSMAX, ENVELOPEMAX, ENVELOPEMIN,\n   [SECTION-POINT-LIST]\n'])
 
                     % Reset the error flag and RETURN
                     error = true;
@@ -138,6 +140,7 @@ elseif ischar(OUTPUT_PLY) == 1.0
 
                 % Warn user later that output is at approximate locations
                 outputApproximate = true;
+                fprintf('Note: Precise output at location MIDDLE is unavailable. Result output is\nwritten approximate locations\n');
             end
         case 'bottom' % Bottom face only
             % Get z-points at ply boundaries (ignore top faces)

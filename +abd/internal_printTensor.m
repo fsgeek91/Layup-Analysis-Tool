@@ -27,7 +27,7 @@ if length(unique(plyBuffer)) ~= nPlies
     fprintf(fid, '\nNote: Result output is not available at all plies\n');
 elseif outputApproximate == true
     % Inform the user of approximate output
-    fprintf(fid, '\nNote: Output location MIDDLE is unavailble. Result output is at approximate\nlocations\n');
+    fprintf(fid, '\nNote: Precise output at location MIDDLE is unavailable. Result output is\nwritten at approximate locations.\n');
 end
 
 %% Print stress tensor data

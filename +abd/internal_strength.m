@@ -206,6 +206,87 @@ classdef internal_strength < handle
                     output{2.0} = 1.0;
             end
         end
+
+        %% GET COLOUR MAP FOR FAILED SETION POINT VISUALISATION
+        function [SP_COLOUR_BUFFER] = getFailedSpBuffer(MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
+                LARTFCRT, SP_COLOUR_BUFFER, N)
+            % Initialise un-analysed strength criteria with zeros
+            if isempty(MSTRS) == true
+                MSTRS = zeros(1.0, N);
+            end
+            if isempty(TSAIH) == true
+                TSAIH = zeros(1.0, N);
+            end
+            if isempty(TSAIW) == true
+                TSAIW = zeros(1.0, N);
+            end
+            if isempty(AZZIT) == true
+                AZZIT = zeros(1.0, N);
+            end
+            if isempty(MSTRN) == true
+                MSTRN = zeros(1.0, N);
+            end
+            if isempty(HSNFTCRT) == true
+                HSNFTCRT = zeros(1.0, N);
+            end
+            if isempty(HSNFCCRT) == true
+                HSNFCCRT = zeros(1.0, N);
+            end
+            if isempty(HSNMTCRT) == true
+                HSNMTCRT = zeros(1.0, N);
+            end
+            if isempty(HSNMCCRT) == true
+                HSNMCCRT = zeros(1.0, N);
+            end
+            if isempty(LARPFCRT) == true
+                LARPFCRT = zeros(1.0, N);
+            end
+            if isempty(LARMFCRT) == true
+                LARMFCRT = zeros(1.0, N);
+            end
+            if isempty(LARKFCRT) == true
+                LARKFCRT = zeros(1.0, N);
+            end
+            if isempty(LARSFCRT) == true
+                LARSFCRT = zeros(1.0, N);
+            end
+            if isempty(LARTFCRT) == true
+                LARTFCRT = zeros(1.0, N);
+            end
+			
+            % Collect the results of the strength analysis into a cell array
+            STRENGTH_RESULTS = {MSTRS >= 1.0, TSAIH >= 1.0, TSAIW >= 1.0, AZZIT >= 1.0, MSTRN >= 1.0, HSNFTCRT >= 1.0, HSNFCCRT >= 1.0, HSNMTCRT >= 1.0, HSNMCCRT >= 1.0,...
+                LARPFCRT >= 1.0, LARMFCRT >= 1.0, LARKFCRT >= 1.0, LARSFCRT >= 1.0, LARTFCRT >= 1.0};
+
+            %{
+                Initialize failed section points buffer with logical FALSE
+                values
+            %}
+            FAILED_SP_BUFFER = false(1.0, N);
+
+            %{
+                For each section point, check if the value for each
+                strength criterion is equal to or greater than 1
+            %}
+            % Looping over section points
+            for i = 1:N
+                % Looping over strength criteria
+                for j = 1.0:numel(STRENGTH_RESULTS)
+                    % Check the current result
+                    if STRENGTH_RESULTS{j}(i) == 1.0
+                        % Reset the value in the failed section point buffer
+                        FAILED_SP_BUFFER(i) = true;
+
+                        % No need to check further if one value > 1
+                        break;
+                    end
+                end
+            end
+
+            % Assign colors based on BUFFER (Red -> true; Green -> false)
+            SP_COLOUR_BUFFER(FAILED_SP_BUFFER, :) = repmat([1.0, 0.0, 0.0], sum(FAILED_SP_BUFFER), 1.0);
+            SP_COLOUR_BUFFER(~FAILED_SP_BUFFER, :) = repmat([0.0, 1.0, 0.0], sum(~FAILED_SP_BUFFER), 1.0);
+        end
     end
     methods(Static = true, Access = public)
         %% FAILURE CRITERION: MAXIMUM STRESS

@@ -616,6 +616,9 @@ end
 ABD(abs(ABD) < tolerance) = 0.0;
 
 %% PERFORM STRENGTH CALCULATION ON PLY STRESSES
+% Preallocate failed section points colour buffer (for plotting)
+SP_COLOUR_BUFFER = repmat([0.0, 0.0, 0.0], [nPlies_points, 1.0]);
+
 if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
     [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET,...
         XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
@@ -633,6 +636,10 @@ if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
     else
         CRITERION_BUFFER = [];
     end
+
+    % Set failed section points colour buffer (for plotting)
+    SP_COLOUR_BUFFER = abd.internal_strength.getFailedSpBuffer(MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
+        LARTFCRT, SP_COLOUR_BUFFER, nPlies_points);
 else
     % Initialise values to default
     MSTRS = [];
@@ -696,7 +703,7 @@ end
 %% PLOT STRAINS AND STRESSES IN A MATLAB FIGURE
 if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) && (nPlies_points > 1.0)
     abd.internal_plot.main(OUTPUT_FIGURE{1.0}, OUTPUT_FIGURE{2.0}, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points, CRITERION_BUFFER,...
-        OUTPUT_OPTIMISED)
+        OUTPUT_OPTIMISED, SP_COLOUR_BUFFER)
 end
 
 %% WRITE RESULTS TO A TEXT FILE

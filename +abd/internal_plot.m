@@ -12,7 +12,8 @@ classdef internal_plot < handle
 %%
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR PLOTTING
-        function [] = main(OUTPUT_FIGURE, PLOT_STYLE, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points, CRITERION_BUFFER, OUTPUT_OPTIMISED)
+        function [] = main(OUTPUT_FIGURE, PLOT_STYLE, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points, CRITERION_BUFFER, OUTPUT_OPTIMISED,...
+                SP_COLOUR_BUFFER)
 
             % Plot parameters
             fontX = 14.0;
@@ -37,25 +38,25 @@ classdef internal_plot < handle
             abd.internal_plot.now(...
                 'XY ply strains for all section points', {'\epsilon_x_x', '\epsilon_y_y', '\gamma_x_y'}, {'XY ply strain in XX-direction', 'XY ply strain in YY-direction',...
                 'XY ply strain in XY-direction'}, PLOT_STYLE, E_ply_xy, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, 'Strain [mm/mm]',...
-                outputLocation, [filesep, 'EP, '])
+                outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER)
 
             %% EP, Ply strains in ply coordinates
             abd.internal_plot.now(...
                 'Aligned ply strains for all section points', {'\epsilon_f_i_b_r_e', '\epsilon_t_r_a_n_s_v_e_r_s_e', '\gamma_p_l_y'}, {'Aligned ply strain in 11-direction',...
                 'Aligned ply strain in 22-direction', 'Aligned ply strain in 12-direction'}, PLOT_STYLE, E_ply_aligned, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle,...
-                fontTicks, fontX, fontY, 'Strain [mm/mm]', outputLocation, [filesep, 'EP, '])
+                fontTicks, fontX, fontY, 'Strain [mm/mm]', outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER)
 
             %% SP, Ply stresses in X-Y coordinates
             abd.internal_plot.now(...
                 'XY ply stresses for all section points', {'\sigma_x_x', '\sigma_y_y', '\tau_x_y'}, {'XY ply stress in XX-direction', 'XY ply stress in YY-direction',...
                 'XY ply stress in XY-direction'}, PLOT_STYLE, S_ply_xy, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, 'Stress [N/mm2]',...
-                outputLocation, [filesep, 'SP, '])
+                outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER)
 
             %% SP, Ply stresses in ply coordinates
             abd.internal_plot.now(...
                 'Aligned ply stresses for all section points', {'\sigma_f_i_b_r_e', '\sigma_t_r_a_n_s_v_e_r_s_e', '\tau_p_l_y'}, {'Aligned ply stress in 11-direction',...
                 'Aligned ply stress in 22-direction', 'Aligned ply stress in 12-direction'}, PLOT_STYLE, S_ply_aligned, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle,...
-                fontTicks, fontX, fontY, 'Stress [N/mm2]', outputLocation, [filesep, 'SP, '])
+                fontTicks, fontX, fontY, 'Stress [N/mm2]', outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER)
 
             %% CB, Optimised criterion buffer
             if isempty(CRITERION_BUFFER) == false
@@ -105,7 +106,7 @@ classdef internal_plot < handle
 
         %% CREATE A MATLAB FIGURE OF THE SELECTED PLOT VARIABLE
         function [] = now(figureTitle, legendStrings, plotTitle, PLOT_STYLE, VARIABLE, RANGE, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, xlabelString,...
-                outputLocation, leadString)
+                outputLocation, leadString, SP_COLOUR_BUFFER)
             % Create the figure
             f = abd.internal_plot.createFigure();
 
@@ -143,9 +144,9 @@ classdef internal_plot < handle
                 % Plot the section points
                 if (strcmpi(PLOT_STYLE, 'compact') == true) && (plotNumber == 1.0)
                     scatter(linspace(0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))), 0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))),...
-                        length(RANGE)), RANGE, 18.0, 'rx')
+                        length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
                 elseif strcmpi(PLOT_STYLE, 'split') == true
-                    scatter(linspace(0.5*(min(DOMAIN) + max(DOMAIN)), 0.5*(min(DOMAIN) + max(DOMAIN)), length(RANGE)), RANGE, 18.0, 'rx')
+                    scatter(linspace(0.5*(min(DOMAIN) + max(DOMAIN)), 0.5*(min(DOMAIN) + max(DOMAIN)), length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
                 end
 
                 % Set the legend and figure title
