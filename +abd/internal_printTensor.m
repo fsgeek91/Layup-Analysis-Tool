@@ -1,5 +1,5 @@
 function [] = internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy, S_ply_aligned, E_ply_xy, E_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned,...
-    nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header)
+    nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header, OUTPUT_PLY)
 %   Print stress/strain tensor information to the output file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -21,6 +21,34 @@ switch ENVELOPE_MODE
         envelopeString = 'ENVELOPE MIN';
 end
 
+%% Set the location string for each section points
+if ischar(OUTPUT_PLY) == true
+    switch lower(OUTPUT_PLY)
+        case 'default'
+            % Top and bottom faces
+            locationString = {'BOTTOM', 'TOP'};
+        case 'top'
+            % Top face only
+            locationString = {'TOP'};
+        case 'middle'
+            % Midspan only
+            if isempty(outputApproximate) == false
+                locationString = {'MIDDLE (APPROX.)'};
+            else
+                locationString = {'MIDDLE (PRECISE)'};
+            end
+        case 'bottom'
+            % Bottom face only
+            locationString = {'BOTTOM'};
+        otherwise
+            % Unknown
+            locationString = repmat({'UNKNOWN'}, 1.0, length(outputPoints));
+    end
+else
+    % User-specified section point list
+    locationString = repmat({'USER'}, 1.0, length(outputPoints));
+end
+
 %% Inform use if output is incomplete
 if length(unique(plyBuffer)) ~= nPlies
     % Inform the user of incomplete output
@@ -35,9 +63,11 @@ fprintf(fid, '\n%s\n', header);
 
 % Print the stress tensor table for each ply location
 fprintf(fid, '\nStress at user-selected locations:\n');
-fprintf(fid, 'PLY    SECTION POINT                 Sxx           Syy           Sxy           S11           S22           S12           \n');
 
 if OUTPUT_ENVELOPE == true
+    % Print the header
+    fprintf(fid, 'PLY    SECTION POINT                 Sxx           Syy           Sxy           S11           S22           S12           \n');
+
     % Print the numerically largest stress in the current ply
     S_ply_xy_envelope_11 = abd.internal_getAbsMax(S_ply_xy(1.0, :), ENVELOPE_MODE);
     S_ply_xy_envelope_22 = abd.internal_getAbsMax(S_ply_xy(2.0, :), ENVELOPE_MODE);
@@ -49,6 +79,9 @@ if OUTPUT_ENVELOPE == true
     fprintf(fid, '%-7s%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, S_ply_xy_envelope_11, S_ply_xy_envelope_22, S_ply_xy_envelope_12, S_ply_aligned_envelope_11,...
         S_ply_aligned_envelope_22, S_ply_aligned_envelope_12);
 else
+    % Print the header
+    fprintf(fid, 'PLY    SECTION POINT                 LOCATION            Sxx           Syy           Sxy           S11           S22           S12           \n');
+
     for i = 1.0:nPlies
         % Extract the stresses at the section points for the current ply
         currentOutputPoints = outputPoints(plyBuffer == i);
@@ -61,9 +94,10 @@ else
             S_ply_aligned_i = S_ply_aligned(:, currentOutputPoints);
 
             for sp = 1.0:length(currentOutputPoints)
+                % Get the thickness fraction of the current section point
                 thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                fprintf(fid, '%-7.0f%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, S_ply_xy_i(1.0, sp), S_ply_xy_i(2.0, sp), S_ply_xy_i(3.0, sp),...
+                fprintf(fid, '%-7.0f%-30s%-20s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, S_ply_xy_i(1.0, sp), S_ply_xy_i(2.0, sp), S_ply_xy_i(3.0, sp),...
                     S_ply_aligned_i(1.0, sp), S_ply_aligned_i(2.0, sp), S_ply_aligned_i(3.0, sp));
             end
         end
@@ -77,9 +111,11 @@ end
 
 %% Print strain tensor data
 fprintf(fid, '\nStrain at user-selected locations:\n');
-fprintf(fid, 'PLY    SECTION POINT                 Exx           Eyy           Exy           E11           E22           E12           \n');
 
 if OUTPUT_ENVELOPE == true
+    % Print the header
+    fprintf(fid, 'PLY    SECTION POINT                 Exx           Eyy           Exy           E11           E22           E12           \n');
+
     % Print the numerically largest stress over all plies
     E_ply_xy_envelope_11 = abd.internal_getAbsMax(E_ply_xy(1.0, :), ENVELOPE_MODE);
     E_ply_xy_envelope_22 = abd.internal_getAbsMax(E_ply_xy(2.0, :), ENVELOPE_MODE);
@@ -91,6 +127,9 @@ if OUTPUT_ENVELOPE == true
     fprintf(fid, '%-7s%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, E_ply_xy_envelope_11, E_ply_xy_envelope_22, E_ply_xy_envelope_12, E_ply_aligned_envelope_11,...
         E_ply_aligned_envelope_22, E_ply_aligned_envelope_12);
 else
+    % Print the header
+    fprintf(fid, 'PLY    SECTION POINT                 LOCATION            Exx           Eyy           Exy           E11           E22           E12           \n');
+
     for i = 1.0:nPlies
         % Extract the strains at the section points for the current ply
         currentOutputPoints = outputPoints(plyBuffer == i);
@@ -105,8 +144,8 @@ else
             for sp = 1.0:length(currentOutputPoints)
                 thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                fprintf(fid, '%-7.0f%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, E_ply_xy_i(1.0, sp), E_ply_xy_i(2.0, sp), E_ply_xy_i(3.0, sp),...
-                    E_ply_aligned_i(1.0, sp), E_ply_aligned_i(2.0, sp), E_ply_aligned_i(3.0, sp));
+                fprintf(fid, '%-7.0f%-30s%-20s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, E_ply_xy_i(1.0, sp), E_ply_xy_i(2.0, sp),...
+                    E_ply_xy_i(3.0, sp), E_ply_aligned_i(1.0, sp), E_ply_aligned_i(2.0, sp), E_ply_aligned_i(3.0, sp));
             end
         end
 

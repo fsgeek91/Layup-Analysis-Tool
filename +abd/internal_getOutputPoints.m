@@ -112,9 +112,10 @@ elseif ischar(OUTPUT_PLY) == true
 
             % Reset very small values to zero
             meanValues(abs(meanValues) < tolerance) = 0.0;
+            z_points(abs(z_points) < tolerance) = 0.0;
             
             % Get section points which lie at midspan locations
-            OUTPUT_PLY_POINTS = find(ismember(z_points, meanValues) == true);
+            OUTPUT_PLY_POINTS = find(any(abs(z_points' - meanValues) < tolerance, 2.0) == true)';
 
             if isempty(OUTPUT_PLY_POINTS) == true
                 %{
@@ -129,7 +130,6 @@ elseif ischar(OUTPUT_PLY) == true
                 for i = 1.0:nPlies
                     % Get all section point locations for the current ply
                     z_points_ply = z_points(spIndex:spIndex + (SECTION_POINTS - 1.0));
-
                     
                     % Assign the section point closest to the middle
                     [~, indexOfMin] = min(abs(z_points_ply - mean(z_points_ply)));
