@@ -1,5 +1,5 @@
 function [] = internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy, S_ply_aligned, E_ply_xy, E_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned,...
-    nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header, OUTPUT_PLY)
+    nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header, OUTPUT_PLY, z_points)
 %   Print stress/strain tensor information to the output file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -80,7 +80,7 @@ if OUTPUT_ENVELOPE == true
         S_ply_aligned_envelope_22, S_ply_aligned_envelope_12);
 else
     % Print the header
-    fprintf(fid, 'PLY    SECTION POINT                 LOCATION            Sxx           Syy           Sxy           S11           S22           S12           \n');
+    fprintf(fid, 'PLY    SECTION POINT                 LOCATION                             Sxx           Syy           Sxy           S11           S22           S12           \n');
 
     for i = 1.0:nPlies
         % Extract the stresses at the section points for the current ply
@@ -93,12 +93,15 @@ else
             S_ply_xy_i = S_ply_xy(:, currentOutputPoints);
             S_ply_aligned_i = S_ply_aligned(:, currentOutputPoints);
 
+            % Get the z-coordinates for the current section points
+            z_points_i = z_points(:, currentOutputPoints);
+
             for sp = 1.0:length(currentOutputPoints)
                 % Get the thickness fraction of the current section point
                 thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                fprintf(fid, '%-7.0f%-30s%-20s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, S_ply_xy_i(1.0, sp), S_ply_xy_i(2.0, sp), S_ply_xy_i(3.0, sp),...
-                    S_ply_aligned_i(1.0, sp), S_ply_aligned_i(2.0, sp), S_ply_aligned_i(3.0, sp));
+                fprintf(fid, '%-7.0f%-30s%-37s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, sprintf('%s (z = %gmm)', locationString{sp}, z_points_i(sp)),...
+                    S_ply_xy_i(1.0, sp), S_ply_xy_i(2.0, sp), S_ply_xy_i(3.0, sp), S_ply_aligned_i(1.0, sp), S_ply_aligned_i(2.0, sp), S_ply_aligned_i(3.0, sp));
             end
         end
 
@@ -128,7 +131,7 @@ if OUTPUT_ENVELOPE == true
         E_ply_aligned_envelope_22, E_ply_aligned_envelope_12);
 else
     % Print the header
-    fprintf(fid, 'PLY    SECTION POINT                 LOCATION            Exx           Eyy           Exy           E11           E22           E12           \n');
+    fprintf(fid, 'PLY    SECTION POINT                 LOCATION                             Exx           Eyy           Exy           E11           E22           E12           \n');
 
     for i = 1.0:nPlies
         % Extract the strains at the section points for the current ply
@@ -141,11 +144,14 @@ else
             E_ply_xy_i = E_ply_xy(:, currentOutputPoints);
             E_ply_aligned_i = E_ply_aligned(:, currentOutputPoints);
 
+            % Get the z-coordinates for the current section points
+            z_points_i = z_points(:, currentOutputPoints);
+
             for sp = 1.0:length(currentOutputPoints)
                 thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                fprintf(fid, '%-7.0f%-30s%-20s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, E_ply_xy_i(1.0, sp), E_ply_xy_i(2.0, sp),...
-                    E_ply_xy_i(3.0, sp), E_ply_aligned_i(1.0, sp), E_ply_aligned_i(2.0, sp), E_ply_aligned_i(3.0, sp));
+                fprintf(fid, '%-7.0f%-30s%-37s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, sprintf('%s (z = %gmm)', locationString{sp}, z_points_i(sp)),...
+                    E_ply_xy_i(1.0, sp), E_ply_xy_i(2.0, sp), E_ply_xy_i(3.0, sp), E_ply_aligned_i(1.0, sp), E_ply_aligned_i(2.0, sp), E_ply_aligned_i(3.0, sp));
             end
         end
 
