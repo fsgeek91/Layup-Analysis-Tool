@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
-%   Last modified 22-May-2025 13:54:47 UTC
+%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Last modified 03-Jun-2025 10:08:33 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -16,7 +16,8 @@ classdef internal_strength < handle
         function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C12, B12, E11,...
                 E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
                 main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT,...
-                YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, stress, nPlies, nPlies_points, SECTION_POINTS, parameter)
+                YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, stress, nPlies, nPlies_points, SECTION_POINTS, parameter,MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
+                HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT)
             % Initialise the output
             S1 = [];    S2 = [];    S3 = [];
 
@@ -89,22 +90,6 @@ classdef internal_strength < handle
                     S3 = zeros(1.0, nPlies_points);
                 end
             end
-            
-            % Initialise output
-            MSTRS = [];
-            TSAIH = [];
-            TSAIW = [];
-            AZZIT = [];
-            MSTRN = [];
-            HSNFTCRT = [];
-            HSNFCCRT = [];
-            HSNMTCRT = [];
-            HSNMCCRT = [];
-            LARPFCRT = [];
-            LARMFCRT = [];
-            LARKFCRT = [];
-            LARSFCRT = [];
-            LARTFCRT = [];
 
             if noFailStress == false
                 % Failure calculation: MSTRS
@@ -209,51 +194,7 @@ classdef internal_strength < handle
 
         %% GET COLOUR MAP FOR FAILED SETION POINT VISUALISATION
         function [SP_COLOUR_BUFFER] = getFailedSpBuffer(MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
-                LARTFCRT, SP_COLOUR_BUFFER, N)
-            % Initialise un-analysed strength criteria with zeros
-            if isempty(MSTRS) == true
-                MSTRS = zeros(1.0, N);
-            end
-            if isempty(TSAIH) == true
-                TSAIH = zeros(1.0, N);
-            end
-            if isempty(TSAIW) == true
-                TSAIW = zeros(1.0, N);
-            end
-            if isempty(AZZIT) == true
-                AZZIT = zeros(1.0, N);
-            end
-            if isempty(MSTRN) == true
-                MSTRN = zeros(1.0, N);
-            end
-            if isempty(HSNFTCRT) == true
-                HSNFTCRT = zeros(1.0, N);
-            end
-            if isempty(HSNFCCRT) == true
-                HSNFCCRT = zeros(1.0, N);
-            end
-            if isempty(HSNMTCRT) == true
-                HSNMTCRT = zeros(1.0, N);
-            end
-            if isempty(HSNMCCRT) == true
-                HSNMCCRT = zeros(1.0, N);
-            end
-            if isempty(LARPFCRT) == true
-                LARPFCRT = zeros(1.0, N);
-            end
-            if isempty(LARMFCRT) == true
-                LARMFCRT = zeros(1.0, N);
-            end
-            if isempty(LARKFCRT) == true
-                LARKFCRT = zeros(1.0, N);
-            end
-            if isempty(LARSFCRT) == true
-                LARSFCRT = zeros(1.0, N);
-            end
-            if isempty(LARTFCRT) == true
-                LARTFCRT = zeros(1.0, N);
-            end
-			
+                LARTFCRT, SP_COLOUR_BUFFER, nPlies_points)
             % Collect the results of the strength analysis into a cell array
             STRENGTH_RESULTS = {MSTRS >= 1.0, TSAIH >= 1.0, TSAIW >= 1.0, AZZIT >= 1.0, MSTRN >= 1.0, HSNFTCRT >= 1.0, HSNFCCRT >= 1.0, HSNMTCRT >= 1.0, HSNMCCRT >= 1.0,...
                 LARPFCRT >= 1.0, LARMFCRT >= 1.0, LARKFCRT >= 1.0, LARSFCRT >= 1.0, LARTFCRT >= 1.0};
@@ -262,14 +203,14 @@ classdef internal_strength < handle
                 Initialize failed section points buffer with logical FALSE
                 values
             %}
-            FAILED_SP_BUFFER = false(1.0, N);
+            FAILED_SP_BUFFER = false(1.0, nPlies_points);
 
             %{
                 For each section point, check if the value for each
                 strength criterion is equal to or greater than 1
             %}
             % Looping over section points
-            for i = 1:N
+            for i = 1:nPlies_points
                 % Looping over strength criteria
                 for j = 1.0:numel(STRENGTH_RESULTS)
                     % Check the current result
@@ -286,6 +227,25 @@ classdef internal_strength < handle
             % Assign colors based on BUFFER (Red -> true; Green -> false)
             SP_COLOUR_BUFFER(FAILED_SP_BUFFER, :) = repmat([1.0, 0.0, 0.0], sum(FAILED_SP_BUFFER), 1.0);
             SP_COLOUR_BUFFER(~FAILED_SP_BUFFER, :) = repmat([0.0, 1.0, 0.0], sum(~FAILED_SP_BUFFER), 1.0);
+        end
+
+        %% INITIALISE FAILURE CRITERIA BUFFERS
+        function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = init(nPlies_points)
+            % Initialise output
+            MSTRS = linspace(-1.0, -1.0, nPlies_points);
+            TSAIH = MSTRS;
+            TSAIW = MSTRS;
+            AZZIT = MSTRS;
+            MSTRN = MSTRS;
+            HSNFTCRT = MSTRS;
+            HSNFCCRT = MSTRS;
+            HSNMTCRT = MSTRS;
+            HSNMCCRT = MSTRS;
+            LARPFCRT = MSTRS;
+            LARMFCRT = MSTRS;
+            LARKFCRT = MSTRS;
+            LARSFCRT = MSTRS;
+            LARTFCRT = MSTRS;
         end
     end
     methods(Static = true, Access = public)

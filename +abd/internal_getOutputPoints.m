@@ -4,8 +4,8 @@ function [error, OUTPUT_PLY_POINTS, plyBuffer, OUTPUT_ENVELOPE, ENVELOPE_MODE, o
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
-%   Last modified 22-May-2025 13:54:47 UTC
+%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Last modified 03-Jun-2025 10:08:33 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -16,7 +16,7 @@ error = false;
 OUTPUT_PLY_POINTS = [];
 OUTPUT_ENVELOPE =  false;
 ENVELOPE_MODE = 1.0;
-outputApproximate = false;
+outputApproximate = [];
 
 %{
     For strength output, the ply is considered to have failed when all of
@@ -26,17 +26,17 @@ outputApproximate = false;
 plyBuffer_sfailratio = [];
 
 %% If cell, convert to CHAR/NUM
-if (iscell(OUTPUT_PLY) == 1.0) && (isempty(OUTPUT_PLY) == 0.0)
+if (iscell(OUTPUT_PLY) == true) && (isempty(OUTPUT_PLY) == false)
     % Extract element from CELL (if applicable)
     OUTPUT_PLY = OUTPUT_PLY{1.0};
 end
 
 %% If definition is empty, use the default value and RETURN
-if isempty(OUTPUT_PLY) == 1.0
+if isempty(OUTPUT_PLY) == true
     OUTPUT_PLY = 'DEFAULT';
 end
 
-if isnumeric(OUTPUT_PLY) == 1.0
+if isnumeric(OUTPUT_PLY) == true
     %% Process numeric definition
     invalidCondition = OUTPUT_PLY <= 0.0 | mod(OUTPUT_PLY, 1.0) ~= 0.0 | OUTPUT_PLY > length(z_points);
     OUTPUT_PLY(OUTPUT_PLY <= 0.0 | mod(OUTPUT_PLY, 1.0) ~= 0.0 | OUTPUT_PLY > length(z_points)) = [];
@@ -48,7 +48,7 @@ if isnumeric(OUTPUT_PLY) == 1.0
 
     % Update the section point list
     OUTPUT_PLY_POINTS = OUTPUT_PLY;
-elseif ischar(OUTPUT_PLY) == 1.0
+elseif ischar(OUTPUT_PLY) == true
     %% Process string definition
     % Remove white space and convert to lower case
     OUTPUT_PLY(ismember(OUTPUT_PLY, ' ')) = [];
@@ -122,11 +122,12 @@ elseif ischar(OUTPUT_PLY) == 1.0
                     MIDDLE, so accept the section points at the ply average
                     z-value for each ply
                 %}
-                % Initialise section point loop index
+                % Initialise section point loop index/buffer
                 spIndex = 1.0;
+                deviation_buffer = zeros(1.0, nPlies);
 
                 for i = 1.0:nPlies
-                    % Get all section point location for the current ply
+                    % Get all section point locations for the current ply
                     z_points_ply = z_points(spIndex:spIndex + (SECTION_POINTS - 1.0));
 
                     
@@ -136,11 +137,36 @@ elseif ischar(OUTPUT_PLY) == 1.0
 
                     % Update the section point loop index
                     spIndex = spIndex + SECTION_POINTS;
+
+                    %{
+                        For the current ply, get the z-coordinates of one
+                        of the two nearest middle points
+                    %}
+                    middle_z_point = z_points_ply(0.5*SECTION_POINTS);
+
+                    % Get the z-coordinate of the mid plane of the first ply
+                    middle_z_coord = meanValues(i);
+
+                    % Compute the deviation for the current ply
+                    if middle_z_point/middle_z_coord > 1.05
+                        deviation_buffer(i) = abs(middle_z_point - middle_z_coord);
+                    end
                 end
 
-                % Warn user later that output is at approximate locations
-                outputApproximate = true;
-                fprintf('Note: Precise output at location MIDDLE is unavailable. Result output is\nwritten approximate locations\n');
+                %{
+                    If the maximum computed deviation exceeds 5%, set a
+                    notice/warning and print this to the output file later
+                %}
+                if any(deviation_buffer > 0.0) == true
+                    % Set the warning for the output file
+                    outputApproximate = sprintf(['\nWarning: The maximum deviation of the midspan from its nearest section\npoints exceeds 5%%%% (%gmm) of the ply thickness.\n-> P',...
+                        'recise output at location MIDDLE is unavailable\n-> For output that lies exactly on the layup midspan, specify an odd number\n   of section points\n-> Res',...
+                        'ults will be written at approximate locations\n'], max(deviation_buffer));
+                else
+                    % Set the notice for the output file
+                    outputApproximate = sprintf(['\nNote: Precise output at location MIDDLE is unavailable\n-> For output that lies exactly on the layup midspan, specify an odd nu',...
+                        'mber\n   of section points\n-> Results will be written at approximate locations\n']);
+                end
             end
         case 'bottom' % Bottom face only
             % Get z-points at ply boundaries (ignore top faces)

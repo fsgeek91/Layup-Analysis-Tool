@@ -3,8 +3,8 @@ classdef internal_plot < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
-%   Last modified 22-May-2025 13:54:47 UTC
+%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Last modified 03-Jun-2025 10:08:33 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -12,8 +12,8 @@ classdef internal_plot < handle
 %%
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR PLOTTING
-        function [] = main(OUTPUT_FIGURE, PLOT_STYLE, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points, CRITERION_BUFFER, OUTPUT_OPTIMISED,...
-                SP_COLOUR_BUFFER)
+        function [] = main(OUTPUT_FIGURE, SP_VIZ, PLOT_STYLE, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points, CRITERION_BUFFER,...
+                OUTPUT_OPTIMISED, SP_COLOUR_BUFFER)
 
             % Plot parameters
             fontX = 14.0;
@@ -38,25 +38,25 @@ classdef internal_plot < handle
             abd.internal_plot.now(...
                 'XY ply strains for all section points', {'\epsilon_x_x', '\epsilon_y_y', '\gamma_x_y'}, {'XY ply strain in XX-direction', 'XY ply strain in YY-direction',...
                 'XY ply strain in XY-direction'}, PLOT_STYLE, E_ply_xy, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, 'Strain [mm/mm]',...
-                outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER)
+                outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
             %% EP, Ply strains in ply coordinates
             abd.internal_plot.now(...
                 'Aligned ply strains for all section points', {'\epsilon_f_i_b_r_e', '\epsilon_t_r_a_n_s_v_e_r_s_e', '\gamma_p_l_y'}, {'Aligned ply strain in 11-direction',...
                 'Aligned ply strain in 22-direction', 'Aligned ply strain in 12-direction'}, PLOT_STYLE, E_ply_aligned, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle,...
-                fontTicks, fontX, fontY, 'Strain [mm/mm]', outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER)
+                fontTicks, fontX, fontY, 'Strain [mm/mm]', outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
             %% SP, Ply stresses in X-Y coordinates
             abd.internal_plot.now(...
                 'XY ply stresses for all section points', {'\sigma_x_x', '\sigma_y_y', '\tau_x_y'}, {'XY ply stress in XX-direction', 'XY ply stress in YY-direction',...
                 'XY ply stress in XY-direction'}, PLOT_STYLE, S_ply_xy, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, 'Stress [N/mm2]',...
-                outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER)
+                outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
             %% SP, Ply stresses in ply coordinates
             abd.internal_plot.now(...
                 'Aligned ply stresses for all section points', {'\sigma_f_i_b_r_e', '\sigma_t_r_a_n_s_v_e_r_s_e', '\tau_p_l_y'}, {'Aligned ply stress in 11-direction',...
                 'Aligned ply stress in 22-direction', 'Aligned ply stress in 12-direction'}, PLOT_STYLE, S_ply_aligned, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle,...
-                fontTicks, fontX, fontY, 'Stress [N/mm2]', outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER)
+                fontTicks, fontX, fontY, 'Stress [N/mm2]', outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
             %% CB, Optimised criterion buffer
             if isempty(CRITERION_BUFFER) == false
@@ -106,7 +106,7 @@ classdef internal_plot < handle
 
         %% CREATE A MATLAB FIGURE OF THE SELECTED PLOT VARIABLE
         function [] = now(figureTitle, legendStrings, plotTitle, PLOT_STYLE, VARIABLE, RANGE, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, xlabelString,...
-                outputLocation, leadString, SP_COLOUR_BUFFER)
+                outputLocation, leadString, SP_COLOUR_BUFFER, SP_VIZ)
             % Create the figure
             f = abd.internal_plot.createFigure();
 
@@ -142,11 +142,13 @@ classdef internal_plot < handle
                 end
 
                 % Plot the section points
-                if (strcmpi(PLOT_STYLE, 'compact') == true) && (plotNumber == 1.0)
-                    scatter(linspace(0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))), 0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))),...
-                        length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
-                elseif strcmpi(PLOT_STYLE, 'split') == true
-                    scatter(linspace(0.5*(min(DOMAIN) + max(DOMAIN)), 0.5*(min(DOMAIN) + max(DOMAIN)), length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
+                if isempty(SP_VIZ) == false
+                    if (strcmpi(PLOT_STYLE, 'compact') == true) && (plotNumber == 1.0)
+                        scatter(linspace(0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))), 0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))),...
+                            length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
+                    elseif strcmpi(PLOT_STYLE, 'split') == true
+                        scatter(linspace(0.5*(min(DOMAIN) + max(DOMAIN)), 0.5*(min(DOMAIN) + max(DOMAIN)), length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
+                    end
                 end
 
                 % Set the legend and figure title
@@ -221,7 +223,7 @@ classdef internal_plot < handle
             %}
             if nPlies < 51.0
                 for i = 1:nPlies + 1.0
-                    line([min(min(DOMAIN)), max(max(DOMAIN))], [RANGE(i), RANGE(i)], 'Color', 'green', 'LineStyle', '--')
+                    line([min(min(DOMAIN)), max(max(DOMAIN))], [RANGE(i), RANGE(i)], 'Color', [0.5, 0.5, 0.5], 'LineStyle', '--')
                 end
             end
         end
@@ -236,7 +238,7 @@ classdef internal_plot < handle
         function [error, output] = getSettings(OUTPUT_FIGURE)
             % Initialise output
             error = false;
-            output = cell(1.0, 2.0);
+            output = cell(1.0, 3.0);
 
             if iscell(OUTPUT_FIGURE) == false
                 % Convert to cell if necessary
@@ -245,12 +247,12 @@ classdef internal_plot < handle
 
             if cellfun(@isempty, OUTPUT_FIGURE) == true
                 % Set default values if necessary
-                OUTPUT_FIGURE = {'DEFAULT', 'SPLIT'};
+                OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
             end
 
-            if length(OUTPUT_FIGURE) ~= 2.0
+            if length(OUTPUT_FIGURE) ~= 3.0
                 % Incorrect number of arguments
-                fprintf('[ERROR] The setting OUTPUT_FIGURE requires two\narguments: {''<mode>'', ''<layout>''}\n');
+                fprintf('[ERROR] The setting OUTPUT_FIGURE requires three arguments:\n{''<mode>'', ''<section-visualisation>'', ''<layout>''}\n');
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -260,18 +262,10 @@ classdef internal_plot < handle
             % Process the first argument
             argument = OUTPUT_FIGURE{1.0};
 
-            if (isempty(argument) == false) && (ischar(argument) == false)
+            if ((isempty(argument) == false) && (ischar(argument) == false)) || ((isempty(argument) == false) && (strcmpi(argument, 'default') == false) &&...
+                    (strcmpi(argument, 'smooth') == false))
                 % Incorrect variable type
-                fprintf('[ERROR] The setting OUTPUT_FIGURE(1) must be a string:\n{''DEFAULT'' | ''SMOOTH''}\n');
-
-                % Reset the error flag and RETURN
-                error = true;
-                return
-            elseif (isempty(argument) == false) &&...
-                    (strcmpi(argument, 'default') == false) &&...
-                    (strcmpi(argument, 'smooth') == false)
-                % Incorrect mode tag
-                fprintf('[ERROR] The setting OUTPUT_FIGURE(1) must be one of\nthe following: {''DEFAULT'' | ''SMOOTH''}\n');
+                fprintf('[ERROR] The setting OUTPUT_FIGURE(1) must be one of the following:\n{''DEFAULT'' | ''SMOOTH''}\n');
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -284,16 +278,9 @@ classdef internal_plot < handle
             % Process the second argument
             argument = OUTPUT_FIGURE{2.0};
 
-            if ischar(argument) == false
+            if ((isempty(argument) == false) && (ischar(argument) == false)) || ((isempty(argument) == false) && (strcmpi(argument, 'points') == false))
                 % Incorrect variable type
-                fprintf('[ERROR] The setting OUTPUT_FIGURE(2) must be a\nstring: {''COMPACT'' | ''SPLIT''}\n');
-
-                % Reset the error flag and RETURN
-                error = true;
-                return
-            elseif (strcmpi(argument, 'compact') == false) && (strcmpi(argument, 'split') == false)
-                % Incorrect mode tag
-                fprintf('[ERROR] The setting OUTPUT_FIGURE(2) must be one of\nthe following: {''COMPACT'' | ''SPLIT''}\n');
+                fprintf('[ERROR] The setting OUTPUT_FIGURE(2) must be one of the following:\n{[] | ''POINTS''}\n');
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -301,6 +288,21 @@ classdef internal_plot < handle
             else
                 % Everything is OK
                 output{2.0} = argument;
+            end
+
+            % Process the third argument
+            argument = OUTPUT_FIGURE{3.0};
+
+            if ((isempty(argument) == false) && (ischar(argument) == false)) || ((strcmpi(argument, 'compact') == false) && (strcmpi(argument, 'split') == false))
+                % Incorrect variable type
+                fprintf('[ERROR] The setting OUTPUT_FIGURE(3) must be one of the following:\n{''COMPACT'' | ''SPLIT''}\n');
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            else
+                % Everything is OK
+                output{3.0} = argument;
             end
         end
 

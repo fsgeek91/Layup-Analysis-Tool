@@ -18,8 +18,8 @@
 %
 %   See also abd.main, examples.
 %
-%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
-%   Last modified 22-May-2025 13:54:47 UTC
+%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Last modified 03-Jun-2025 10:08:33 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -181,15 +181,19 @@ OUTPUT_PLY = 'DEFAULT';
     First argument:
     '<mode>': [] (do not create figures); Default (no smoothing); Smooth
     (smooth output at ply boundaries)
-
+    
     Second argument:
+    '<section-visualisation>': [] (do not visualise section points); Points
+    (plot all section points)
+
+    Third argument:
     '<layout>': Split (one figure per tensor component); Compact (single
     figure for all tensor components)
 
     Note: MATLAB figures are generated when at least one load matrix
     component is specified with NXX/NYY/NXY or MXX/MYY/MXY.
 %}
-OUTPUT_FIGURE = {'DEFAULT', 'SPLIT'};
+OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
 
 % OUTPUT_STRENGTH  Evaluate static failure/damage initiation criteria
 %{

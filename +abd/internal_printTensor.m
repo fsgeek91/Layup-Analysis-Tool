@@ -4,8 +4,8 @@ function [] = internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
-%   Last modified 22-May-2025 13:54:47 UTC
+%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Last modified 03-Jun-2025 10:08:33 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -25,9 +25,8 @@ end
 if length(unique(plyBuffer)) ~= nPlies
     % Inform the user of incomplete output
     fprintf(fid, '\nNote: Result output is not available at all plies\n');
-elseif outputApproximate == true
-    % Inform the user of approximate output
-    fprintf(fid, '\nNote: Precise output at location MIDDLE is unavailable. Result output is\nwritten at approximate locations.\n');
+elseif isempty(outputApproximate) == false
+    fprintf(fid, outputApproximate);
 end
 
 %% Print stress tensor data

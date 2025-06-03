@@ -127,12 +127,18 @@ function [varargout] = main(varargin)
 %   output, OUTPUT_FIGURE. OUTPUT_FIGURE(1) is a parameter specifying the
 %   figure type ([], 'DEFAULT' or 'SMOOTH'). The parameter 'DEFAULT'
 %   creates figures from the raw stress/strain data; the parameter 'SMOOTH'
-%   uses the built-in SMOOTHDATA function to smooth the output at the ply
-%   boundaries; an empty assignment disables MATLAB figure output;
-%   OUTPUT_FIGURE(2) is a parameter specifying the figure layout ('SPLIT'
-%   or 'COMPACT'). The parameter 'SPLIT' creates a separate plot for each
-%   tensor component; the parameter 'COMPACT' overlays each tensor
-%   component in a single plot.
+%   uses the built-in MATLAB SMOOTHDATA function to smooth the output at
+%   the ply boundaries; an empty assignment disables MATLAB figure output;
+%   OUTPUT_FIGURE(2) is a parameter specifying the visualisation of the
+%   section points ([], 'POINTS'). The parameter 'POINTS' plots the section
+%   points over the stress/strain MATLAB figures. If a strength analysis is
+%   performed with OUTPUT_STRENGTH, then the section points are coloured
+%   green or red for points which are safe or unsafe, respectively (Note: A
+%   section point is coloured red if it failed according to at least one
+%   failure/damage initiation criterion); OUTPUT_FIGURE(3) is a parameter
+%   specifying the figure layout ('SPLIT' or 'COMPACT'). The parameter
+%   'SPLIT' creates a separate plot for each tensor component; the
+%   parameter 'COMPACT' overlays each tensor component in a single plot.
 %
 %   OUTPUT_DEF(3:4) are empty ( [] )
 %
@@ -350,8 +356,8 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
-%   Last modified 22-May-2025 13:54:47 UTC
+%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Last modified 03-Jun-2025 10:08:33 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -619,12 +625,16 @@ ABD(abs(ABD) < tolerance) = 0.0;
 % Preallocate failed section points colour buffer (for plotting)
 SP_COLOUR_BUFFER = repmat([0.0, 0.0, 0.0], [nPlies_points, 1.0]);
 
+% Initialise failure criteria component buffers
+[MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = abd.internal_strength.init(nPlies_points);
+
 if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
     [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET,...
         XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
         ...
         abd.internal_strength.main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT,...
-        XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S_ply_aligned, nPlies, nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0});
+        XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S_ply_aligned, nPlies, nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0}, MSTRS, TSAIH,...
+        TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT);
 
     if OUTPUT_OPTIMISED{1.0} == true
         %% FIND THE OPTIMUM STACKING SEQUENCE
@@ -642,20 +652,6 @@ if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
         LARTFCRT, SP_COLOUR_BUFFER, nPlies_points);
 else
     % Initialise values to default
-    MSTRS = [];
-    TSAIH = [];
-    TSAIW = [];
-    AZZIT = [];
-    MSTRN = [];
-    HSNFTCRT = [];
-    HSNFCCRT = [];
-    HSNMTCRT = [];
-    HSNMCCRT = [];
-    LARPFCRT = [];
-    LARMFCRT = [];
-    LARKFCRT = [];
-    LARSFCRT = [];
-    LARTFCRT = [];
     CRITERION_BUFFER = [];
 
     % Suppress strength output
@@ -702,8 +698,8 @@ end
 
 %% PLOT STRAINS AND STRESSES IN A MATLAB FIGURE
 if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) && (nPlies_points > 1.0)
-    abd.internal_plot.main(OUTPUT_FIGURE{1.0}, OUTPUT_FIGURE{2.0}, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points, CRITERION_BUFFER,...
-        OUTPUT_OPTIMISED, SP_COLOUR_BUFFER)
+    abd.internal_plot.main(OUTPUT_FIGURE{1.0}, OUTPUT_FIGURE{2.0}, OUTPUT_FIGURE{3.0}, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points,...
+        CRITERION_BUFFER, OUTPUT_OPTIMISED, SP_COLOUR_BUFFER)
 end
 
 %% WRITE RESULTS TO A TEXT FILE

@@ -26,8 +26,8 @@
 %
 %   See also abd.main, user_definitions.
 %
-%   Layup Analysis Tool 3.0.6 Copyright Louis Vallance 2025
-%   Last modified 22-May-2025 13:54:47 UTC
+%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Last modified 03-Jun-2025 10:08:33 UTC
 %
 %==========================================================================
 %__________________________________________________________________________
@@ -60,7 +60,7 @@
     abd.main(...                                                           % Function name
     {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], [], []},...     % Material properties
     {[45, 90], 0.1, false, 3},...                                          % Stacking sequence, ply thickness, symmetry flag, number of section points
-    {'MIDDLE', {'DEFAULT', 'SPLIT'}, [], [], 'DEFAULT'},...                % Output location, MATLAB figure appearance, output location
+    {'MIDDLE', {'DEFAULT', [], 'SPLIT'}, [], [], 'DEFAULT'},...            % Output location, MATLAB figure appearance, output location
     [0, 0, 0, 100, 0, 0]);                                                 % Load matrix
 %__________________________________________________________________________
 %   USE CASE III - Strength analysis:
@@ -73,7 +73,7 @@
     abd.main(...
     {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], [], []},...
     {[45, 90, 90], [0.15, 0.2, 0.2], true, 2},...
-    {'BOTTOM', {[], 'SPLIT'}, {true, 'RESERVE'}, [], 'DEFAULT'},...
+    {'BOTTOM', {[], [], 'SPLIT'}, {true, 'RESERVE'}, [], 'DEFAULT'},...
     [0, 150, 0, -100, 0, 0]);
 %__________________________________________________________________________
 %   USE CASE IV - Stacking sequence optimisation:
@@ -84,5 +84,5 @@
 [~, ~, ~, ~, ~, ~, ~, ~, OPT_SEQ] =...
     abd.main({[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], [], []},...
     {[45, 90, 90], [0.15, 0.2, 0.2], true, 2},...
-    {'BOTTOM', {'DEFAULT', 'SPLIT'}, {true, 'RESERVE'}, {'TSAIW', 'RESERVE', 'MINMAX', 10.0}, 'DEFAULT'},...
+    {'BOTTOM', {'DEFAULT', [], 'SPLIT'}, {true, 'RESERVE'}, {'TSAIW', 'RESERVE', 'MINMAX', 10.0}, 'DEFAULT'},...
     [0, 150, 0, -100, 0, 0]);
