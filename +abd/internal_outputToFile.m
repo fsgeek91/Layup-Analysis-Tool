@@ -1,13 +1,13 @@
 function [] = internal_outputToFile(dateString, outputLocation, outputStrength, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
-    HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, nSectionPoints, outputPoints,...
+    HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, outputPoints,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy,...
     E_midplane, OUTPUT_PLY, z_points)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 3.1.0 Copyright Louis Vallance 2025
 %   Last modified 03-Jun-2025 10:08:33 UTC
 %
 
@@ -19,12 +19,12 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 fid = fopen([outputLocation, filesep, 'analysis_results.txt'], 'w+');
 
 % Print header
-fprintf(fid, 'Layup Analysis Tool 3.0.7\n\nCopyright Louis Vallance 2025\nLast modified 03-Jun-2025 10:08:33 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 3.1.0\n\nCopyright Louis Vallance 2025\nLast modified 03-Jun-2025 10:08:33 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
 % Print the units and CSYS conventions
 if printTensor == 1.0
-    fprintf(fid, 'Stress units - [N/mm2]; Strain units - [mm/mm]\n[xx, yy, xy] - Global (x-y) CSYS\n[11, 22, 12] - Layup (longitudinal-transverse) CSYS\n\n');
+    fprintf(fid, 'Length units - [mm]; Stress units - [N/mm2]; Strain units - [mm/mm]\n[xx, yy, xy] - Global (x-y) CSYS\n[11, 22, 12] - Layup (longitudinal-transverse) CSYS\n\n');
 end
 
 %% Initialise variables
@@ -46,10 +46,10 @@ if (enableTensor == 1.0) && (printTensor == 1.0)
 
     for i = 1.0:nPlies
         % Get the stresses for all section points of the current ply
-        Si = S_ply_aligned(:, spIndex:spIndex + (nSectionPoints - 1.0));
+        Si = S_ply_aligned(:, spIndex:spIndex + (SECTION_POINTS - 1.0));
 
         % Update the section point index
-        spIndex = spIndex + nSectionPoints;
+        spIndex = spIndex + SECTION_POINTS;
 
         % Get the numerically largest stresses over the ply
         S1iMax = abd.internal_getAbsMax(Si(1.0, :), 1.0);
@@ -133,7 +133,7 @@ if any(any([axx; ayy; axy; bxx; byy; bxy])) == true
 end
 
 %% Print stress/strain tensors
-if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (nSectionPoints == 1.0)
+if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (SECTION_POINTS == 1.0)
     %{
         Inform the user if there is only one total section point for output
         and MATLAB figures were requested
@@ -142,9 +142,28 @@ if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (nSectionPoints 
 end
 
 if printTensor == 1.0
+    % Set the header
+    if OUTPUT_ENVELOPE == 1.0
+        header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: 1 (ENVELOPE)',...
+            SECTION_POINTS);
+    else
+        if ischar(OUTPUT_PLY) == true
+            if (mod(SECTION_POINTS, 2.0) == 0.0) && (strcmpi(OUTPUT_PLY, 'MIDDLE') == true)
+                header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: %.0f (%s)',...
+                    SECTION_POINTS, length(outputPoints)/nPlies, 'MIDDLE - APPROXIMATE');
+            else
+                header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: %.0f (%s)',...
+                    SECTION_POINTS, length(outputPoints)/nPlies, upper(OUTPUT_PLY));
+            end
+        else
+            header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: %.0f (%s)',...
+                SECTION_POINTS, length(OUTPUT_PLY), 'USER-SPECIFIED');
+        end
+    end
+
+    % Print the stress/strain tensor
     abd.internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy, S_ply_aligned, E_ply_xy, E_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned,...
-        nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness,...
-        sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f', nSectionPoints), OUTPUT_PLY, z_points)
+        nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header, OUTPUT_PLY, z_points, SECTION_POINTS)
 
     %% Print the mid-plane strain
     fprintf(fid, '\nMid-plane strains and curvatures:\nExx_0         Eyy_0         Exy_0         Kxx           Kyy           Kxy\n%-14g%-14g%-14g%-14g%-14g%-14g\n',...
@@ -274,7 +293,7 @@ end
 
 %% Print parameter descriptor
 if ((outputStrength{1.0} == true) && (noFailStress == false)) || ((outputStrength{1.0} == true) && (noFailStrain == false))
-    fprintf(fid, '\n(R): Strength reserve factor\n(V): Criterion value\n');
+    fprintf(fid, '\n(R): Strength reserve factor; (V): Criterion value\n');
 end
 
 %% Print summary of failure criteria assessments
@@ -378,9 +397,10 @@ end
 
 %% Print failure assessment summary
 if (outputStrength{1.0} == true) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
-    fprintf(fid, ['\nNotes about failure/damage initiation assessment output:\n\t- Assessment criteria report the worst section point for each ply\n\t- The ply is marked as UNSAFE',...
-        ' if at least one section point in the ply\n\t  failed\n\t- SFAILRATIO is the section failure ratio across all the plies (a ply\n\t  is considered failed when all of the s',...
-        'ection points in the ply\n\t  failed)\n\t- It is possible for the worst section point value to be greater than\n\t  1 without observing ply failure\n']);
+    fprintf(fid, ['\nNotes about failure/damage initiation assessment output:\n\t- The assessment is performed at every section point in the layup\n\t  regardless of the setting o',...
+        'f OUTPUT_PLY\n\t- Assessment criteria report the worst section point for each ply\n\t- The ply is marked as UNSAFE if at least one section point in the ply\n\t  failed\n\',...
+        't- SFAILRATIO is the section failure ratio across all the plies (a ply\n\t  is considered failed when all of the section points in the ply\n\t  failed)\n\t- It is possibl',...
+        'e for the worst section point value to be greater than\n\t  1 without observing ply failure\n']);
 
     fprintf(fid, '\n===========================================================================\n');
 end
@@ -473,7 +493,8 @@ elseif isempty(BEST_SEQUENCE) == false
     % Print the optimised stress/strain tensor
     abd.internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, BEST_SEQUENCE{6.0}.STRESS_XY, BEST_SEQUENCE{6.0}.STRESS_PLY, BEST_SEQUENCE{6.0}.STRAIN_XY,...
         BEST_SEQUENCE{6.0}.STRAIN_PLY, [], [], [], [], nPlies, outputPoints, plyBuffer, BEST_SEQUENCE{6.0}.SYMMETRIC_ABD, outputApproximate, thickness,...
-        sprintf('Stress/strain calculation summary for optimised stacking sequence\nSection points per ply: From layup definition'), OUTPUT_PLY, z_points)
+        sprintf('Stress/strain calculation summary for optimised stacking sequence\nSection points per ply: <From layup definition>\nOutput locations: <From layup definition>'),...
+        OUTPUT_PLY, z_points, SECTION_POINTS)
 
     fprintf(fid, '\n===========================================================================\n');
 elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) &&...

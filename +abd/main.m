@@ -356,7 +356,7 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 3.1.0 Copyright Louis Vallance 2025
 %   Last modified 03-Jun-2025 10:08:33 UTC
 
 %% - DO NOT EDIT BELOW LINE

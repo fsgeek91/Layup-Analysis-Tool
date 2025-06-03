@@ -1,10 +1,10 @@
 function [] = internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy, S_ply_aligned, E_ply_xy, E_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned,...
-    nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header, OUTPUT_PLY, z_points)
+    nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header, OUTPUT_PLY, z_points, SECTION_POINTS)
 %   Print stress/strain tensor information to the output file.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.0.7 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 3.1.0 Copyright Louis Vallance 2025
 %   Last modified 03-Jun-2025 10:08:33 UTC
 %
 
@@ -26,27 +26,50 @@ if ischar(OUTPUT_PLY) == true
     switch lower(OUTPUT_PLY)
         case 'default'
             % Top and bottom faces
-            locationString = {'BOTTOM', 'TOP'};
+            locationString = {'B', 'T'};
+            locationLegendString = sprintf('\nB: Bottom; T: Top\n');
         case 'top'
             % Top face only
-            locationString = {'TOP'};
+            locationString = {'T'};
+            locationLegendString = '';
         case 'middle'
             % Midspan only
-            if isempty(outputApproximate) == false
-                locationString = {'MIDDLE (APPROX.)'};
-            else
-                locationString = {'MIDDLE (PRECISE)'};
-            end
+            locationString = {'M'};
+                locationLegendString = '';
         case 'bottom'
             % Bottom face only
-            locationString = {'BOTTOM'};
+            locationString = {'B'};
+            locationLegendString = '';
+        case 'all'
+            switch SECTION_POINTS
+                case 1.0
+                    locationString = {'M'};
+                    locationLegendString = sprintf('\nM: Middle (exact)\n');
+                case 2.0
+                    locationString = {'B', 'T'};
+                    locationLegendString = sprintf('\nB: Bottom; T: Top\n');
+                case 3.0
+                    locationString = {'B', 'M', 'T'};
+                    locationLegendString = sprintf('\nB: Bottom; M: Middle; T: Top\n');
+                otherwise
+                    if mod(SECTION_POINTS, 2.0) == 0.0
+                        locationString = [{'B'}, repmat({'<......>'}, 1.0, SECTION_POINTS - 2.0), {'T'}];
+                        locationLegendString = sprintf('\nB: Bottom; T: Top\n');
+                    else
+                        locationString = [{'B'}, repmat({'<......>'}, 1.0, floor(0.5*SECTION_POINTS) - 1.0), {'M'}, repmat({'<......>'}, 1.0, floor(0.5*SECTION_POINTS) - 1.0),...
+                            {'T'}];
+                        locationLegendString = sprintf('\nB: Bottom; M: Middle; T: Top\n');
+                    end
+            end
         otherwise
             % Unknown
-            locationString = repmat({'UNKNOWN'}, 1.0, length(outputPoints));
+            locationString = repmat({'?'}, 1.0, length(outputPoints));
+            locationLegendString = '';
     end
 else
     % User-specified section point list
-    locationString = repmat({'USER'}, 1.0, length(outputPoints));
+    locationString = repmat({'U'}, 1.0, length(outputPoints));
+    locationLegendString = sprintf('\nU: User-specified\n');
 end
 
 %% Inform use if output is incomplete
@@ -80,7 +103,7 @@ if OUTPUT_ENVELOPE == true
         S_ply_aligned_envelope_22, S_ply_aligned_envelope_12);
 else
     % Print the header
-    fprintf(fid, 'PLY    SECTION POINT                 LOCATION                             Sxx           Syy           Sxy           S11           S22           S12           \n');
+    fprintf(fid, 'PLY    SECTION POINT                 LOCATION    Z           Sxx           Syy           Sxy           S11           S22           S12           \n');
 
     for i = 1.0:nPlies
         % Extract the stresses at the section points for the current ply
@@ -100,8 +123,8 @@ else
                 % Get the thickness fraction of the current section point
                 thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                fprintf(fid, '%-7.0f%-30s%-37s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, sprintf('%s (z = %gmm)', locationString{sp}, z_points_i(sp)),...
-                    S_ply_xy_i(1.0, sp), S_ply_xy_i(2.0, sp), S_ply_xy_i(3.0, sp), S_ply_aligned_i(1.0, sp), S_ply_aligned_i(2.0, sp), S_ply_aligned_i(3.0, sp));
+                fprintf(fid, '%-7.0f%-30s%-12s%-12g%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, z_points_i(sp), S_ply_xy_i(1.0, sp),...
+                    S_ply_xy_i(2.0, sp), S_ply_xy_i(3.0, sp), S_ply_aligned_i(1.0, sp), S_ply_aligned_i(2.0, sp), S_ply_aligned_i(3.0, sp));
             end
         end
 
@@ -131,7 +154,7 @@ if OUTPUT_ENVELOPE == true
         E_ply_aligned_envelope_22, E_ply_aligned_envelope_12);
 else
     % Print the header
-    fprintf(fid, 'PLY    SECTION POINT                 LOCATION                             Exx           Eyy           Exy           E11           E22           E12           \n');
+    fprintf(fid, 'PLY    SECTION POINT                 LOCATION    Z           Exx           Eyy           Exy           E11           E22           E12           \n');
 
     for i = 1.0:nPlies
         % Extract the strains at the section points for the current ply
@@ -150,8 +173,8 @@ else
             for sp = 1.0:length(currentOutputPoints)
                 thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                fprintf(fid, '%-7.0f%-30s%-37s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, sprintf('%s (z = %gmm)', locationString{sp}, z_points_i(sp)),...
-                    E_ply_xy_i(1.0, sp), E_ply_xy_i(2.0, sp), E_ply_xy_i(3.0, sp), E_ply_aligned_i(1.0, sp), E_ply_aligned_i(2.0, sp), E_ply_aligned_i(3.0, sp));
+                fprintf(fid, '%-7.0f%-30s%-12s%-12g%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, z_points_i(sp), E_ply_xy_i(1.0, sp),...
+                    E_ply_xy_i(2.0, sp), E_ply_xy_i(3.0, sp), E_ply_aligned_i(1.0, sp), E_ply_aligned_i(2.0, sp), E_ply_aligned_i(3.0, sp));
             end
         end
 
@@ -160,6 +183,11 @@ else
             fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
         end
     end
+end
+
+%% Print the legend for result location
+if OUTPUT_ENVELOPE == false
+    fprintf(fid, locationLegendString);
 end
 
 %% Print the stress-free thermal strain tensor data
