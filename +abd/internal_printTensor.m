@@ -89,7 +89,7 @@ fprintf(fid, '\nStress at user-selected locations:\n');
 
 if OUTPUT_ENVELOPE == true
     % Print the header
-    fprintf(fid, 'PLY    SECTION POINT                 Sxx           Syy           Sxy           S11           S22           S12           \n');
+    fprintf(fid, 'PLY    SECTION POINT      Sxx           Syy           Sxy           S11           S22           S12           \n');
 
     % Print the numerically largest stress in the current ply
     S_ply_xy_envelope_11 = abd.internal_getAbsMax(S_ply_xy(1.0, :), ENVELOPE_MODE);
@@ -99,7 +99,7 @@ if OUTPUT_ENVELOPE == true
     S_ply_aligned_envelope_22 = abd.internal_getAbsMax(S_ply_aligned(2.0, :), ENVELOPE_MODE);
     S_ply_aligned_envelope_12 = abd.internal_getAbsMax(S_ply_aligned(3.0, :), ENVELOPE_MODE);
 
-    fprintf(fid, '%-7s%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, S_ply_xy_envelope_11, S_ply_xy_envelope_22, S_ply_xy_envelope_12, S_ply_aligned_envelope_11,...
+    fprintf(fid, '%-7s%-19s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, S_ply_xy_envelope_11, S_ply_xy_envelope_22, S_ply_xy_envelope_12, S_ply_aligned_envelope_11,...
         S_ply_aligned_envelope_22, S_ply_aligned_envelope_12);
 else
     % Print the header
@@ -130,7 +130,7 @@ else
 
         % Draw symmetry plane (if applicable)
         if (symmetricAbd == true) && (i == nPlies/2.0)
-            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
+            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
         end
     end
 end
@@ -140,7 +140,7 @@ fprintf(fid, '\nStrain at user-selected locations:\n');
 
 if OUTPUT_ENVELOPE == true
     % Print the header
-    fprintf(fid, 'PLY    SECTION POINT                 Exx           Eyy           Exy           E11           E22           E12           \n');
+    fprintf(fid, 'PLY    SECTION POINT      Exx           Eyy           Exy           E11           E22           E12           \n');
 
     % Print the numerically largest stress over all plies
     E_ply_xy_envelope_11 = abd.internal_getAbsMax(E_ply_xy(1.0, :), ENVELOPE_MODE);
@@ -150,7 +150,7 @@ if OUTPUT_ENVELOPE == true
     E_ply_aligned_envelope_22 = abd.internal_getAbsMax(E_ply_aligned(2.0, :), ENVELOPE_MODE);
     E_ply_aligned_envelope_12 = abd.internal_getAbsMax(E_ply_aligned(3.0, :), ENVELOPE_MODE);
 
-    fprintf(fid, '%-7s%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, E_ply_xy_envelope_11, E_ply_xy_envelope_22, E_ply_xy_envelope_12, E_ply_aligned_envelope_11,...
+    fprintf(fid, '%-7s%-19s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, E_ply_xy_envelope_11, E_ply_xy_envelope_22, E_ply_xy_envelope_12, E_ply_aligned_envelope_11,...
         E_ply_aligned_envelope_22, E_ply_aligned_envelope_12);
 else
     % Print the header
@@ -180,7 +180,7 @@ else
 
         % Draw symmetry plane (if applicable)
         if (symmetricAbd == true) && (i == nPlies/2.0)
-            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
+            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
         end
     end
 end

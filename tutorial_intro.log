@@ -1,0 +1,109 @@
+Quick Fatigue Tool 6.14.00.6423 on machine LP15-E5O-AUT
+MATLAB version 24.2.0.2923080 (R2024b) Update 6 on PCWIN64
+
+Copyright Louis Vallance 2025
+Last modified 23-May-2025 08:46:12 UTC
+
+INPUT SUMMARY:
+=======
+    User: E5O
+    Job name: tutorial_intro
+    Description: Demonstration of a simple loading
+
+    <MATERIAL DATA>
+    Name: SAE-950C
+    Material Model: Linear Elastic (Hookean)
+    Stress-Life Properties: FATIGUE TEST DATA (s_values, n_values)
+    S-N Scale: 1
+    S-N Knock-Down Curve: NONE
+    Basquin's Exponent Above Knee Point (B2): -0.095
+    Life Above Which To Use b2: Inf
+    Constant Amplitude Endurance Limit: 1e+07 Cycles
+    Fatigue Limit (Stress Amplitude): 188.3MPa
+    Overflow Stress: 870.927MPa
+
+    <MODEL DATA>
+    Dataset: 'stress_uni.dat'
+    Stress Dataset Units: MEGAPASCAL [MPa]
+    Requested section point (location): [1]|2
+    Allow RPT Datasets containing 2D elements: NO
+    Result Position: UNKNOWN
+
+    <LOADING SETTINGS>
+    Load History: 'history_fully_reversed.dat'
+    Direct Stress Range: 200 to -200
+    Shear Stress Range: 0 to 0
+    Maximum Stress Components in Loading:
+    Sxx	Syy	Szz	Sxy	Syz	Sxz
+    200@4935.1,	0@4935.1,	0@4935.1,	0@4935.1,	0@4935.1,	0@4935.1
+    Analysis Items: 1
+    History Points: 2
+    Loading is equivalent to: 1 Repeats
+    Load Scale Factors: [1]
+    Load Offset Values: NONE
+    Repeats: 1
+    Time history pre-processing: GATE TENSORS
+
+    <ANALYSIS SETTINGS>
+    Analysis Algorithm: Normal Stress
+    Mean Stress Correction: NONE
+    Design Life: 1e+07 Repeats
+    Analysis region: WHOLE MODEL
+    Item Elimination: ON (0 items removed)
+    Load Proportionality Checking: OFF
+    Fatigue Reserve Factor Envelope: MODIFIED GOODMAN
+    Surface Finish Definition: Surface finish from list
+    Definition File: 'default.ra'
+    Surface Finish: Mirror Polished - Ra <= 0.25um (Kt = 1)
+    Notch Factor Estimation: Peterson (default)
+    Residual Stress: NONE
+    Damage accumulation rule: LINEAR, PALMGREN-MINER
+
+ANALYSIS GROUPS:
+=======
+    Group                                  Material                               # Items in group  # Items in other groups  # Items used  Worst life (Repeats) @ ID
+    -------------------------------------- -------------------------------------- ----------------- ------------------------ ------------- -------------------------
+    DEFAULT                                SAE-950C                               1                 0                        1             5.3e+06@4935.1
+
+CP SUMMARY AT WORST ITEM:
+=======
+    NOTE: The worst item CP summary is not available because the loading at
+    the worst analysis item is proportional. Load proportionality checks
+    are controlled by the 'qftpref_cp.checkLP' user preference.
+
+    Load proportionality is discussed in Section 4.5.3 of the Quick
+    Fatigue Tool User Guide.
+
+FATIGUE RESULTS SUMMARY:
+=======
+    Worst Life-Repeats                    : 5.30248e+06
+    at Item 4935.1
+
+    Number of cycles in loading           : 1
+
+    Worst FRF                             : 0.9415
+    at Item 4935.1
+
+    Maximum stress (MPa)                  : 200
+    at Item 4935.1
+
+    Maximum stress/yield                  : 0.615385
+    at Item 4935.1
+
+    Maximum stress/UTS                    : 0.5
+    at Item 4935.1
+
+    Worst cycle mean stress (MPa)         : 0
+    at Item 4935.1
+
+    Worst cycle stress amplitude (MPa)    : 200
+    at Item 4935.1
+
+    Worst cycle damage parameter (MPa)    : 200
+    at Item 4935.1
+
+Analysis time                             : 0:00:1.433
+
+FATIGUE ANALYSIS COMPLETE (04-Jun-2025 11:31:55)
+
+========================================================================================

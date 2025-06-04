@@ -18,8 +18,12 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 %% Open the results file and print the header
 fid = fopen([outputLocation, filesep, 'analysis_results.txt'], 'w+');
 
+% Get the user's machine name
+[~, hostname] = system('hostname');
+
 % Print header
-fprintf(fid, 'Layup Analysis Tool 3.1.0\n\nCopyright Louis Vallance 2025\nLast modified 03-Jun-2025 10:08:33 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 3.1.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 03-Jun-2025 10:08:33 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
 % Print the units and CSYS conventions
@@ -61,7 +65,7 @@ if (enableTensor == 1.0) && (printTensor == 1.0)
 
         % Draw symmetry plane (if applicable)
         if (symmetricAbd == true) && (i == nPlies/2.0)
-            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
+            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
         end
     end
 else
@@ -142,24 +146,31 @@ if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (SECTION_POINTS 
 end
 
 if printTensor == 1.0
-    % Set the header
+    % Set the ply location string
     if OUTPUT_ENVELOPE == 1.0
-        header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: 1 (ENVELOPE)',...
-            SECTION_POINTS);
+        % Envelope plot
+        plyOutputString = '1 (ENVELOPE)';
     else
         if ischar(OUTPUT_PLY) == true
+            % Location
             if (mod(SECTION_POINTS, 2.0) == 0.0) && (strcmpi(OUTPUT_PLY, 'MIDDLE') == true)
-                header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: %.0f (%s)',...
-                    SECTION_POINTS, length(outputPoints)/nPlies, 'MIDDLE - APPROXIMATE');
+                plyOutputString = [sprintf('%.0f', length(outputPoints)/nPlies), ' (MIDDLE - APPROXIMATE)'];
             else
-                header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: %.0f (%s)',...
-                    SECTION_POINTS, length(outputPoints)/nPlies, upper(OUTPUT_PLY));
+                if strcmpi(OUTPUT_PLY, 'DEFAULT') == true
+                    plyOutputString = [sprintf('%.0f', length(outputPoints)/nPlies), ' (DEFAULT - TOP AND BOTTOM)'];
+                else
+                    plyOutputString = [sprintf('%.0f', length(outputPoints)/nPlies), ' (', upper(OUTPUT_PLY), ')'];
+                end
             end
         else
-            header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: %.0f (%s)',...
-                SECTION_POINTS, length(OUTPUT_PLY), 'USER-SPECIFIED');
+            % User-sppecified
+            plyOutputString = [sprintf('%.0f', length(OUTPUT_PLY)), ' (USER-SPECIFIED)'];
         end
     end
+
+    % Set the stress/strain tensor header
+    header = sprintf('Stress/strain tensor calculation summary for user-defined stacking sequence\nSection points per ply: %.0f\nOutput locations: %s',...
+        SECTION_POINTS, plyOutputString);
 
     % Print the stress/strain tensor
     abd.internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy, S_ply_aligned, E_ply_xy, E_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned,...

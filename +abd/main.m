@@ -91,9 +91,12 @@ function [varargout] = main(varargin)
 %
 %   OUTPUT_DEF(1:4) are empty ( [] )
 %
-%   OUTPUT_DEF(5) is a string specifying the results location,
-%   OUTPUT_LOCATION. Use 'DEFAULT' to save results under a new folder in
-%   the current working directory, or specify the directory directly.
+%   OUTPUT_DEF(5) is a 1x2 cell array specifying the results location,
+%   OUTPUT_LOCATION. OUTPUT_LOCATION(1) is a string specifying the results
+%   location. Use the parameter 'DEFAULT' to save results under the output
+%   folder in the current working directory, or specify the directory path
+%   directly; OUTPUT_LOCATION(2) is a flag to enable or disable opening of
+%   the results file after the analysis has been completed.
 %__________________________________________________________________________
 %   USE CASE II - Stress analysis:
 %
@@ -673,23 +676,26 @@ varargout{9.0} = BEST_SEQUENCE;
 
 %% CREATE OUTPUT DIRECTORY
 % Create the root output folder if it does not already exist
-if exist(OUTPUT_LOCATION, 'dir') ~= 7.0
-    mkdir(OUTPUT_LOCATION)
+if exist(OUTPUT_LOCATION{1.0}, 'dir') ~= 7.0
+    mkdir(OUTPUT_LOCATION{1.0})
 end
 
 % Add the root output folder to the MATLAB path
-addpath(OUTPUT_LOCATION)
+addpath(OUTPUT_LOCATION{1.0})
 
 % Get the date string for the output folder
 dateString = char(datetime('now'));
-for i = 1:length(dateString)
-    if (strcmpi(dateString(i), ':') == 1.0) || (strcmpi(dateString(i), ' ') == 1.0)
-        dateString(i) = '_';
+dateStringFile = dateString;
+
+% Replace unsupported characters for file name string
+for i = 1:length(dateStringFile)
+    if (strcmpi(dateStringFile(i), ':') == 1.0) || (strcmpi(dateStringFile(i), ' ') == 1.0)
+        dateStringFile(i) = '_';
     end
 end
 
 % Construct the output location path
-outputLocation = [OUTPUT_LOCATION, [filesep, 'abd_results_', dateString]];
+outputLocation = [OUTPUT_LOCATION{1.0}, [filesep, 'abd_results_', dateStringFile]];
 
 % Create the folder if it does not already exist
 if exist(outputLocation, 'dir') ~= 7.0
@@ -711,4 +717,13 @@ abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
+
+%% Open the results file now (if applicable)
+if OUTPUT_LOCATION{2.0} == true
+    try
+        open([outputLocation, filesep, 'analysis_results.txt'])
+    catch
+        % Do nothing
+    end
+end
 end

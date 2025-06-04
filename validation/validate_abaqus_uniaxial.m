@@ -239,10 +239,15 @@ OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 10.0};
 
 % OUTPUT_LOCATION  Results output location
 %{
+    First argument (output location):
     'DEFAULT': Default output location
     '<location>': User-specified output location
+    
+    Second argument (open results file);
+    true: Open results file after analysis
+    false: Do not open results file after analysis
 %}
-OUTPUT_LOCATION = 'DEFAULT';
+OUTPUT_LOCATION = {'DEFAULT', true};
 
 %% - DO NOT EDIT BELOW LINE
 %__________________________________________________________________________

@@ -129,11 +129,33 @@ if cellfun(@isempty, OUTPUT_OPTIMISED) == true
 end
 
 %% Process output location
-if strcmpi(OUTPUT_LOCATION, 'default') == true
-    % Save results under OUTPUT folder inside user's PWD
-    OUTPUT_LOCATION = [pwd, filesep, 'output'];
-elseif strcmpi(OUTPUT_LOCATION, 'qft') == true
-    % Save results under QFT folder structure inside user's PWD
-    OUTPUT_LOCATION = [pwd, filesep, 'Project', filesep, 'output'];
+if iscell(OUTPUT_LOCATION) == false
+    OUTPUT_LOCATION = {OUTPUT_LOCATION};
+end
+
+if length(OUTPUT_LOCATION) < 2.0
+    OUTPUT_LOCATION{2.0} = false;
+end
+
+% Process the first argument
+argument = OUTPUT_LOCATION{1.0};
+
+if ischar(argument) == false
+    OUTPUT_LOCATION{1.0} = 'DEFAULT';
+else
+    if strcmpi(argument, 'default') == true
+        % Save results under OUTPUT folder inside user's PWD
+        OUTPUT_LOCATION{1.0} = [pwd, filesep, 'output'];
+    elseif strcmpi(argument, 'qft') == true
+        % Save results under QFT folder structure inside user's PWD
+        OUTPUT_LOCATION{1.0} = [pwd, filesep, 'Project', filesep, 'output'];
+    end
+end
+
+% Process the second argument
+argument = OUTPUT_LOCATION{2.0};
+
+if islogical(argument) == false
+    OUTPUT_LOCATION{2.0} = false;
 end
 end
