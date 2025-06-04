@@ -49,7 +49,7 @@ for i = 1.0:cols
     DATA_ply = zeros(nPlies, 1.0);
 
     % Buffer to record failed plies
-    FAILED_PLY = zeros(1.0, nPlies);
+    FAILED_PLY = false(1.0, nPlies);
 
     for p = 1.0:nPlies
         % Get maximum value in current ply based on output section points
@@ -108,4 +108,5 @@ end
 
 % Output SFAILRATIO
 varargout{sfailratioIndex} = SFAILRATIO;
+varargout{sfailratioIndex + 1.0} = FAILED_PLY;
 end
