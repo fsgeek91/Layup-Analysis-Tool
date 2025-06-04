@@ -22,6 +22,12 @@ fid = fopen([outputLocation, filesep, 'analysis_results.txt'], 'w+');
 [~, hostname] = system('hostname');
 
 % Print header
+fprintf(fid, '***************************************************************************\n');
+fprintf(fid, '*   For questions, comments or suggestions, please contact the author:    *\n*   help.qft@gmail.com                                                    *\n');
+fprintf(fid, '*                                                                         *\n');
+fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
+fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
+fprintf(fid, '***************************************************************************\n\n');
 fprintf(fid, 'Layup Analysis Tool 3.1.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
 fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 03-Jun-2025 10:08:33 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
@@ -253,7 +259,7 @@ if (outputStrength{1.0} == true) && (noFailStress == false)
     FAIL_STRESS_ALL_MAX = max(FAIL_STRESS_ALL, [], 2.0);
 
     % Print table header
-    fprintf(fid, '\nAssessment summary for stress-based failure criteria\nOutput location: Worst section point\n');
+    fprintf(fid, '\nAssessment summary for stress-based failure criteria\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           MSTRS(V)      TSAIH%s      TSAIW%s      AZZIT%s      (WORST)       STATUS\n', parameter, parameter, parameter);
 
     % Print ply-wise results
@@ -279,7 +285,7 @@ end
 %% Print results of failure criteria analysis (strain-based)
 if (outputStrength{1.0} == true) && (noFailStrain == false)
     % Print table header
-    fprintf(fid, '\nAssessment summary for strain-based failure criteria\nOutput location: Worst section point\n');
+    fprintf(fid, '\nAssessment summary for strain-based failure criteria\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           MSTRN(V)      STATUS\n');
 
     % Print ply-wise results
@@ -325,7 +331,7 @@ if (outputStrength{1.0} == true) && (noHashin == false)
     HASHIN_ALL_MAX = max(HASHIN_ALL, [], 2.0);
 
     % Print table header
-    fprintf(fid, '\nAssessment summary for Hashin''s damage initiation criteria\nOutput location: Worst section point\n');
+    fprintf(fid, '\nAssessment summary for Hashin''s damage initiation criteria\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           HSNFTCRT      HSNFCCRT      HSNMTCRT      HSNMCCRT      (WORST)       STATUS\n');
 
     % Print ply-wise results
@@ -369,7 +375,7 @@ if (outputStrength{1.0} == true) && (noLaRC05 == false)
     LARC05_ALL_MAX = max(LARC05_ALL, [], 2.0);
 
     % Print table header
-    fprintf(fid, '\nAssessment summary for LaRC05 damage initiation criteria\nOutput location: Worst section point\n');
+    fprintf(fid, '\nAssessment summary for LaRC05 damage initiation criteria\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           LARPFCRT      LARMFCRT      LARKFCRT      LARSFCRT      LARTFCRT      (WORST)       STATUS\n');
 
     % Print ply-wise results
@@ -410,8 +416,8 @@ end
 if (outputStrength{1.0} == true) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
     fprintf(fid, ['\nNotes about failure/damage initiation assessment output:\n\t- The assessment is performed at every section point in the layup\n\t  regardless of the setting o',...
         'f OUTPUT_PLY\n\t- Assessment criteria report the worst section point for each ply\n\t- The ply is marked as UNSAFE if at least one section point in the ply\n\t  failed\n\',...
-        't- SFAILRATIO is the section failure ratio across all the plies (a ply\n\t  is considered failed when all of the section points in the ply\n\t  failed)\n\t- It is possibl',...
-        'e for the worst section point value to be greater than\n\t  1 without observing ply failure\n']);
+        't- SFAILRATIO is the section failure ratio across all the plies (a ply\n\t  is considered to have failed when all of the section points in the\n\t  ply have failed)\n\t- ',...
+        'It is possible for the worst section point value to be greater than\n\t  1 without observing ply failure\n']);
 
     fprintf(fid, '\n===========================================================================\n');
 end
