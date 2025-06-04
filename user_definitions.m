@@ -178,19 +178,19 @@ OUTPUT_PLY = 'DEFAULT';
 
 % OUTPUT_FIGURE  MATLAB figure of stress and strain
 %{
-    First argument:
+    First argument (MATLAB figures):
     '<mode>': [] (do not create figures); Default (no smoothing); Smooth
     (smooth output at ply boundaries)
     
-    Second argument:
-    '<section-visualisation>': [] (do not visualise section points); Points
+    Second argument (section points):
+    '<mode>': [] (do not visualise section points); Points
     (plot all section points)
 
-    Third argument:
+    Third argument (MATLAB figure layout):
     '<layout>': Split (one figure per tensor component); Compact (single
     figure for all tensor components)
 
-    Note: MATLAB figures are generated when at least one load matrix
+    Note: MATLAB figures are only generated when at least one load matrix
     component is specified with NXX/NYY/NXY or MXX/MYY/MXY.
 %}
 OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
@@ -228,7 +228,7 @@ OUTPUT_STRENGTH = {false, 'RESERVE'};
     '<fun>': MinMax (minimise the maximum criterion value); MinMean
     (minimise the average criterion value)
 
-    Fourth argument:
+    Fourth argument (precision):
     theta: Angular step size
 %}
 OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 10.0};
