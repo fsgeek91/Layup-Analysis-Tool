@@ -39,7 +39,7 @@
     abd.main(...                                                           % Function name
     {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], [], []},...     % Material properties
     {[45, 90], 0.1, false, []},...                                         % Stacking sequence, ply thickness, symmetry flag
-    {[], [], [], [], {'DEFAULT', false}});                                 % Output location
+    {[], [], [], [], [], {'DEFAULT', false}});                             % Output location
 %
 %   ABD calculation of a variable thickness UD [45(1)/90(1)]-Symmetric
 %   layup, different materials; return ABD matrices and the equivalent
@@ -48,7 +48,7 @@
     abd.main(...
     {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [1.5e5, 5e4, 3.5e3, 0.29, 1.2e-5, 1.2e-5, 1.5e-3, 1.5e-3]}, [], [], [], []},...
     {[45, 90], [0.1, 0.15], true, []},...
-    {[], [], [], [], {'DEFAULT', false}});
+    {[], [], [], [], [], {'DEFAULT', false}});
 %__________________________________________________________________________
 %   USE CASE II - Stress analysis:
 %
@@ -56,12 +56,12 @@
 %   (x-axis); output for 3 section points per ply, output stresses at ply
 %   midspans, return midplane strains and curvatures and stress/strain
 %   tensors:
-[~, ~, ~, EI, EP, SP, ~, ~, ~] =...                                        % Output requests
-    abd.main(...                                                           % Function name
-    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], [], []},...     % Material properties
-    {[45, 90], 0.1, false, 3},...                                          % Stacking sequence, ply thickness, symmetry flag, number of section points
-    {'MIDDLE', {'DEFAULT', [], 'SPLIT'}, [], [], {'DEFAULT', false}},...   % Output location, MATLAB figure appearance, output location
-    [0, 0, 0, 100, 0, 0]);                                                 % Load matrix
+[~, ~, ~, EI, EP, SP, ~, ~, ~] =...                                            % Output requests
+    abd.main(...                                                               % Function name
+    {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [], [], [], []},...         % Material properties
+    {[45, 90], 0.1, false, 3},...                                              % Stacking sequence, ply thickness, symmetry flag, number of section points
+    {'MIDDLE', {'DEFAULT', [], 'SPLIT'}, [], [], [], {'DEFAULT', false}},...   % Output location, MATLAB figure appearance, output location
+    [0, 0, 0, 100, 0, 0]);                                                     % Load matrix
 %__________________________________________________________________________
 %   USE CASE III - Strength analysis:
 %
@@ -73,7 +73,7 @@
     abd.main(...
     {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], [], []},...
     {[45, 90, 90], [0.15, 0.2, 0.2], true, 2},...
-    {'BOTTOM', {[], [], 'SPLIT'}, {true, 'RESERVE'}, [], {'DEFAULT', false}},...
+    {'BOTTOM', {[], [], 'SPLIT'}, {true, 'RESERVE'}, [], [], {'DEFAULT', false}},...
     [0, 150, 0, -100, 0, 0]);
 %__________________________________________________________________________
 %   USE CASE IV - Stacking sequence optimisation:
@@ -84,5 +84,5 @@
 [~, ~, ~, ~, ~, ~, ~, ~, OPT_SEQ] =...
     abd.main({[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3], [400, 300, 400, 300, 150, 1, 0], [], [], []},...
     {[45, 90, 90], [0.15, 0.2, 0.2], true, 2},...
-    {'BOTTOM', {'DEFAULT', [], 'SPLIT'}, {true, 'RESERVE'}, {'TSAIW', 'RESERVE', 'MINMAX', 10.0}, {'DEFAULT', false}},...
+    {'BOTTOM', {'DEFAULT', [], 'SPLIT'}, {true, 'RESERVE'}, {'TSAIW', 'RESERVE', 'MINMAX', 10.0}, {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'}, {'DEFAULT', false}},...
     [0, 150, 0, -100, 0, 0]);

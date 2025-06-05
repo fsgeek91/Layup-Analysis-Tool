@@ -64,10 +64,11 @@ classdef internal_plot < handle
                 f = abd.internal_plot.createFigure();
 
                 % Set the figure title
-                figureTitle = sprintf('Optimiser criterion for all stacking permutations');
+                figureTitle = sprintf('CDF plot of optimiser criterion for all stacking permutations');
 
                 % Plot the criterion
-                histogram(CRITERION_BUFFER);
+                h = cdfplot(CRITERION_BUFFER);
+                set(h, 'LineWidth', 2.0)
                 hold on
 
                 % Activate the grid
@@ -86,7 +87,7 @@ classdef internal_plot < handle
 
                 % Set axis labels
                 xlabel(xLabelString, 'FontSize', fontY)
-                ylabel('Number of occurrences', 'FontSize', fontX)
+                ylabel('Cumulative probability', 'FontSize', fontX)
 
                 % Set the figure title
                 title(figureTitle, 'FontSize', fontTitle)

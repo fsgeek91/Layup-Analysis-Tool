@@ -85,13 +85,13 @@ function [varargout] = main(varargin)
 %
 %   LAYUP(4) is empty ( [] )
 %
-%   OUTPUT_DEF. A 1x5 cell array specifying the ply output location,
-%   MATLAB figures, strength calculation, stacking sequence optimisation
-%   and the results output location.
+%   OUTPUT_DEF. A 1x6 cell array specifying the ply output location,
+%   MATLAB figures, strength calculation, stacking sequence optimisation,
+%   optimiser solver settings and the results output location.
 %
-%   OUTPUT_DEF(1:4) are empty ( [] )
+%   OUTPUT_DEF(1:5) are empty ( [] )
 %
-%   OUTPUT_DEF(5) is a 1x2 cell array specifying the results location,
+%   OUTPUT_DEF(6) is a 1x2 cell array specifying the results location,
 %   OUTPUT_LOCATION. OUTPUT_LOCATION(1) is a string specifying the results
 %   location. Use the parameter 'DEFAULT' to save results under the output
 %   folder in the current working directory, or specify the directory path
@@ -106,10 +106,12 @@ function [varargout] = main(varargin)
 %
 %   LAYUP(1:3) (already specified - see USE CASE I)
 %
-%   LAYUP(4) is an integer specifying the number of stress/strain section
-%   points per ply, SECTION_POINTS. Since the layup section is integrated
-%   once before the stress analysis, section points are treated as sample
-%   points.
+%   LAYUP(4) is the number of stress/strain section points per ply,
+%   SECTION_POINTS. The parameter 'DEFAULT' allows the number of section
+%   point to be chosen automatically; the number of section points is
+%   specified directly with a positive integer. Since the layup section is
+%   integrated once before the stress analysis, section points are treated
+%   as sample points.
 %
 %   OUTPUT_DEF(1) is the section output request, OUTPUT_PLY. When
 %   OUTPUT_PLY is a string, it specifies the output location of each ply:
@@ -143,7 +145,7 @@ function [varargout] = main(varargin)
 %   'SPLIT' creates a separate plot for each tensor component; the
 %   parameter 'COMPACT' overlays each tensor component in a single plot.
 %
-%   OUTPUT_DEF(3:4) are empty ( [] )
+%   OUTPUT_DEF(3:5) are empty ( [] )
 %
 %   LOAD. A 1x6 array specifying the applied load, N11, N22, N12, M11, M22
 %   and M12.
@@ -192,6 +194,7 @@ function [varargout] = main(varargin)
 %     strain-based failure criteria, the inverse of the strength reserve
 %     factor [1/R] is the scaling factor by which the load matrix must be
 %     multiplied to hit the failure surface.
+%
 %     VALUE: Criterion value, V. The value of the index obtained directly
 %     from the failure criterion.
 %   
@@ -206,9 +209,9 @@ function [varargout] = main(varargin)
 %   Note: For Hashin's theory and LaRC05, R is not evaluated; output for
 %   these criteria is quoted as the damage initiation criterion index.
 %
-%   OUTPUT_DEF(4) is empty ( [] )
+%   OUTPUT_DEF(4:5) are empty ( [] )
 %
-%   OUTPUT_DEF(5) (already specified - see USE CASE I)
+%   OUTPUT_DEF(6) (already specified - see USE CASE I)
 %
 %   LOAD (already specified - see USE CASE II)
 %__________________________________________________________________________
@@ -237,7 +240,43 @@ function [varargout] = main(varargin)
 %   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
 %   permutations.
 %
-%   OUTPUT_DEF(5) (already specified - see USE CASE I)
+%   OUTPUT_DEF(5) is a 1x3 cell array specifying the solver settings for
+%   the stacking sequence optimiser, OPTIMISER_SETTINGS.
+%   OPTIMISER_SETTINGS(1) is the solver type:
+%
+%     FULL MATRIX: This method computes all stacking sequence combinations
+%     before the start of the optimisation. This method is depracated and
+%     is not recommended. For large stacking sequences, the optimisation
+%     may exit with an error.
+%
+%     MIXED-RADIX: This method uses index-based generation to compute the
+%     stacking sequence combinations dynamically. This method has a much
+%     lower memory cost than the FULL MATRIX method and can handle very
+%     large stacking sequences. It is the recommended method in most cases.
+%
+%     CHUNKS: This method uses chunking and worker looping to distrubte the
+%     stacking sequence combinations between workers. It is the recommended
+%     method for extremely large problems (hundreds of millions to hundreds
+%     of billions of stacking sequence combinations) where the MIXED-RADIX
+%     method would produce undesirable results, but requires a chunk size
+%     to be specified. This method provides no benefit over the MIXED-RADIX 
+%     method unless a parallel pool is active in the curent MATLAB session.
+%
+%   OPTIMISER_SETTINGS(2) is the chunk size when the CHUNKS method is
+%   specified. The parameter 'DEFAULT' computes the chunk size
+%   automatically based on a heuristic algorithm; the chunk size is
+%   specified directly with a positive integer.
+%
+%   OPTIMISER_SETTINGS(3) is the tuning constant for the chunk size when
+%   the CHUNKS method is specified. The parameter 'DEFAULT' uses a default
+%   value (5); the tuning parameter is specified directly with a positive
+%   integer (typically in the range 2-10).
+%
+%   Note: The stacking sequence optimiser solver settings are intended for
+%   advanced users only. The use of non-standard settings may result in an
+%   increase in the analysis time, or the analysis may crash.
+%
+%   OUTPUT_DEF(6) (already specified - see USE CASE I)
 %
 %   LOAD (already specified - see USE CASE II)
 %__________________________________________________________________________
@@ -347,7 +386,8 @@ function [varargout] = main(varargin)
 %   SP. MATLAB figure of S_PLY in X-Y coordinates and ply coordinates
 %   for all section points.
 %
-%   CB, Optimiser criterion for all stacking permutations.
+%   CB, Cumulative density function plot of optimiser criterion for all
+%   stacking permutations.
 %
 %   See also examples, user_definitions.
 %
@@ -380,7 +420,7 @@ varargout{9.0} = [];
 
 %% GET USER INPUTS FROM VARARGIN
 [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
-    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
+    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
     ...
     abd.internal_initialise(nargin, varargin);
 
@@ -532,10 +572,9 @@ tolerance = 1e-6;
 [z, t] = abd.internal_getThickness(nPlies, t_ply, tolerance);
 
 %% PROCESS SECTION_POINTS
-[error, z_points, theta_points, nPlies_points, A11_points, A22_points,...
-    B11_points, B22_points, plyBuffer, thickness, SECTION_POINTS] =...
+[error, z_points, theta_points, nPlies_points, A11_points, A22_points, B11_points, B22_points, plyBuffer, thickness, SECTION_POINTS] =...
     ...
-    abd.internal_getSectionPoints(SECTION_POINTS, 'SECTION_POINTS', nPlies, theta, z, A11, A22, B11, B22, tolerance);
+    abd.internal_getSectionPoints(SECTION_POINTS, 'SECTION_POINTS', nPlies, theta, z, A11, A22, B11, B22, tolerance, OUTPUT_PLY);
 
 % An error occurred, so RETURN
 if error == true
@@ -641,11 +680,11 @@ if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
 
     if OUTPUT_OPTIMISED{1.0} == true
         %% FIND THE OPTIMUM STACKING SEQUENCE
-        [BEST_SEQUENCE, CRITERION_BUFFER, ~] =...
+        [BEST_SEQUENCE, CRITERION_BUFFER, ~, CHUNK_SIZE, N_CHUNKS] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
-            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS);
+            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OPTIMISER_SETTINGS);
     else
         CRITERION_BUFFER = [];
     end
@@ -713,7 +752,7 @@ abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
-    bxy, E_midplane, OUTPUT_PLY, z_points)
+    bxy, E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS)
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));

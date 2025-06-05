@@ -149,6 +149,9 @@ SYMMETRIC_LAYUP = false;
 
 % SECTION_POINTS  Number of stress/strain section points per ply
 %{
+    'Default': Program controlled
+    sp: User-defined
+
     Note: The layup section is integrated once before the stress analysis;
     section points are thus treated as sample points.
 
@@ -235,7 +238,22 @@ OUTPUT_STRENGTH = {true, 'RESERVE'};
     Fourth argument (precision):
     theta: Angular step size
 %}
-OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 10.0};
+OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 5.0};
+
+% OPTIMISER_SETTINGS  Optimiser solver settings (advanced)
+%{
+    First argument (solver):
+    '<param>': Full matrix; Mixed-radix; Chunks
+    
+    Second argument (chunk size):
+    'DEFAULT': Program controlled
+    n: User-defined
+    
+    Third argument (tuning constant):
+    'DEFAULT': Program-controlled
+    k: User-defined
+%}
+OPTIMISER_SETTINGS = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
 
 % OUTPUT_LOCATION  Results output location
 %{
@@ -257,7 +275,7 @@ OUTPUT_LOCATION = {'DEFAULT', true};
 [ABD1, ABD2, Q, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT_SEQ] =...
     ...
     abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN, LARC05}, {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY, OUTPUT_FIGURE,...
-    OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
+    OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
 
 clear MATERIAL FAIL_STRESS FAIL_STRAIN HASHIN LARC05 STACKING_SEQUENCE PLY_THICKNESS SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY DELTA_T DELTA_M OUTPUT_PLY...
-    OUTPUT_FIGURE OUTPUT_STRENGTH OUTPUT_OPTIMISED OUTPUT_LOCATION
+    OUTPUT_FIGURE OUTPUT_STRENGTH OUTPUT_OPTIMISED OPTIMISER_SETTINGS OUTPUT_LOCATION

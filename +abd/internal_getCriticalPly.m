@@ -35,6 +35,9 @@ nPoints = 1.0:length(plyBuffer);
 % Initialise buffer for SFAILRATIO
 SFAILRATIO = zeros(1.0, cols);
 
+% Buffer to hold fail ply information for each criterion
+FAILED_PLY_OUTER = false(nPlies, cols);
+
 for i = 1.0:cols
     % Get the current column from DATA
     DATA_i = DATA(:, i);
@@ -49,7 +52,7 @@ for i = 1.0:cols
     DATA_ply = zeros(nPlies, 1.0);
 
     % Buffer to record failed plies
-    FAILED_PLY = false(1.0, nPlies);
+    FAILED_PLY_INNER = false(1.0, nPlies);
 
     for p = 1.0:nPlies
         % Get maximum value in current ply based on output section points
@@ -70,13 +73,19 @@ for i = 1.0:cols
         end
 
         if all(DATA_i_all >= 1.0)
-            % All section points in the ply have failed
-            FAILED_PLY(p) = true;
+            %{
+                All section points in the ply have failed. Update the
+                failed ply inner buffer
+            %}
+            FAILED_PLY_INNER(p) = true;
         end
     end
 
     % Update the value of SFAILRATIO
-    SFAILRATIO(i) = length(FAILED_PLY(FAILED_PLY == true))/nPlies;
+    SFAILRATIO(i) = length(FAILED_PLY_INNER(FAILED_PLY_INNER == true))/nPlies;
+
+    % Update the failed ply outer buffer
+    FAILED_PLY_OUTER(:, i) = FAILED_PLY_INNER;
 
     % Update VARARGOUT
     varargout{dataIndexes(i)} = find(DATA_ply == max(DATA_ply), 1.0);
@@ -108,5 +117,7 @@ end
 
 % Output SFAILRATIO
 varargout{sfailratioIndex} = SFAILRATIO;
-varargout{sfailratioIndex + 1.0} = FAILED_PLY;
+
+% Output the failed ply outer buffer
+varargout{sfailratioIndex + 1.0} = max(FAILED_PLY_OUTER, [], 2.0)';
 end

@@ -2,7 +2,7 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, outputPoints,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy,...
-    E_midplane, OUTPUT_PLY, z_points)
+    E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -437,12 +437,14 @@ end
 %% Print failure assessment summary
 if (outputStrength{1.0} == true) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
     fprintf(fid, '\nNotes about failure/damage initiation assessment output:\n\t');
-    fprintf(fid, '- The assessment is performed at every section point in the layup\n\t  regardless of the setting of OUTPUT_PLY\n\t');
-    fprintf(fid, '- Assessment criteria report the worst section point for each ply\n\t');
-    fprintf(fid, ['- SFAILRATIO is the section failure ratio across all the plies (a ply\n\t  is considered to have failed when all of the section points in the\n\t  ply have fail',...
-        'ed)\n\t']);
-    fprintf(fid, ['- The plies are marked with the STATUS flags as follows:\n\t\t"SAFE": No section points in the ply have failed\n\t\t"FAILED": All of the section points in the p',...
-        'ly have failed\n\t\t"UNSAFE": The ply has not failed, but at least one section point in\n\t\tthe ply has failed\n\t']);
+    fprintf(fid, '- The assessment is performed at every section point in the layup,\n\t  regardless of the setting of OUTPUT_PLY\n\t');
+    fprintf(fid, '- The assessment criteria report the worst section point for each ply\n\t');
+    fprintf(fid, ['- A section point is considered to have failed when failure is\n\t  reported according to at least one of the evaluated failure indexes\n\t  or damage initiatio',...
+        'n criteria for the selected strength assessment\n\t']);
+    fprintf(fid, '- A ply is considered to have failed when all of the section points in\n\t  the ply have failed\n\t');
+    fprintf(fid, '- SFAILRATIO is the section failure ratio across all the plies\n\t  (NUMBER_OF_FAILED_PLIES/TOTAL_NUMBER_OF_PLIES)\n\t');
+    fprintf(fid, ['- The plies are marked with the STATUS flags as follows:\n\t\tSAFE: No section points in the ply have failed\n\t\tFAILED: All of the section points in the ply h',...
+        'ave failed\n\t\tUNSAFE: The ply has not failed, but at least one section point in\n\t\tthe ply has failed\n\t']);
     fprintf(fid, '- The worst section point value for the ply may be greater than 1\n\t  without the ply''s status being marked as FAILED\n');
 
     fprintf(fid, '\n===========================================================================\n');
@@ -467,8 +469,8 @@ if (isempty(BEST_SEQUENCE) == false) && (isempty(BEST_SEQUENCE{5.0}) == false)
 
     fprintf(fid, '\n\n===========================================================================\n');
 elseif isempty(BEST_SEQUENCE) == false
-    % Print the header
-    fprintf(fid, '\nStacking sequence optimisation summary:\n');
+    % Print the settings header
+    fprintf(fid, '\nStacking sequence optimisation settings:\n');
 
     % Get the criterion selected for optimisation
     optiCriterion = lower(OUTPUT_OPTIMISED{2.0});
@@ -515,6 +517,27 @@ elseif isempty(BEST_SEQUENCE) == false
     % Print the precision
     fprintf(fid, '\nPrecision: %g degrees', OUTPUT_OPTIMISED{5.0}(2.0) - OUTPUT_OPTIMISED{5.0}(1.0));
 
+    % Print the optimisation method
+    switch OPTIMISER_SETTINGS{1.0}
+        case 1.0
+            fprintf(fid, '\nMethod: %s', 'Full matrix (deprecated - not recommended)');
+        case 2.0
+            fprintf(fid, '\nMethod: %s', 'Index-based generation (mixed-radix)');
+        case 3.0
+            fprintf(fid, '\nMethod: %s', 'Chunking + worker looping');
+
+            % Print the chunk size and number of chunks
+            if isempty(CHUNK_SIZE) == false
+                fprintf(fid, '\n\tChunk size: %.0f', CHUNK_SIZE);
+                fprintf(fid, '\n\tNumber of chunks: %.0f', N_CHUNKS);
+            end
+        otherwise
+            fprintf(fid, '\nMethod: %s', 'UNKNOWN');
+    end
+
+    % Print the results header
+    fprintf(fid, '\n\nStacking sequence optimisation results summary:');
+
     % Print the formatted stacking sequence string
     seqStr = BEST_SEQUENCE{1.0};
     seqStrFormatted = '[';
@@ -531,7 +554,11 @@ elseif isempty(BEST_SEQUENCE) == false
     fprintf(fid, '\nCritical value: %g', BEST_SEQUENCE{2.0});
 
     % Print other calculation data
-    fprintf(fid, '\n(Checked %.0f stacking permutations in %g seconds)\n', BEST_SEQUENCE{3.0}, BEST_SEQUENCE{4.0});
+    str = sprintf('%.0f', BEST_SEQUENCE{3.0});
+    str_with_commas = regexprep(fliplr(str), '(\d{3})(?=\d)', '$1,');
+    str_with_commas = fliplr(str_with_commas);
+
+    fprintf(fid, '\n(Checked %s stacking permutations in %g seconds)\n', str_with_commas, BEST_SEQUENCE{4.0});
 
     % Print the optimised stress/strain tensor
     abd.internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, BEST_SEQUENCE{6.0}.STRESS_XY, BEST_SEQUENCE{6.0}.STRESS_PLY, BEST_SEQUENCE{6.0}.STRAIN_XY,...
@@ -540,8 +567,7 @@ elseif isempty(BEST_SEQUENCE) == false
         OUTPUT_PLY, z_points, SECTION_POINTS)
 
     fprintf(fid, '\n===========================================================================\n');
-elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) &&...
-        (OUTPUT_OPTIMISED{1.0} == true))
+elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true))
     % Print message about no optimisation output
     if printTensor ~= -1.0
         fprintf(fid, '\nNote: Stacking sequence optimisation results are unavailable. The strength\ncalculation must first be enabled with OUTPUT_STRENGTH = {true, <param>}.\n');

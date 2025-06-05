@@ -1,5 +1,5 @@
 function [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
-    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
+    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
     internal_initialise(nargin, USER_INPUTS)
 %   Gather variables from user inputs.
 %
@@ -26,6 +26,7 @@ OUTPUT_PLY = [];
 OUTPUT_FIGURE = [];
 OUTPUT_STRENGTH = [];
 OUTPUT_OPTIMISED = [];
+OPTIMISER_SETTINGS = [];
 OUTPUT_LOCATION = [];
 Nxx = [];
 Nyy = [];
@@ -55,8 +56,8 @@ switch nargin
         [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
 
         % Output data
-        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0}, USER_INPUTS{3.0}{3.0},...
-            USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0});
+        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0},...
+            USER_INPUTS{3.0}{3.0}, USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0}, USER_INPUTS{3.0}{6.0});
 
         % Disable tensor output
         enableTensor = false;
@@ -73,8 +74,8 @@ switch nargin
         [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
 
         % Output data
-        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0}, USER_INPUTS{3.0}{3.0},...
-            USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0});
+        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0},...
+            USER_INPUTS{3.0}{3.0}, USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0}, USER_INPUTS{3.0}{6.0});
 
         % Load matrix data
         [Nxx, Nyy, Nxy, Mxx, Myy, Mxy] = deal(USER_INPUTS{4.0}(1.0), USER_INPUTS{4.0}(2.0), USER_INPUTS{4.0}(3.0), USER_INPUTS{4.0}(4.0), USER_INPUTS{4.0}(5.0),...
@@ -95,8 +96,8 @@ switch nargin
         [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
 
         % Output data
-        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0}, USER_INPUTS{3.0}{3.0},...
-            USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0});
+        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0},...
+            USER_INPUTS{3.0}{3.0}, USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0}, USER_INPUTS{3.0}{6.0});
 
         % Load matrix data
         [Nxx, Nyy, Nxy, Mxx, Myy, Mxy] = deal(USER_INPUTS{4.0}(1.0), USER_INPUTS{4.0}(2.0), USER_INPUTS{4.0}(3.0), USER_INPUTS{4.0}(4.0), USER_INPUTS{4.0}(5.0),...
@@ -123,10 +124,43 @@ if iscell(OUTPUT_OPTIMISED) == false
     OUTPUT_OPTIMISED = {OUTPUT_OPTIMISED};
 end
 
-if cellfun(@isempty, OUTPUT_OPTIMISED) == true
+if all(cellfun(@isempty, OUTPUT_OPTIMISED)) == true
     % Set default values if necessary
     OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 10.0};
 end
+
+%% Process OPTIMISER_SETTINGS
+if iscell(OPTIMISER_SETTINGS) == false
+    OPTIMISER_SETTINGS = {OPTIMISER_SETTINGS};
+end
+
+if all((cellfun(@isempty, OPTIMISER_SETTINGS) == true)) || (length(OPTIMISER_SETTINGS) < 3.0)
+    % Set default values if necessary
+    OPTIMISER_SETTINGS = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
+end
+
+% Process the first argument
+argument = OPTIMISER_SETTINGS{1.0};
+
+if ischar(argument) == false
+    OPTIMISER_SETTINGS{1.0} = 2.0;
+else
+    argument = lower(argument);
+    argument(ismember(argument, ' ')) = [];
+    argument(ismember(argument, '-')) = [];
+
+    switch argument
+        case 'fullmatrix'
+            OPTIMISER_SETTINGS{1.0} = 1.0;
+        case 'mixedradix'
+            OPTIMISER_SETTINGS{1.0} = 2.0;
+        case 'chunks'
+            OPTIMISER_SETTINGS{1.0} = 3.0;
+        otherwise
+            OPTIMISER_SETTINGS{1.0} = 2.0;
+    end
+end
+
 
 %% Process output location
 if iscell(OUTPUT_LOCATION) == false
