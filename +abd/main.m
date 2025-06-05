@@ -255,12 +255,10 @@ function [varargout] = main(varargin)
 %     large stacking sequences. It is the recommended method in most cases.
 %
 %     CHUNKS: This method uses chunking and worker looping to distrubte the
-%     stacking sequence combinations between workers. It is the recommended
-%     method for extremely large problems (hundreds of millions to hundreds
-%     of billions of stacking sequence combinations) where the MIXED-RADIX
-%     method would produce undesirable results, but requires a chunk size
-%     to be specified. This method provides no benefit over the MIXED-RADIX 
-%     method unless a parallel pool is active in the curent MATLAB session.
+%     stacking sequence combinations between workers. It scales better than
+%     the MIXED-RADIX method for large problems, but requires a chunk size
+%     to be specified. This method provides no benefit over the MIXED-RADIX
+%     method unless a parallel pool is connected.
 %
 %   OPTIMISER_SETTINGS(2) is the chunk size when the CHUNKS method is
 %   specified. The parameter 'DEFAULT' computes the chunk size
