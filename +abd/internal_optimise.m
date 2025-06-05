@@ -75,11 +75,13 @@ classdef internal_optimise < handle
                         anglePermutations = anglePermutations';
                     end
 
+                    % Run the stacking sequence optimiser
                     CRITERION_BUFFER = abd.internal_optimise.parfor1(nPermutations, anglePermutations, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points,...
                         A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
                         parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC,...
                         SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective);
                 case 2.0 % MIXED-RADIX REPRESENTATION
+                    % Run the stacking sequence optimiser
                     CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
                         A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC,...
                         YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC,...
@@ -90,14 +92,18 @@ classdef internal_optimise < handle
                     
                     if strcmpi(OPTIMISER_SETTINGS{2.0}, 'DEFAULT') == true
                         if isempty(poolObj) == false
+                            % Parallel mode: Optimise chunk size for worker load
+
                             % Get the tuning constant
                             if strcmpi(OPTIMISER_SETTINGS{3.0}, 'DEFAULT') == true
+                                % Default value
                                 k = 5.0;
                             else
+                                % User-defined
                                 k = OPTIMISER_SETTINGS{3.0};
                             end
 
-                            % Parallel mode: Optimise chunk size for worker load
+                            % Set the chunk size
                             CHUNK_SIZE = ceil(nPermutations/(poolObj.NumWorkers*k));
                         else
                             %{
@@ -108,12 +114,14 @@ classdef internal_optimise < handle
                             CHUNK_SIZE = ceil(nPermutations/40.0);
                         end
                     else
+                        % User-defined chunk size
                         CHUNK_SIZE = OPTIMISER_SETTINGS{2.0};
                     end
 
                     % Get the number of chunks
                     N_CHUNKS = ceil(nPermutations/CHUNK_SIZE);
 
+                    % Run the stacking sequence optimiser
                     CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11,...
                         Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
                         failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable,...

@@ -458,6 +458,9 @@ if (isempty(BEST_SEQUENCE) == false) && (isempty(BEST_SEQUENCE{5.0}) == false)
     % Print message about no optimisation output
     fprintf(fid, '\nException: Stacking optimisation was not performed.\n\tidentifier: %s\n\tmessage: %s\n', exception.identifier, exception.message);
 
+    % Advise the user to select a different optimization method
+    fprintf(fid, '\nNote: In OPTIMISER_SETTINGS, the ''FULL MATRIX'' optimiser method is\ndeprecated. Select the ''MIXED-RADIX'' or ''CHUNKS'' method instead.\n\n');
+
     % Get the error stack object
     stack = exception.stack;
 
