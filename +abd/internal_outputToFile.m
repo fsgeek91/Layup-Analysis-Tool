@@ -459,7 +459,7 @@ if (isempty(BEST_SEQUENCE) == false) && (isempty(BEST_SEQUENCE{5.0}) == false)
     fprintf(fid, '\nException: Stacking optimisation was not performed.\n\tidentifier: %s\n\tmessage: %s\n', exception.identifier, exception.message);
 
     % Advise the user to select a different optimization method
-    fprintf(fid, '\nNote: In OPTIMISER_SETTINGS, the ''FULL MATRIX'' optimiser method is\ndeprecated. Select the ''MIXED-RADIX'' or ''CHUNKS'' method instead.\n\n');
+    fprintf(fid, '\nWarning: The FULL MATRIX method is not recommended. Use MIXED-RADIX or\nCHUNKS instead.\n\n');
 
     % Get the error stack object
     stack = exception.stack;
@@ -523,7 +523,8 @@ elseif isempty(BEST_SEQUENCE) == false
     % Print the optimisation method
     switch OPTIMISER_SETTINGS{1.0}
         case 1.0
-            fprintf(fid, '\nMethod: %s', 'Full matrix (deprecated - not recommended)');
+            fprintf(fid, '\nMethod: %s', 'Full matrix');
+            fprintf(fid, '\n\tWarning: This method is not recommended. For improved scalability, use\n\tMIXED-RADIX or CHUNKS instead');
         case 2.0
             fprintf(fid, '\nMethod: %s', 'Index-based generation (mixed-radix)');
         case 3.0
