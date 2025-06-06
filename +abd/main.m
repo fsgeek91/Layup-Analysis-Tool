@@ -678,6 +678,7 @@ SP_COLOUR_BUFFER = repmat([0.0, 0.0, 0.0], [nPlies_points, 1.0]);
 % Initialise chunk size and number of chunks
 CHUNK_SIZE = [];
 N_CHUNKS = [];
+EXECUTION_MODE = [];
 
 % Initialise failure criteria component buffers
 [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = abd.internal_strength.init(nPlies_points);
