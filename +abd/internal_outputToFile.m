@@ -7,8 +7,8 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.1.0 Copyright Louis Vallance 2025
-%   Last modified 03-Jun-2025 10:08:33 UTC
+%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 05:42:50 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -28,8 +28,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 3.1.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 03-Jun-2025 10:08:33 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 4.0.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 06-Jun-2025 05:42:50 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
 % Print the units and CSYS conventions
@@ -143,7 +143,7 @@ if any(any([axx; ayy; axy; bxx; byy; bxy])) == true
 end
 
 %% Print stress/strain tensors
-if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (SECTION_POINTS == 1.0)
+if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (isscalar(z_points) == true)
     %{
         Inform the user if there is only one total section point for output
         and MATLAB figures were requested
@@ -439,8 +439,8 @@ if (outputStrength{1.0} == true) && (any(~[noFailStress, noFailStrain, noHashin]
     fprintf(fid, '\nNotes about failure/damage initiation assessment output:\n\t');
     fprintf(fid, '- The assessment is performed at every section point in the layup,\n\t  regardless of the setting of OUTPUT_PLY\n\t');
     fprintf(fid, '- The assessment criteria report the worst section point for each ply\n\t');
-    fprintf(fid, ['- A section point is considered to have failed when failure is\n\t  reported according to at least one of the evaluated failure indexes\n\t  or damage initiatio',...
-        'n criteria for the selected strength assessment\n\t']);
+    fprintf(fid, ['- A section point is considered to have failed when failure or damage\n\t  is reported according to at least one of the evaluated failure\n\t  indexes or damage',...
+        ' initiation criteria for the selected strength\n\t  assessment\n\t']);
     fprintf(fid, '- A ply is considered to have failed when all of the section points in\n\t  the ply have failed\n\t');
     fprintf(fid, '- SFAILRATIO is the section failure ratio across all the plies\n\t  (NUMBER_OF_FAILED_PLIES/TOTAL_NUMBER_OF_PLIES)\n\t');
     fprintf(fid, ['- The plies are marked with the STATUS flags as follows:\n\t\tSAFE: No section points in the ply have failed\n\t\tFAILED: All of the section points in the ply h',...

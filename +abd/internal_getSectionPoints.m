@@ -4,8 +4,8 @@ function [error, z_points, theta, nPlies_points, A11, A22, B11, B22, plyBuffer, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.1.0 Copyright Louis Vallance 2025
-%   Last modified 03-Jun-2025 10:08:33 UTC
+%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 05:42:50 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -48,10 +48,14 @@ if (ischar(SECTION_POINTS) == true) && (strcmpi(SECTION_POINTS, 'DEFAULT') == tr
             end
         elseif isnumeric(OUTPUT_PLY) == true
             %{
-                OUTPUT_PLY is a section point list, so ensure that highest
-                requested section point is available
+                OUTPUT_PLY is a section point list. Inform the user that
+                they need to specify the number of section points directly
             %}
-            SECTION_POINTS = max(OUTPUT_PLY);
+            str = strtrim(sprintf('%d, ', OUTPUT_PLY));
+            fprintf('[ERROR] Invalid value of OUTPUT_PLY ([%s])\n-> For user-defined section point lists, the number of section points must\n   be specified with SECTION_POINTS\n',...
+                str(1.0:end - 1.0));
+            error = true;
+            return
         else
             % Only 2 section points are required
             SECTION_POINTS = 2.0;

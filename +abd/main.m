@@ -295,44 +295,49 @@ function [varargout] = main(varargin)
 %   Q.PLY is a 3x3xn array of the stiffness matrices in ply coordinates,
 %   where n is the number of plies in the layup.
 %
-%   EI. A 6x1 array of the midplane strains and curvatures induced in the
+%   E_MIDPLANE. A 6x1 array of the midplane strain and curvature components
+%   (EXX_0, EYY_0, EXY_0, KAPPA_XX, KAPPA_YY, KAPPA_XY) induced in the
 %   laminate. These strains represent the deflections of the laminate about
 %   the neutral axis
 %
-%   EP. A 1x6 cell array of the ply strains for all section points, where
-%   n (below) is the total number of section points in the layup.
+%   E_PLY. A 1x6 cell array of the ply strain components (EXX/E11, EYY/E22,
+%   GAMMA_XY/GAMMA_12) for all section points, where n (below) is the total
+%   number of section points in the layup.
 %
-%   EP(1) is a 3xn array of the ply strains in global (X-Y) coordinates.
+%   E_PLY(1) is a 3xn array of the ply strains in global (X-Y) coordinates.
 %
-%   EP(2) is a 3xn array of the ply strains in ply (1-2) coordinates.
+%   E_PLY(2) is a 3xn array of the ply strains in ply (1-2) coordinates.
 %
-%   EP(3) is a 3xn array of the stress-free ply strains due to thermal
+%   E_PLY(3) is a 3xn array of the stress-free ply strains due to thermal
 %   process in global (X-Y) coordinates.
 %
-%   EP(4) is a 3xn array of the stress-free ply strains due to thermal
+%   E_PLY(4) is a 3xn array of the stress-free ply strains due to thermal
 %   process in ply (1-2) coordinates.
 %
-%   EP(5) is a 3xn array of the stress-free ply strains due to moisture
+%   E_PLY(5) is a 3xn array of the stress-free ply strains due to moisture
 %   process in global (X-Y) coordinates.
 %
-%   EP(6) is a 3xn array of the stress-free ply strains due to moisture
+%   E_PLY(6) is a 3xn array of the stress-free ply strains due to moisture
 %   process in ply (1-2) coordinates.
 %
 %   Note: For stress-free thermal/moisture strains, contractions have
 %   positive values.
 %
-%   SP. A 1x2 cell array of the ply stresses for all section points, where
-%   n (below) is the total number of section points in the layup.
+%   S_PLY. A 1x2 cell array of the ply stress components (SXX/S11, SYY/S22,
+%   SXY/S12) for all section points, where n (below) is the total number of
+%   section points in the layup.
 %
-%   SP(1) is a 3xn array of the ply stresses in global (X-Y) coordinates.
+%   S_PLY(1) is a 3xn array of the ply stresses in global (X-Y)
+%   coordinates.
 %
-%   SP(2) is a 3xn array of the ply stresses in ply (1-2) coordinates.
+%   S_PLY(2) is a 3xn array of the ply stresses in ply (1-2) coordinates.
 %
-%   EMTB. A 1x2 cell array of the equivalent moduli in tension and bending.
+%   EQ_MODULI. A 1x2 cell array of the equivalent moduli in tension and
+%   bending.
 %
-%   EMTB(1) = EXT, EYT, GXYT, NUXYT, NUYXT.
+%   EQ_MODULI(1) = EXT, EYT, GXYT, NUXYT, NUYXT.
 %
-%   EMTB(2) = EXB, EYB, GXYB, NUXYB, NUYXB.
+%   EQ_MODULI(2) = EXB, EYB, GXYB, NUXYB, NUYXB.
 %
 %   Note: The equivalent moduli are only calculated for symmetric
 %   laminate stacking sequences.
@@ -357,21 +362,22 @@ function [varargout] = main(varargin)
 %       - LARTFCRT, LaRC05 fibre tensile failure measure
 %       - SFAILRATIO, The section failure ratio across all plies [%/100]
 %
-%   OPT. A 1x6 cell of the results of the stacking sequence optimisation.
+%   OPT_SEQ. A 1x6 cell of the results of the stacking sequence
+%   optimisation.
 %
-%   OPT(1) is a 1xn array of the optimum stacking sequence, where n is the
-%   number of plies in the layup.
+%   OPT_SEQ(1) is a 1xn array of the optimum stacking sequence, where n is
+%   the number of plies in the layup.
 %
-%   OPT(2) is the critical failure criterion value.
+%   OPT_SEQ(2) is the critical failure criterion value.
 %
-%   OPT(3) is the total number of stacking permutations considered by the
-%   optimiser.
+%   OPT_SEQ(3) is the total number of stacking permutations considered by
+%   the optimiser.
 %
-%   OPT(4) is the analysis time (in seconds).
+%   OPT_SEQ(4) is the analysis time (in seconds).
 %
-%   OPT(5) is an exception returned in case of optimisation failure.
+%   OPT_SEQ(5) is an exception returned in case of optimisation failure.
 %
-%   OPT(6) is a structure containing the stress and strain tensors
+%   OPT_SEQ(6) is a structure containing the stress and strain tensors
 %   corresponding to the optimum stacking sequence.
 %
 %   Note: Replace unrequested outputs with a tilde ( ~ ) assignment.
@@ -384,8 +390,8 @@ function [varargout] = main(varargin)
 %   SP. MATLAB figure of S_PLY in X-Y coordinates and ply coordinates
 %   for all section points.
 %
-%   CB, Cumulative density function plot of optimiser criterion for all
-%   stacking permutations.
+%   CB, Cumulative Density Function (CFD) plot of optimiser criterion for
+%   all stacking permutations.
 %
 %   See also examples, user_definitions.
 %
@@ -397,8 +403,8 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 3.1.0 Copyright Louis Vallance 2025
-%   Last modified 03-Jun-2025 10:08:33 UTC
+%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 05:42:50 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -664,6 +670,10 @@ ABD(abs(ABD) < tolerance) = 0.0;
 %% PERFORM STRENGTH CALCULATION ON PLY STRESSES
 % Preallocate failed section points colour buffer (for plotting)
 SP_COLOUR_BUFFER = repmat([0.0, 0.0, 0.0], [nPlies_points, 1.0]);
+
+% Initialise chunk size and number of chunks
+CHUNK_SIZE = [];
+N_CHUNKS = [];
 
 % Initialise failure criteria component buffers
 [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = abd.internal_strength.init(nPlies_points);

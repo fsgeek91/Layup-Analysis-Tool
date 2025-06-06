@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 3.1.0 Copyright Louis Vallance 2025
-%   Last modified 03-Jun-2025 10:08:33 UTC
+%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 05:42:50 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
