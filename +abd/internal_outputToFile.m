@@ -2,7 +2,7 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, outputPoints,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy,...
-    E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS)
+    E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, JOB_NAME)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -31,10 +31,11 @@ fprintf(fid, '******************************************************************
 fprintf(fid, 'Layup Analysis Tool 4.0.1 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
 fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 06-Jun-2025 11:07:25 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
+fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 
 % Print the units and CSYS conventions
 if printTensor == 1.0
-    fprintf(fid, 'Length units - [mm]; Stress units - [N/mm2]; Strain units - [mm/mm]\n[xx, yy, xy] - Global (x-y) CSYS\n[11, 22, 12] - Layup (longitudinal-transverse) CSYS\n\n');
+    fprintf(fid, 'Length units: [mm]; Stress units: [N/mm2]; Strain units: [mm/mm]\n[xx, yy, xy] -> Global (x-y) CSYS\n[11, 22, 12] -> Layup (longitudinal-transverse) CSYS\n\n');
 end
 
 %% Initialise variables
@@ -512,9 +513,9 @@ elseif isempty(BEST_SEQUENCE) == false
 
     % Print the objective function
     if OUTPUT_OPTIMISED{4.0} == 1.0
-        fprintf(fid, '\nObjective function: MinMax');
+        fprintf(fid, '\nObjective function: MinMax (minimise the maximum criterion value)');
     else
-        fprintf(fid, '\nObjective function: MinMean');
+        fprintf(fid, '\nObjective function: MinMean (minimise the average criterion value)');
     end
 
     % Print the precision
@@ -523,12 +524,12 @@ elseif isempty(BEST_SEQUENCE) == false
     % Print the optimisation method
     switch OPTIMISER_SETTINGS{1.0}
         case 1.0
-            fprintf(fid, '\nMethod: %s', 'Full matrix');
+            fprintf(fid, '\nMethod: Full matrix');
             fprintf(fid, '\n\tWarning: This method is not recommended. For improved scalability, use\n\tMIXED-RADIX or CHUNKS instead');
         case 2.0
-            fprintf(fid, '\nMethod: %s', 'Index-based generation (mixed-radix)');
+            fprintf(fid, '\nMethod: Index-based generation (mixed-radix)');
         case 3.0
-            fprintf(fid, '\nMethod: %s', 'Chunking + worker looping');
+            fprintf(fid, '\nMethod: Chunking + worker looping');
 
             % Print the chunk size and number of chunks
             if isempty(CHUNK_SIZE) == false
@@ -536,7 +537,15 @@ elseif isempty(BEST_SEQUENCE) == false
                 fprintf(fid, '\n\tNumber of chunks: %.0f', N_CHUNKS);
             end
         otherwise
-            fprintf(fid, '\nMethod: %s', 'UNKNOWN');
+            fprintf(fid, '\nMethod: UNKNOWN');
+    end
+
+    % Print the execution mode
+    fprintf(fid, '\nExecution mode: %s', EXECUTION_MODE);
+
+    if (OPTIMISER_SETTINGS{1.0} == 3.0) && (strcmpi(EXECUTION_MODE, 'SERIAL') == true)
+        fprintf(fid, ['\n\tNote: The chunking + worker looping method is not recommended for\n\tserial execution. Either connect a parallel pool or use index-based\n\tgeneration (',...
+            'mixed-radix) instead']);
     end
 
     % Print the results header

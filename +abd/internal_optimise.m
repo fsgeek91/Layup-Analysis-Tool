@@ -14,7 +14,7 @@ classdef internal_optimise < handle
 
     methods(Static = true, Access = public)
         %% RUN THE OPTIMISER
-        function [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION, CHUNK_SIZE, N_CHUNKS] =...
+        function [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
                 main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, nSectionPoints, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points, B22_points, tolerance,...
                 XT, XC, YT, YC, S, C12, B12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, deltaT, deltaM,...
                 Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OPTIMISER_SETTINGS)
@@ -32,6 +32,7 @@ classdef internal_optimise < handle
             MIN_CRITERION = [];
             CHUNK_SIZE = [];
             N_CHUNKS = [];
+            EXECUTION_MODE = 'N/A';
 
             % Get data from OUTPUT_OPTIMISED
             [enabled, failureCriterion, parameter, objective, thetaAll] = deal(OUTPUT_OPTIMISED{1.0}, OUTPUT_OPTIMISED{2.0}, OUTPUT_OPTIMISED{3.0}, OUTPUT_OPTIMISED{4.0},...
@@ -50,6 +51,18 @@ classdef internal_optimise < handle
 
             % Set dummy variable
             dummy = zeros(1.0, nPlies);
+            
+            % Get the MATLAB parallel pool object
+            poolObj = gcp("nocreate");
+
+            % Get the execution mode
+            if isempty(poolObj) == true
+                EXECUTION_MODE = 'Serial';
+            elseif poolObj.Connected == true
+                EXECUTION_MODE = 'Parallel';
+            else
+                EXECUTION_MODE = 'Unknown';
+            end
 
             % Start the timer
             timer = tic;
@@ -87,9 +100,6 @@ classdef internal_optimise < handle
                         YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC,...
                         YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective);
                 case 3.0 % CHUNKS
-                    % Get the MATLAB parallel pool object
-                    poolObj = gcp("nocreate");
-                    
                     if strcmpi(OPTIMISER_SETTINGS{2.0}, 'DEFAULT') == true
                         if isempty(poolObj) == false
                             % Parallel mode: Optimise chunk size for worker load

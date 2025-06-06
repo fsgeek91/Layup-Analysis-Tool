@@ -692,7 +692,7 @@ if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
 
     if OUTPUT_OPTIMISED{1.0} == true
         %% FIND THE OPTIMUM STACKING SEQUENCE
-        [BEST_SEQUENCE, CRITERION_BUFFER, ~, CHUNK_SIZE, N_CHUNKS] =...
+        [BEST_SEQUENCE, CRITERION_BUFFER, ~, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
@@ -740,13 +740,15 @@ dateStringFile = dateString;
 
 % Replace unsupported characters for file name string
 for i = 1:length(dateStringFile)
-    if (strcmpi(dateStringFile(i), ':') == 1.0) || (strcmpi(dateStringFile(i), ' ') == 1.0)
+    if (strcmpi(dateStringFile(i), ':') == true) || (strcmpi(dateStringFile(i), ' ') == true)
         dateStringFile(i) = '_';
     end
 end
 
 % Construct the output location path
-outputLocation = [OUTPUT_LOCATION{1.0}, [filesep, 'abd_results_', dateStringFile]];
+% Get the function stack
+stack = dbstack;
+outputLocation = [OUTPUT_LOCATION{1.0}, [filesep, [stack(end).name, '_'], dateStringFile]];
 
 % Create the folder if it does not already exist
 if exist(outputLocation, 'dir') ~= 7.0
@@ -764,7 +766,7 @@ abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
-    bxy, E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS)
+    bxy, E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name)
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
