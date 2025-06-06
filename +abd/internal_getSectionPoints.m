@@ -1,11 +1,11 @@
-function [error, z_points, theta, nPlies_points, A11, A22, B11, B22, plyBuffer, thickness, SECTION_POINTS] =...
+function [error, z_points, theta, nPlies_points, A11, A22, B11, B22, plyBuffer, thickness, SECTION_POINTS, OUTPUT_PLY] =...
     internal_getSectionPoints(SECTION_POINTS, TAG, nPlies, theta, z, A11, A22, B11, B22, tolerance, OUTPUT_PLY)
 %   Get list of section points from user definition.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 05:42:50 UTC
+%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 11:07:25 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -61,6 +61,13 @@ if (ischar(SECTION_POINTS) == true) && (strcmpi(SECTION_POINTS, 'DEFAULT') == tr
             SECTION_POINTS = 2.0;
         end
     end
+elseif (SECTION_POINTS == 1.0) && (strcmpi(OUTPUT_PLY, 'DEFAULT') == true)
+    %{
+        The user specified a single section point and the output location
+        is set to DEFAULT, so reset the value of OUTPUT_PLY to MIDDLE in
+        order to satisfy the request
+    %}
+    OUTPUT_PLY = 'MIDDLE';
 end
 
 if (SECTION_POINTS <= 0.0) || (mod(SECTION_POINTS, 1.0) ~= 0.0) || (isnan(SECTION_POINTS) == true) || (isinf(SECTION_POINTS) == true)

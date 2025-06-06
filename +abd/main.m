@@ -116,7 +116,11 @@ function [varargout] = main(varargin)
 %   OUTPUT_DEF(1) is the section output request, OUTPUT_PLY. When
 %   OUTPUT_PLY is a string, it specifies the output location of each ply:
 %
-%     DEFAULT: Top and bottom faces
+%     DEFAULT: Program controlled
+%       If:
+%         SECTION_POINTS = 1: Midspans only
+%       Else:
+%         Top and bottom faces
 %     TOP: Top faces only
 %     MIDDLE: Midspans only
 %     BOTTOM: Bottom faces only
@@ -245,9 +249,9 @@ function [varargout] = main(varargin)
 %   OPTIMISER_SETTINGS(1) is the solver type:
 %
 %     FULL MATRIX: This method computes all stacking sequence combinations
-%     before the start of the optimisation. This method is depracated and
-%     is not recommended. For large stacking sequences, the optimisation
-%     may exit with an error.
+%     before the start of the optimisation. This method is not recommended.
+%     For large stacking sequences, the optimisation may exit with an
+%     error.
 %
 %     MIXED-RADIX: This method uses index-based generation to compute the
 %     stacking sequence combinations dynamically. This method has a much
@@ -403,8 +407,8 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 05:42:50 UTC
+%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 11:07:25 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -576,7 +580,7 @@ tolerance = 1e-6;
 [z, t] = abd.internal_getThickness(nPlies, t_ply, tolerance);
 
 %% PROCESS SECTION_POINTS
-[error, z_points, theta_points, nPlies_points, A11_points, A22_points, B11_points, B22_points, plyBuffer, thickness, SECTION_POINTS] =...
+[error, z_points, theta_points, nPlies_points, A11_points, A22_points, B11_points, B22_points, plyBuffer, thickness, SECTION_POINTS, OUTPUT_PLY] =...
     ...
     abd.internal_getSectionPoints(SECTION_POINTS, 'SECTION_POINTS', nPlies, theta, z, A11, A22, B11, B22, tolerance, OUTPUT_PLY);
 

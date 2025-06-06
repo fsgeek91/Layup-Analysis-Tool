@@ -5,8 +5,8 @@ function [enableTensor, printTensor, materialDataMechanical, materialDataFailStr
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 05:42:50 UTC
+%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 11:07:25 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

@@ -18,8 +18,8 @@
 %
 %   See also abd.main, examples.
 %
-%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 05:42:50 UTC
+%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 11:07:25 UTC
 
 %% 1: MATERIAL DATA
 % MATERIAL  Mechanical material properties
@@ -173,8 +173,8 @@ DELTA_M = 0.0;
 %% 4: OUTPUT DEFINITION
 % OUTPUT_PLY  Section points for stress/strain output
 %{
-    '<location>': Default (top and bottom); Top; Middle (midspan/single
-    section point; Bottom; All; EnvelopeAbsMax; EnvelopeMax; EnvelopeMin
+    '<location>': Default (program controlled); Top; Middle (midspan/single
+    section point); Bottom; All; EnvelopeAbsMax; EnvelopeMax; EnvelopeMin
     [SP1,..., SPn]: Section point list (1 = Bottom; n = Top)
 %}
 OUTPUT_PLY = 'DEFAULT';

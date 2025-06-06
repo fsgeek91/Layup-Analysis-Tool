@@ -7,8 +7,8 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.0.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 05:42:50 UTC
+%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Last modified 06-Jun-2025 11:07:25 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -28,8 +28,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 4.0.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 06-Jun-2025 05:42:50 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 4.0.1 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 06-Jun-2025 11:07:25 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 
 % Print the units and CSYS conventions
@@ -163,7 +163,7 @@ if printTensor == 1.0
                 plyOutputString = [sprintf('%.0f', length(outputPoints)/nPlies), ' (MIDDLE - APPROXIMATE)'];
             else
                 if strcmpi(OUTPUT_PLY, 'DEFAULT') == true
-                    plyOutputString = [sprintf('%.0f', length(outputPoints)/nPlies), ' (DEFAULT - TOP AND BOTTOM)'];
+                    plyOutputString = [sprintf('%.0f', length(outputPoints)/nPlies), ' (TOP AND BOTTOM)'];
                 else
                     plyOutputString = [sprintf('%.0f', length(outputPoints)/nPlies), ' (', upper(OUTPUT_PLY), ')'];
                 end
