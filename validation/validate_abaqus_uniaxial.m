@@ -15,7 +15,7 @@
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
 %   Last modified 06-Jun-2025 11:07:25 UTC
 
 %% 1: MATERIAL DATA

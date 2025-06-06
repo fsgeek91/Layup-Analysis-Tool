@@ -4,7 +4,7 @@ function [] = internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
 %   Last modified 06-Jun-2025 11:07:25 UTC
 %
 
@@ -185,17 +185,15 @@ else
     end
 end
 
-%% Print the legend for result location
-if OUTPUT_ENVELOPE == false
-    fprintf(fid, locationLegendString);
-end
-
 %% Print the stress-free thermal strain tensor data
 if isempty(E_therm_xy) == false && (any(any(E_therm_xy)) == true || any(any(E_therm_aligned)) == true)
+    % Print the header
     fprintf(fid, '\nStress-free strain due to thermal process at user-selected locations:\n');
-    fprintf(fid, 'PLY    SECTION POINT                 E_Therm_xx    E_Therm_yy    E_Therm_xy    E_Therm_11    E_Therm_22    E_Therm_12    \n');
 
     if OUTPUT_ENVELOPE == true
+        % Print the header
+        fprintf(fid, 'PLY    SECTION POINT      E_Therm_xx    E_Therm_yy    E_Therm_xy    E_Therm_11    E_Therm_22    E_Therm_12    \n');
+        
         % Print the numerically largest stress over all plies
         E_therm_xy_envelope_11 = abd.internal_getAbsMax(E_therm_xy(1.0, :), ENVELOPE_MODE);
         E_therm_xy_envelope_22 = abd.internal_getAbsMax(E_therm_xy(2.0, :), ENVELOPE_MODE);
@@ -204,9 +202,12 @@ if isempty(E_therm_xy) == false && (any(any(E_therm_xy)) == true || any(any(E_th
         E_therm_aligned_envelope_22 = abd.internal_getAbsMax(E_therm_aligned(2.0, :), ENVELOPE_MODE);
         E_therm_aligned_envelope_12 = abd.internal_getAbsMax(E_therm_aligned(3.0, :), ENVELOPE_MODE);
 
-        fprintf(fid, '%-7s%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, E_therm_xy_envelope_11, E_therm_xy_envelope_22, E_therm_xy_envelope_12,...
+        fprintf(fid, '%-7s%-19s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, E_therm_xy_envelope_11, E_therm_xy_envelope_22, E_therm_xy_envelope_12,...
             E_therm_aligned_envelope_11, E_therm_aligned_envelope_22, E_therm_aligned_envelope_12);
     else
+        % Print the header
+        fprintf(fid, 'PLY    SECTION POINT                 LOCATION    Z           E_Therm_xx    E_Therm_yy    E_Therm_xy    E_Therm_11    E_Therm_22    E_Therm_12    \n');
+
         for i = 1.0:nPlies
             %{
                 Extract the strains for the current section point for the
@@ -221,11 +222,14 @@ if isempty(E_therm_xy) == false && (any(any(E_therm_xy)) == true || any(any(E_th
                 E_therm_xy_i = E_therm_xy(:, currentOutputPoints);
                 E_therm_aligned_i = E_therm_aligned(:, currentOutputPoints);
 
+                % Get the z-coordinates for the current section points
+                z_points_i = z_points(:, currentOutputPoints);
+
                 for sp = 1.0:length(currentOutputPoints)
                     thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                    fprintf(fid, '%-7.0f%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, E_therm_xy_i(1.0, sp), E_therm_xy_i(2.0, sp), E_therm_xy_i(3.0, sp),...
-                        E_therm_aligned_i(1.0, sp), E_therm_aligned_i(2.0, sp), E_therm_aligned_i(3.0, sp));
+                    fprintf(fid, '%-7.0f%-30s%-12s%-12g%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, z_points_i(sp), E_therm_xy_i(1.0, sp),...
+                        E_therm_xy_i(2.0, sp), E_therm_xy_i(3.0, sp), E_therm_aligned_i(1.0, sp), E_therm_aligned_i(2.0, sp), E_therm_aligned_i(3.0, sp));
                 end
             end
 
@@ -239,10 +243,13 @@ end
 
 %% Print the stress-free moisture strain tensor data
 if isempty(E_moist_xy) == false && (any(any(E_moist_xy)) == true || any(any(E_moist_aligned)) == true)
+    % Print the header
     fprintf(fid, '\nStress-free strain due to moisture process at user-selected locations:\n');
-    fprintf(fid, 'PLY    SECTION POINT                 E_Moist_xx    E_Moist_yy    E_Moist_xy    E_Moist_11    E_Moist_22    E_Moist_12    \n');
 
     if OUTPUT_ENVELOPE == true
+        % Print the header
+        fprintf(fid, 'PLY    SECTION POINT      E_Moist_xx    E_Moist_yy    E_Moist_xy    E_Moist_11    E_Moist_22    E_Moist_12    \n');
+
         % Print the numerically largest stress over all plies
         E_moist_xy_envelope_11 = abd.internal_getAbsMax(E_moist_xy(1.0, :), ENVELOPE_MODE);
         E_moist_xy_envelope_22 = abd.internal_getAbsMax(E_moist_xy(2.0, :), ENVELOPE_MODE);
@@ -251,9 +258,12 @@ if isempty(E_moist_xy) == false && (any(any(E_moist_xy)) == true || any(any(E_mo
         E_moist_aligned_envelope_22 = abd.internal_getAbsMax(E_moist_aligned(2.0, :), ENVELOPE_MODE);
         E_moist_aligned_envelope_12 = abd.internal_getAbsMax(E_moist_aligned(3.0, :), ENVELOPE_MODE);
 
-        fprintf(fid, '%-7s%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, E_moist_xy_envelope_11, E_moist_xy_envelope_22, E_moist_xy_envelope_12,...
+        fprintf(fid, '%-7s%-19s%-14g%-14g%-14g%-14g%-14g%-14g\n', 'ALL', envelopeString, E_moist_xy_envelope_11, E_moist_xy_envelope_22, E_moist_xy_envelope_12,...
             E_moist_aligned_envelope_11, E_moist_aligned_envelope_22, E_moist_aligned_envelope_12);
     else
+        % Print the header
+        fprintf(fid, 'PLY    SECTION POINT                 LOCATION    Z           E_Moist_xx    E_Moist_yy    E_Moist_xy    E_Moist_11    E_Moist_22    E_Moist_12    \n');
+
         for i = 1.0:nPlies
             %{
                 Extract the strains for the current section point for the
@@ -268,11 +278,14 @@ if isempty(E_moist_xy) == false && (any(any(E_moist_xy)) == true || any(any(E_mo
                 E_moist_xy_i = E_moist_xy(:, currentOutputPoints);
                 E_moist_aligned_i = E_moist_aligned(:, currentOutputPoints);
 
+                % Get the z-coordinates for the current section points
+                z_points_i = z_points(:, currentOutputPoints);
+
                 for sp = 1.0:length(currentOutputPoints)
                     thicknessFraction = sprintf('%.0f (fraction = %.5g)', currentOutputPoints(sp), thickness(currentOutputPoints(sp)));
 
-                    fprintf(fid, '%-7.0f%-30s%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, E_moist_xy_i(1.0, sp), E_moist_xy_i(2.0, sp), E_moist_xy_i(3.0, sp),...
-                        E_moist_aligned_i(1.0, sp), E_moist_aligned_i(2.0, sp), E_moist_aligned_i(3.0, sp));
+                    fprintf(fid, '%-7.0f%-30s%-12s%-12g%-14g%-14g%-14g%-14g%-14g%-14g\n', i, thicknessFraction, locationString{sp}, z_points_i(sp), E_moist_xy_i(1.0, sp),...
+                        E_moist_xy_i(2.0, sp), E_moist_xy_i(3.0, sp), E_moist_aligned_i(1.0, sp), E_moist_aligned_i(2.0, sp), E_moist_aligned_i(3.0, sp));
                 end
             end
 
@@ -282,4 +295,9 @@ if isempty(E_moist_xy) == false && (any(any(E_moist_xy)) == true || any(any(E_mo
             end
         end
     end
+end
+
+%% Print the legend for result location
+if OUTPUT_ENVELOPE == false
+    fprintf(fid, locationLegendString);
 end

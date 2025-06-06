@@ -5,7 +5,7 @@ function [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
 %   Last modified 06-Jun-2025 11:07:25 UTC
 %
 

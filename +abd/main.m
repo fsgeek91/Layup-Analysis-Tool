@@ -407,7 +407,7 @@ function [varargout] = main(varargin)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
 %   Last modified 06-Jun-2025 11:07:25 UTC
 
 %% - DO NOT EDIT BELOW LINE
@@ -714,12 +714,17 @@ else
 end
 
 %% OUTPUT TO VARARGOUT
+
+
 varargout{1.0} = ABD;
 varargout{2.0} = inv(ABD);
 varargout{3.0} = struct('XY', Qij, 'PLY', Qt);
 varargout{4.0} = E_midplane;
-varargout{5.0} = {E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned};
-varargout{6.0} = {S_ply_xy, S_ply_aligned};
+% varargout{5.0} = {E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned};
+varargout{5.0} = {abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
+    abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
+    abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned')};
+varargout{6.0} = {abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned')};
 varargout{7.0} = {[EXT, EYT, GXYT, NUXYT, NUYXT],...
                   [EXB, EYB, GXYB, NUXYB, NUYXB]};
 varargout{8.0} = struct('MSTRS', MSTRS, 'TSAIH', TSAIH, 'TSAIW', TSAIW, 'AZZIT', AZZIT, 'MSTRN', MSTRN, 'HSNFTCRT', HSNFTCRT, 'HSNFCCRT', HSNFCCRT, 'HSNMTCRT', HSNMTCRT,...

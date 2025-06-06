@@ -7,7 +7,7 @@ function [] = internal_outputToFile(dateString, outputLocation, outputStrength, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.0.1 Copyright Louis Vallance 2025
+%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
 %   Last modified 06-Jun-2025 11:07:25 UTC
 %
 
@@ -136,8 +136,20 @@ if any(any([axx; ayy; axy; bxx; byy; bxy])) == true
     fprintf(fid, '\nEffective thermal/hydroscopic constants:\n');
     fprintf(fid, 'PLY   axx           ayy           axy           bxx           byy           bxy           \n');
     for i = 1.0:nPlies
-        s = find(plyBuffer == i, 1.0);
-        fprintf(fid, '%-6.0f%-14g%-14g%-14g%-14g%-14g%-14g\n', i, axx(s), ayy(s), axy(s), bxx(s), byy(s), bxy(s));
+        %{
+            Get the section point for the current ply. Since the thermal
+            and hydroscopic properties are constant over each ply, it is
+            safe to accept the first value in each ply
+        %}
+        s = outputPoints(find(plyBuffer == i, 1.0));
+
+        if isempty(s) == true
+            % There is no data for the current ply
+            fprintf(fid, '%-6.0fNO RESULTS\n', i);
+        else
+            % Print the data
+            fprintf(fid, '%-6.0f%-14g%-14g%-14g%-14g%-14g%-14g\n', i, axx(s), ayy(s), axy(s), bxx(s), byy(s), bxy(s));
+        end
     end
 
     fprintf(fid, '\n===========================================================================\n');
