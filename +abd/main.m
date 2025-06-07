@@ -383,33 +383,48 @@ function [varargout] = main(varargin)
 %       LARSFCRT: LaRC05 fibre splitting failure measure
 %       LARTFCRT: LaRC05 fibre tensile failure measure
 %
-%   OPT_SEQ. A 1x6 cell of the results of the stacking sequence
+%   OPT. A structure containing the results of the stacking sequence
 %   optimisation.
 %
-%   OPT_SEQ(1) is a 1xn array of the optimum stacking sequence, where n is
-%   the number of plies in the layup.
+%   OPT.SEQUENCE is a 1xn array of the optimum stacking sequence,
+%   where n is the number of plies in the layup.
 %
-%   OPT_SEQ(2) is the critical failure criterion value.
+%   OPT.CRITICAL_VALUE is the critical failure criterion value.
 %
-%   OPT_SEQ(3) is the total number of stacking permutations considered by
-%   the optimiser.
+%   OPT.N_PERMUTATIONS is the total number of stacking permutations
+%   considered by the optimiser.
 %
-%   OPT_SEQ(4) is the analysis time (in seconds).
+%   OPT.WALL_CLOCK is the analysis time (seconds).
 %
-%   OPT_SEQ(5) is an exception returned in case of optimisation failure.
+%   OPT.EXCEPTION is an exception object returned by the optimiser.
 %
-%   OPT_SEQ(6) is a structure containing the stress and strain tensors
+%   OPT.TENSOR is a structure containing the stress and strain tensors
 %   corresponding to the optimum stacking sequence.
+%
+%   OPT.TENSOR.STRESS_XY is a 3xn table of the post-optimisation ply
+%   stresses in global (X-Y) coordinates.
+%
+%   OPT.TENSOR.STRESS_PLY is a 3xn table of the post-optimisation ply
+%   stresses in ply (1-2) coordinates.
+%
+%   OPT.TENSOR.STRAIN_XY is a 3xn table of the post-optimisation ply
+%   strains in global (X-Y) coordinates.
+%
+%   OPT.TENSOR.STRAIN_PLY is a 3xn table of the post-optimisation ply
+%   strains in ply (1-2) coordinates.
+%
+%   OPT.TENSOR.SYMMETRIC_ABD is a flag indicating if the optimised
+%   stacking sequence is syymetric.
 %
 %   Note: Replace unrequested outputs with a tilde ( ~ ) assignment.
 %
 %   MATLAB figures:
 %
-%   EP. MATLAB figure of E_PLY in X-Y coordinates and ply coordinates
-%   for all section points.
+%   EP. MATLAB figure of E_PLY in X-Y coordinates and ply coordinates for
+%   all section points.
 %
-%   SP. MATLAB figure of S_PLY in X-Y coordinates and ply coordinates
-%   for all section points.
+%   SP. MATLAB figure of S_PLY in X-Y coordinates and ply coordinates for
+%   all section points.
 %
 %   CB, Cumulative Density Function (CFD) plot of optimiser criterion for
 %   all stacking permutations.
@@ -774,23 +789,24 @@ end
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
     bxy, E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name);
 
+%% COLLECT OUTPUT
+[ABD_INV, Q, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT] = abd.internal_getOutput(ABD, Qij, Qt, E_midplane, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
+    E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN,...
+    SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE);
+
 %% OUTPUT TO VARARGOUT
 varargout{1.0} = ABD;
-varargout{2.0} = inv(ABD);
-varargout{3.0} = struct('XY', Qij, 'PLY', Qt);
-varargout{4.0} = abd.internal_getTableFromArray(E_midplane, 'strain_midplane');
-varargout{5.0} = {abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
-    abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
-    abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned')};
-varargout{6.0} = {abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned')};
-varargout{7.0} = {abd.internal_getTableFromArray([EXT, EYT, GXYT, NUXYT, NUYXT], 'moduli_eq_tension'), abd.internal_getTableFromArray([EXB, EYB, GXYB, NUXYB, NUYXB],...
-    'moduli_eq_bending')};
-varargout{8.0} = struct('STRESS', abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [TSAIW, SFAILRATIO_STRESS(3.0)];...
-    [AZZIT, SFAILRATIO_STRESS(4.0)]], 'cfailure_stress'), 'STRAIN', abd.internal_getTableFromArray([MSTRN, SFAILRATIO_STRAIN], 'cfailure_strain'), 'HASHIN',...
-    abd.internal_getTableFromArray([[HSNFTCRT, SFAILRATIO_HASHIN(1.0)]; [HSNFCCRT, SFAILRATIO_HASHIN(2.0)]; [HSNMTCRT, SFAILRATIO_HASHIN(3.0)]; [HSNMCCRT,...
-    SFAILRATIO_HASHIN(4.0)]], 'cfailure_hashin'), 'LARC05', abd.internal_getTableFromArray([[LARPFCRT, SFAILRATIO_LARC05(1.0)]; [LARMFCRT, SFAILRATIO_LARC05(2.0)]; [LARKFCRT,...
-    SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05'));
-varargout{9.0} = BEST_SEQUENCE;
+varargout{2.0} = ABD_INV;
+varargout{3.0} = Q;
+varargout{4.0} = E_MIDPLANE;
+varargout{5.0} = E_PLY;
+varargout{6.0} = S_PLY;
+varargout{7.0} = EQ_MODULI;
+varargout{8.0} = CFAILURE;
+varargout{9.0} = OPT;
+
+% Save workspace variables to a MAT file in the output directory
+save([outputLocation, filesep, 'analysis_results.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDPLANE', 'E_PLY', 'S_PLY', 'EQ_MODULI', 'CFAILURE', 'OPT');
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
