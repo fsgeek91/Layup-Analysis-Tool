@@ -299,7 +299,7 @@ function [varargout] = main(varargin)
 %   Q.PLY is a 3x3xn array of the stiffness matrices in ply coordinates,
 %   where n is the number of plies in the layup.
 %
-%   E_MIDPLANE. A 6x1 array of the midplane strain and curvature components
+%   E_MIDPLANE. A 6x1 table of the midplane strain and curvature components
 %   (EXX_0, EYY_0, EXY_0, KAPPA_XX, KAPPA_YY, KAPPA_XY) induced in the
 %   laminate. These strains represent the deflections of the laminate about
 %   the neutral axis
@@ -308,20 +308,20 @@ function [varargout] = main(varargin)
 %   GAMMA_XY/GAMMA_12) for all section points, where n (below) is the total
 %   number of section points in the layup.
 %
-%   E_PLY(1) is a 3xn array of the ply strains in global (X-Y) coordinates.
+%   E_PLY(1) is a 3xn table of the ply strains in global (X-Y) coordinates.
 %
-%   E_PLY(2) is a 3xn array of the ply strains in ply (1-2) coordinates.
+%   E_PLY(2) is a 3xn table of the ply strains in ply (1-2) coordinates.
 %
-%   E_PLY(3) is a 3xn array of the stress-free ply strains due to thermal
+%   E_PLY(3) is a 3xn table of the stress-free ply strains due to thermal
 %   process in global (X-Y) coordinates.
 %
-%   E_PLY(4) is a 3xn array of the stress-free ply strains due to thermal
+%   E_PLY(4) is a 3xn table of the stress-free ply strains due to thermal
 %   process in ply (1-2) coordinates.
 %
-%   E_PLY(5) is a 3xn array of the stress-free ply strains due to moisture
+%   E_PLY(5) is a 3xn table of the stress-free ply strains due to moisture
 %   process in global (X-Y) coordinates.
 %
-%   E_PLY(6) is a 3xn array of the stress-free ply strains due to moisture
+%   E_PLY(6) is a 3xn table of the stress-free ply strains due to moisture
 %   process in ply (1-2) coordinates.
 %
 %   Note: For stress-free thermal/moisture strains, contractions have
@@ -331,10 +331,10 @@ function [varargout] = main(varargin)
 %   SXY/S12) for all section points, where n (below) is the total number of
 %   section points in the layup.
 %
-%   S_PLY(1) is a 3xn array of the ply stresses in global (X-Y)
+%   S_PLY(1) is a 3xn table of the ply stresses in global (X-Y)
 %   coordinates.
 %
-%   S_PLY(2) is a 3xn array of the ply stresses in ply (1-2) coordinates.
+%   S_PLY(2) is a 3xn table of the ply stresses in ply (1-2) coordinates.
 %
 %   EQ_MODULI. A 1x2 cell array of the equivalent moduli in tension and
 %   bending.
@@ -349,22 +349,39 @@ function [varargout] = main(varargin)
 %   CFAILURE. A structure containing the failure/damage initiation measure
 %   components for all section points.
 %
-%   Failure/damage initiation analysis output variable identifiers:
-%       - MSTRS, Maximum stress theory failure measure
-%       - TSAIH, Tsai-Hill theory failure measure (reserve/value)
-%       - TSAIW, Tsai-Wu theory failure measure (reserve/value)
-%       - AZZIT, Azzi-Tsai-Hill theory failure measure (reserve/value)
-%       - MSTRN, Maximum strain theory failure measure
-%       - HSNFTCRT, Hashin’s fibre tensile damage initiation criterion
-%       - HSNFCCRT, Hashin’s fibre compression damage initiation criterion
-%       - HSNMTCRT, Hashin’s matrix tensile damage initiation criterion
-%       - HSNMCCRT, Hashin’s matrix compression damage initiation criterion
-%       - LARPFCRT, LaRC05 polymer failure measure
-%       - LARMFCRT, LaRC05 matrix failure measure
-%       - LARKFCRT, LaRC05 fibre kinking failure measure
-%       - LARSFCRT, LaRC05 fibre splitting failure measure
-%       - LARTFCRT, LaRC05 fibre tensile failure measure
-%       - SFAILRATIO, The section failure ratio across all plies [%/100]
+%   CFAILURE.STRESS is a 4xN table of the stress-based failure measure
+%   components for all (N-1) section points. The Nth column contains the
+%   value of SFAILRATIO for each failure measure component:
+%
+%       MSTRS: Maximum stress theory failure measure
+%       TSAIH: Tsai-Hill theory failure measure (reserve/value)
+%       TSAIW: Tsai-Wu theory failure measure (reserve/value)
+%       AZZIT: Azzi-Tsai-Hill theory failure measure (reserve/value)
+%
+%   CFAILURE.STRAIN is a 1xN table of the strain-based failure measure
+%   component for all (N-1) section points. The Nth column contains the
+%   value of SFAILRATIO for the failure measure component:
+%
+%       MSTRN: Maximum strain theory failure measure
+%
+%   CFAILURE.HASHIN is a 4xN table of the Hashin damage initiation criteria
+%   for all (N-1) section points. The Nth column contains the value of
+%   SFAILRATIO for each damage initiation criterion:
+%
+%       HSNFTCRT: Hashin’s fibre tensile damage initiation criterion
+%       HSNFCCRT: Hashin’s fibre compression damage initiation criterion
+%       HSNMTCRT: Hashin’s matrix tensile damage initiation criterion
+%       HSNMCCRT: Hashin’s matrix compression damage initiation criterion
+%
+%   CFAILURE.LARC05 is a 4xN table of the LaCC05 damage initiation criteria
+%   for all (N-1) section points. The Nth column contains the value of
+%   SFAILRATIO for each damage initiation criterion:
+%
+%       LARPFCRT: LaRC05 polymer failure measure
+%       LARMFCRT: LaRC05 matrix failure measure
+%       LARKFCRT: LaRC05 fibre kinking failure measure
+%       LARSFCRT: LaRC05 fibre splitting failure measure
+%       LARTFCRT: LaRC05 fibre tensile failure measure
 %
 %   OPT_SEQ. A 1x6 cell of the results of the stacking sequence
 %   optimisation.
@@ -713,24 +730,6 @@ else
     OUTPUT_STRENGTH{1.0} = false;
 end
 
-%% OUTPUT TO VARARGOUT
-
-
-varargout{1.0} = ABD;
-varargout{2.0} = inv(ABD);
-varargout{3.0} = struct('XY', Qij, 'PLY', Qt);
-varargout{4.0} = E_midplane;
-% varargout{5.0} = {E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned};
-varargout{5.0} = {abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
-    abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
-    abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned')};
-varargout{6.0} = {abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned')};
-varargout{7.0} = {[EXT, EYT, GXYT, NUXYT, NUYXT],...
-                  [EXB, EYB, GXYB, NUXYB, NUYXB]};
-varargout{8.0} = struct('MSTRS', MSTRS, 'TSAIH', TSAIH, 'TSAIW', TSAIW, 'AZZIT', AZZIT, 'MSTRN', MSTRN, 'HSNFTCRT', HSNFTCRT, 'HSNFCCRT', HSNFCCRT, 'HSNMTCRT', HSNMTCRT,...
-    'HSNMCCRT', HSNMCCRT, 'LARPFCRT', LARPFCRT, 'LARMFCRT', LARMFCRT, 'LARKFCRT', LARKFCRT, 'LARSFCRT', LARSFCRT, 'LARTFCRT', LARTFCRT);
-varargout{9.0} = BEST_SEQUENCE;
-
 %% CREATE OUTPUT DIRECTORY
 % Create the root output folder if it does not already exist
 if exist(OUTPUT_LOCATION{1.0}, 'dir') ~= 7.0
@@ -768,11 +767,30 @@ if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) && (nPlies_poi
 end
 
 %% WRITE RESULTS TO A TEXT FILE
-abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
+[SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05] =...
+    abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
-    bxy, E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name)
+    bxy, E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name);
+
+%% OUTPUT TO VARARGOUT
+varargout{1.0} = ABD;
+varargout{2.0} = inv(ABD);
+varargout{3.0} = struct('XY', Qij, 'PLY', Qt);
+varargout{4.0} = abd.internal_getTableFromArray(E_midplane, 'strain_midplane');
+varargout{5.0} = {abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
+    abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
+    abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned')};
+varargout{6.0} = {abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned')};
+varargout{7.0} = {abd.internal_getTableFromArray([EXT, EYT, GXYT, NUXYT, NUYXT], 'moduli_eq_tension'), abd.internal_getTableFromArray([EXB, EYB, GXYB, NUXYB, NUYXB],...
+    'moduli_eq_bending')};
+varargout{8.0} = struct('STRESS', abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [TSAIW, SFAILRATIO_STRESS(3.0)];...
+    [AZZIT, SFAILRATIO_STRESS(4.0)]], 'cfailure_stress'), 'STRAIN', abd.internal_getTableFromArray([MSTRN, SFAILRATIO_STRAIN], 'cfailure_strain'), 'HASHIN',...
+    abd.internal_getTableFromArray([[HSNFTCRT, SFAILRATIO_HASHIN(1.0)]; [HSNFCCRT, SFAILRATIO_HASHIN(2.0)]; [HSNMTCRT, SFAILRATIO_HASHIN(3.0)]; [HSNMCCRT,...
+    SFAILRATIO_HASHIN(4.0)]], 'cfailure_hashin'), 'LARC05', abd.internal_getTableFromArray([[LARPFCRT, SFAILRATIO_LARC05(1.0)]; [LARMFCRT, SFAILRATIO_LARC05(2.0)]; [LARKFCRT,...
+    SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05'));
+varargout{9.0} = BEST_SEQUENCE;
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
