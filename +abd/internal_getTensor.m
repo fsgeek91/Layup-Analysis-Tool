@@ -1,4 +1,4 @@
-function [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned] =...
+function [E_midspan, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned] =...
     internal_getTensor(ABD, Nxx, NxxT, NxxM, Nyy, NyyT, NyyM, Nxy, NxyT, NxyM, Mxx, MxxT, MxxM, Myy, MyyT, MyyM, Mxy, MxyT, MxyM, nPlies_points, z, theta_points, Qt, deltaT,...
     deltaM, axx, ayy, axy, bxx, byy, bxy, tolerance)
 %   Get tensor quantities from ABD matrix.
@@ -16,14 +16,14 @@ function [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_
 %% GET INDUCED MIDPLANE STRAIN
 % Induced midplane strains and curvatures for the laminate
 %{
-    E_midplane = [epsilon_xx_0;
+    E_midspan = [epsilon_xx_0;
                   epsilon_yy_0;
                   epsilon_xy_0;
                   kappa_xx;
                   kappa_yy;
                   kappa_xy]
 %}
-E_midplane = ABD\[(Nxx + NxxT + NxxM);...
+E_midspan = ABD\[(Nxx + NxxT + NxxM);...
                   (Nyy + NyyT + NyyM);...
                   (Nxy + NxyT + NxyM);...
                   (Mxx + MxxT + MxxM);...
@@ -61,13 +61,13 @@ for i = 1:nPlies_points
 
         Note: gamma_xy = 2.0.*epsilon_xy
     %}
-    E_ply_xy(:, i) = [E_midplane(1.0);
-                      E_midplane(2.0);
-                      A*E_midplane(3.0)] +...
+    E_ply_xy(:, i) = [E_midspan(1.0);
+                      E_midspan(2.0);
+                      A*E_midspan(3.0)] +...
                       ...
-                      z_points*[E_midplane(4.0);
-                             E_midplane(5.0);
-                             E_midplane(6.0)];
+                      z_points*[E_midspan(4.0);
+                             E_midspan(5.0);
+                             E_midspan(6.0)];
 
     % Thermal/moiture strain components (XY)
     E_therm_xy(:, i) = deltaT*[axx(i); ayy(i); axy(i)];

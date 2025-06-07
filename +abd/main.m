@@ -9,7 +9,7 @@ function [varargout] = main(varargin)
 %   The following output is produced:
 %
 %   - A, B and D matrices (and their inverses)
-%   - Induced midplane strains and curvatures
+%   - Induced midspan strains and curvatures
 %   - X-Y stresses and strains based on specified forces and moments
 %   - Ply stresses and strains based on specified forces and moments
 %   - Equivalent extensional and bending moduli (symmetric layups only)
@@ -299,7 +299,7 @@ function [varargout] = main(varargin)
 %   Q.PLY is a 3x3xn array of the stiffness matrices in ply coordinates,
 %   where n is the number of plies in the layup.
 %
-%   E_MIDPLANE. A 6x1 table of the midplane strain and curvature components
+%   E_MIDSPAN. A 6x1 table of the midspan strain and curvature components
 %   (EXX_0, EYY_0, EXY_0, KAPPA_XX, KAPPA_YY, KAPPA_XY) induced in the
 %   laminate. These strains represent the deflections of the laminate about
 %   the neutral axis
@@ -668,18 +668,18 @@ end
 
 %% COMPUTE TENSOR QUANTITIES
 if enableTensor == true
-    [E_midplane, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned] =...
+    [E_midspan, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned] =...
         ...
         abd.internal_getTensor(ABD, Nxx, NxxT, NxxM, Nyy, NyyT, NyyM, Nxy, NxyT, NxyM, Mxx, MxxT, MxxM, Myy, MyyT, MyyM, Mxy, MxyT, MxyM, nPlies_points, z_points, theta_points,...
         Qijt, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, tolerance);
 
-    if any(E_midplane) == false
+    if any(E_midspan) == false
         printTensor = -1.0;
     end
 else
     % Initialise values to default
     printTensor = 0.0;
-    E_midplane = [];
+    E_midspan = [];
     E_ply_xy = [];  E_ply_aligned = [];
     S_ply_xy = [];  S_ply_aligned = [];
     E_therm_xy = [];    E_therm_aligned = [];
@@ -787,10 +787,10 @@ end
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
-    bxy, E_midplane, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name);
+    bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name);
 
 %% COLLECT OUTPUT
-[ABD_INV, Q, E_MIDPLANE, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT] = abd.internal_getOutput(ABD, Qij, Qt, E_midplane, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
+[ABD_INV, Q, E_MIDSPAN, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
     E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN,...
     SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE);
 
@@ -798,7 +798,7 @@ end
 varargout{1.0} = ABD;
 varargout{2.0} = ABD_INV;
 varargout{3.0} = Q;
-varargout{4.0} = E_MIDPLANE;
+varargout{4.0} = E_MIDSPAN;
 varargout{5.0} = E_PLY;
 varargout{6.0} = S_PLY;
 varargout{7.0} = EQ_MODULI;
@@ -806,7 +806,7 @@ varargout{8.0} = CFAILURE;
 varargout{9.0} = OPT;
 
 % Save workspace variables to a MAT file in the output directory
-save([outputLocation, filesep, 'analysis_results.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDPLANE', 'E_PLY', 'S_PLY', 'EQ_MODULI', 'CFAILURE', 'OPT');
+save([outputLocation, filesep, 'analysis_results.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'E_PLY', 'S_PLY', 'EQ_MODULI', 'CFAILURE', 'OPT');
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));

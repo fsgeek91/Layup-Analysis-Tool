@@ -49,6 +49,13 @@ classdef internal_optimise < handle
             % Get the number of permutations
             nPermutations = length(thetaAll)^nPlies;
 
+            % Warn the user if a large number of iteration will be required
+            if nPermutations > 1e6
+                fprintf('Warning: More than one million iterations are required by the stacking\nsequence optimiser\n');
+                fprintf('-> The analysis may take a long time to complete\n');
+                fprintf('-> The required number of iterations is given by ANGLE_PRECISION^NUMBER_OF_PLIES\n');
+            end
+
             % Set dummy variable
             dummy = zeros(1.0, nPlies);
             
