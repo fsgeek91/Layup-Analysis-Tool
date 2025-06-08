@@ -13,8 +13,8 @@ function [E_midspan, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_x
 %_______________________________________________________________________
 %%
 
-%% GET INDUCED MIDPLANE STRAIN
-% Induced midplane strains and curvatures for the laminate
+%% GET INDUCED MIDSPAN STRAIN
+% Induced midspan strains and curvatures for the laminate
 %{
     E_midspan = [epsilon_xx_0;
                   epsilon_yy_0;
@@ -29,6 +29,9 @@ E_midspan = ABD\[(Nxx + NxxT + NxxM);...
                   (Mxx + MxxT + MxxM);...
                   (Myy + MyyT + MyyM);...
                   (Mxy + MxyT + MxyM)];
+
+% Reset very small values to zero
+E_midspan(abs(E_midspan) < 1e-12) = 0.0;
 
 %% GET X-Y STRAIN FOR EACH PLY
 % Initialise stress/strain buffers for mechanical quantities

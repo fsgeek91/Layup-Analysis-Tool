@@ -196,8 +196,8 @@ if printTensor == 1.0
     abd.internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, S_ply_xy, S_ply_aligned, E_ply_xy, E_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned,...
         nPlies, outputPoints, plyBuffer, symmetricAbd, outputApproximate, thickness, header, OUTPUT_PLY, z_points, SECTION_POINTS)
 
-    %% Print the mid-plane strain
-    fprintf(fid, '\nMid-plane strains and curvatures:\nExx_0         Eyy_0         Exy_0         Kxx           Kyy           Kxy\n%-14g%-14g%-14g%-14g%-14g%-14g\n',...
+    %% Print the midspan strain
+    fprintf(fid, '\nMidspan strains and curvatures:\nExx_0         Eyy_0         Exy_0         Kxx           Kyy           Kxy\n%-14g%-14g%-14g%-14g%-14g%-14g\n',...
         E_midspan(1.0), E_midspan(2.0), E_midspan(3.0), E_midspan(4.0), E_midspan(5.0), E_midspan(6.0));
 elseif printTensor == -1.0
     % Print message about zero load

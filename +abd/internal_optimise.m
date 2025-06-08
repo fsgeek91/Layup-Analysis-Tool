@@ -41,6 +41,9 @@ classdef internal_optimise < handle
             if enabled == false
                 % Do not run optimisation if it was disabled by the user
                 return
+            else
+                % Inform the user that optimisation has started
+                fprintf('[NOTICE] Stacking sequence optimisation started. Please be patient...\n');
             end
 
             % Get the number of ply orientations to be considered
@@ -51,7 +54,7 @@ classdef internal_optimise < handle
 
             % Warn the user if a large number of iteration will be required
             if nPermutations > 1e6
-                fprintf('Warning: More than one million iterations are required by the stacking\nsequence optimiser\n');
+                fprintf('[WARNING] More than one million iterations are required by the stacking\nsequence optimiser\n');
                 fprintf('-> The analysis may take a long time to complete\n');
                 fprintf('-> The required number of iterations is given by ANGLE_PRECISION^NUMBER_OF_PLIES\n');
             end

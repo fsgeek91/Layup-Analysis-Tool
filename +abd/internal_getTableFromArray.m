@@ -31,7 +31,7 @@ switch lower(TYPE)
         rowNames = {'E_MOIST_XX', 'E_MOIST_YY', 'E_MOIST_XY'};
     case 'moist_aligned'
         rowNames = {'E_MOIST_11', 'E_MOIST_22', 'E_MOIST_12'};
-    case 'strain_midplane'
+    case 'strain_midspan'
         rowNames = {'EXX_0', 'EYY_0', 'EXY_0', 'KAPPA_XX', 'KAPPA_YY', 'KAPPA_XY'};
         varNames = "MIDSPAN";
     case 'moduli_eq_tension'

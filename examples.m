@@ -54,7 +54,7 @@
 %
 %   Stress analysis of a 0.1mm thick UD [45(1)/90(1)] layup in pure bending
 %   (x-axis); output for 3 section points per ply, output stresses at ply
-%   midspans, return midplane strains and curvatures and stress/strain
+%   midspans, return midspan strains and curvatures and stress/strain
 %   tensors:
 [~, ~, ~, EI, EP, SP, ~, ~, ~] =...                                            % Output requests
     abd.main(...                                                               % Function name

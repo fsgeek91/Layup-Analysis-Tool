@@ -1,4 +1,4 @@
-function [ABD_INV, Q, E_MIDSPAN, E_PLY, S_PLY, EQ_MODULI, CFAILURE, BEST_SEQUENCE] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy,...
+function [ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, BEST_SEQUENCE] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy,...
     E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW,...
     AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE)
 %   Collect variables for output.
@@ -19,15 +19,15 @@ ABD_INV = inv(ABD);
 Q = struct('XY', Qij, 'PLY', Qt);
 
 % Midspan 
-E_MIDSPAN = abd.internal_getTableFromArray(E_midspan, 'strain_midplane');
+E_MIDSPAN = abd.internal_getTableFromArray(E_midspan, 'strain_midspan');
 
 % Strain tensors
-E_PLY = {abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
-    abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
-    abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned')};
+STRAIN = struct('TENSOR_XY', abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
+    'THERM_XY', abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), 'THERM_PLY',  abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
+    'MOIST_XY', abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), 'MOIST_PLY', abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned'));
 
 % Stress tensors
-S_PLY = {abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned')};
+STRESS = struct('TENSOR_XY', abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned'));
 
 % Equivalent extension/bending moduli
 if isempty(EXT) == false

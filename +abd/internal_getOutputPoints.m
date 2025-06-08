@@ -43,7 +43,7 @@ if isnumeric(OUTPUT_PLY) == true
 
     % Number of section points must be a positive integer
     if (any(invalidCondition) == true) && (isempty(OUTPUT_PLY) == false)
-        fprintf('[WARNING] Invalid section point numbers found in\nOUTPUT_PLY have been removed\n')
+        fprintf('[WARNING] Invalid section point numbers found in OUTPUT_PLY have been removed\n')
     end
 
     % Update the section point list

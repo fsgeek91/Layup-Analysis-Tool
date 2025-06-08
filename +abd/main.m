@@ -304,37 +304,40 @@ function [varargout] = main(varargin)
 %   laminate. These strains represent the deflections of the laminate about
 %   the neutral axis
 %
-%   E_PLY. A 1x6 cell array of the ply strain components (EXX/E11, EYY/E22,
-%   GAMMA_XY/GAMMA_12) for all section points, where n (below) is the total
-%   number of section points in the layup.
+%   STRAIN. A 1x6 structure containing the ply strain components (EXX/E11,
+%   EYY/E22, GAMMA_XY/GAMMA_12) for all section points, where n (below) is
+%   the total number of section points in the layup.
 %
-%   E_PLY(1) is a 3xn table of the ply strains in global (X-Y) coordinates.
+%   STRAIN.TENSOR_XY is a 3xn table of the ply strains in global (X-Y)
+%   coordinates.
 %
-%   E_PLY(2) is a 3xn table of the ply strains in ply (1-2) coordinates.
+%   STRAIN.TENSOR_PLY is a 3xn table of the ply strains in ply (1-2)
+%   coordinates.
 %
-%   E_PLY(3) is a 3xn table of the stress-free ply strains due to thermal
-%   process in global (X-Y) coordinates.
+%   STRAIN.THERM_XY is a 3xn table of the stress-free ply strains due to
+%   thermal process in global (X-Y) coordinates.
 %
-%   E_PLY(4) is a 3xn table of the stress-free ply strains due to thermal
-%   process in ply (1-2) coordinates.
+%   STRAIN.THERM_PLY is a 3xn table of the stress-free ply strains due to
+%   thermal process in ply (1-2) coordinates.
 %
-%   E_PLY(5) is a 3xn table of the stress-free ply strains due to moisture
-%   process in global (X-Y) coordinates.
+%   STRAIN.MOIST_XY is a 3xn table of the stress-free ply strains due to
+%   moisture process in global (X-Y) coordinates.
 %
-%   E_PLY(6) is a 3xn table of the stress-free ply strains due to moisture
-%   process in ply (1-2) coordinates.
+%   STRAIN.MOIST_PLY is a 3xn table of the stress-free ply strains due to
+%   moisture process in ply (1-2) coordinates.
 %
 %   Note: For stress-free thermal/moisture strains, contractions have
 %   positive values.
 %
-%   S_PLY. A 1x2 cell array of the ply stress components (SXX/S11, SYY/S22,
-%   SXY/S12) for all section points, where n (below) is the total number of
-%   section points in the layup.
+%   S_PLY. A structure containing the ply stress components (SXX/S11,
+%   SYY/S22, SXY/S12) for all section points, where n (below) is the total
+%   number of section points in the layup.
 %
-%   S_PLY(1) is a 3xn table of the ply stresses in global (X-Y)
+%   STRESS.TENSOR_XY is a 3xn table of the ply stresses in global (X-Y)
 %   coordinates.
 %
-%   S_PLY(2) is a 3xn table of the ply stresses in ply (1-2) coordinates.
+%   STRESS.TENSOR_PLY is a 3xn table of the ply stresses in ply (1-2)
+%   coordinates.
 %
 %   EQ_MODULI. A 1x2 cell array of the equivalent moduli in tension and
 %   bending.
@@ -790,7 +793,7 @@ end
     bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name);
 
 %% COLLECT OUTPUT
-[ABD_INV, Q, E_MIDSPAN, E_PLY, S_PLY, EQ_MODULI, CFAILURE, OPT] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
+[ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, OPT] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
     E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN,...
     SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE);
 
@@ -799,14 +802,14 @@ varargout{1.0} = ABD;
 varargout{2.0} = ABD_INV;
 varargout{3.0} = Q;
 varargout{4.0} = E_MIDSPAN;
-varargout{5.0} = E_PLY;
-varargout{6.0} = S_PLY;
+varargout{5.0} = STRAIN;
+varargout{6.0} = STRESS;
 varargout{7.0} = EQ_MODULI;
 varargout{8.0} = CFAILURE;
 varargout{9.0} = OPT;
 
 % Save workspace variables to a MAT file in the output directory
-save([outputLocation, filesep, 'analysis_results.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'E_PLY', 'S_PLY', 'EQ_MODULI', 'CFAILURE', 'OPT');
+save([outputLocation, filesep, 'analysis_results.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'STRAIN', 'STRESS', 'EQ_MODULI', 'CFAILURE', 'OPT');
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
