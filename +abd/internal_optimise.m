@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 11:07:25 UTC
+%   Layup Analysis Tool 4.2.0 Copyright Louis Vallance 2025
+%   Last modified 10-Jun-2025 08:28:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -74,6 +74,9 @@ classdef internal_optimise < handle
                 EXECUTION_MODE = 'Unknown';
             end
 
+            % Save number of analysed permutations
+            BEST_SEQUENCE{3.0} = nPermutations;
+
             % Start the timer
             timer = tic;
 
@@ -84,9 +87,9 @@ classdef internal_optimise < handle
                         indexPermutations =...
                             ...
                             fig.combinator(numAngles, nPlies, 'p', 'r');
-                    catch combiException
+                    catch seqException
                         % A problem occurred while getting the combinations
-                        BEST_SEQUENCE{5.0} = combiException;
+                        BEST_SEQUENCE{5.0} = seqException;
                         return
                     end
 
@@ -105,10 +108,17 @@ classdef internal_optimise < handle
                         SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective);
                 case 2.0 % MIXED-RADIX REPRESENTATION
                     % Run the stacking sequence optimiser
-                    CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
-                        A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC,...
-                        YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC,...
-                        YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective);
+                    try
+                        CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
+                            A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT,...
+                            XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12,...
+                            XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective);
+                    catch seqException
+                        % A problem occurred while running the optimisation
+                        BEST_SEQUENCE{5.0} = seqException;
+                        return
+                    end
+                    
                 case 3.0 % CHUNKS
                     if strcmpi(OPTIMISER_SETTINGS{2.0}, 'DEFAULT') == true
                         if isempty(poolObj) == false
@@ -142,10 +152,17 @@ classdef internal_optimise < handle
                     N_CHUNKS = ceil(nPermutations/CHUNK_SIZE);
 
                     % Run the stacking sequence optimiser
-                    CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11,...
-                        Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
-                        failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable,...
-                        S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective);
+                    try
+                        CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance,...
+                            Q11, Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
+                            failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
+                            symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective);
+                    catch seqException
+                        % A problem occurred while running the optimisation
+                        BEST_SEQUENCE{5.0} = seqException;
+                        return
+                    end
+                    
                 otherwise
             end
 
@@ -168,9 +185,6 @@ classdef internal_optimise < handle
 
             % Save the critical value
             BEST_SEQUENCE{2.0} = CRITERION_BUFFER(MIN_CRITERION);
-
-            % Save number of analysed permutations
-            BEST_SEQUENCE{3.0} = nPermutations;
 
             % Get the optimised stress/strain tensors
             [E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, symmetricAbd] =...

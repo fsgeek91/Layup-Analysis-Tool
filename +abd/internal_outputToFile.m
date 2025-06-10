@@ -8,8 +8,8 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 11:07:25 UTC
+%   Layup Analysis Tool 4.2.0 Copyright Louis Vallance 2025
+%   Last modified 10-Jun-2025 08:28:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -29,8 +29,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 4.0.1 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 06-Jun-2025 11:07:25 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 4.2.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 10-Jun-2025 08:28:19 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 
@@ -470,10 +470,12 @@ if (isempty(BEST_SEQUENCE) == false) && (isempty(BEST_SEQUENCE{5.0}) == false)
     exception = BEST_SEQUENCE{5.0};
 
     % Print message about no optimisation output
-    fprintf(fid, '\nException: Stacking optimisation was not performed.\n\tidentifier: %s\n\tmessage: %s\n', exception.identifier, exception.message);
+    fprintf(fid, '\nException: Stacking optimisation was not performed.\n\tidentifier: %s\n\tmessage: %s\n\n', exception.identifier, exception.message);
 
     % Advise the user to select a different optimization method
-    fprintf(fid, '\nWarning: The FULL MATRIX method is not recommended. Use MIXED-RADIX or\nCHUNKS instead.\n\n');
+    if OPTIMISER_SETTINGS{1.0} == 1.0
+        fprintf(fid, '\nWarning: The FULL MATRIX method is not recommended. Use MIXED-RADIX or\nCHUNKS instead.\n\n');
+    end
 
     % Get the error stack object
     stack = exception.stack;
@@ -483,6 +485,7 @@ if (isempty(BEST_SEQUENCE) == false) && (isempty(BEST_SEQUENCE{5.0}) == false)
     for i = 1:length(stack)
         fprintf(fid, '\n\t<LEVEL %.0f>\n\tfile: %s\n\tname: %s\n\tline: %.0f', i, stack(i).file, stack(i).name, stack(i).line);
     end
+    fprintf(fid, '\n\nRequired number of iterations for optimisation: %g', BEST_SEQUENCE{3.0});
 
     fprintf(fid, '\n\n===========================================================================\n');
 elseif isempty(BEST_SEQUENCE) == false

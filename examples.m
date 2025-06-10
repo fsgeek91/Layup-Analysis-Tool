@@ -26,8 +26,8 @@
 %
 %   See also abd.main, user_definitions.
 %
-%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 11:07:25 UTC
+%   Layup Analysis Tool 4.2.0 Copyright Louis Vallance 2025
+%   Last modified 10-Jun-2025 08:28:19 UTC
 %
 %==========================================================================
 %__________________________________________________________________________

@@ -5,8 +5,8 @@ function [E_midspan, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_x
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 11:07:25 UTC
+%   Layup Analysis Tool 4.2.0 Copyright Louis Vallance 2025
+%   Last modified 10-Jun-2025 08:28:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -101,3 +101,5 @@ end
 % Remove near-zero stress values
 S_ply_xy(abs(S_ply_xy) < tolerance) = 0.0;
 S_ply_aligned(abs(S_ply_aligned) < tolerance) = 0.0;
+E_ply_xy(abs(E_ply_xy) < 1e-12) = 0.0;
+E_ply_aligned(abs(E_ply_aligned) < 1e-12) = 0.0;

@@ -1,12 +1,12 @@
-function [ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, BEST_SEQUENCE] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy,...
+function [ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, OPT] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy,...
     E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW,...
     AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE)
 %   Collect variables for output.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.1.0 Copyright Louis Vallance 2025
-%   Last modified 06-Jun-2025 11:07:25 UTC
+%   Layup Analysis Tool 4.2.0 Copyright Louis Vallance 2025
+%   Last modified 10-Jun-2025 08:28:19 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -46,12 +46,25 @@ CFAILURE = struct('STRESS', abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_S
 
 % Stacking sequence optimiser
 if isempty(BEST_SEQUENCE) == false
+    % Add optimiser output to the structure
+    OPT = struct('SEQUENCE', BEST_SEQUENCE{1.0}, 'CRITICAL_VALUE', BEST_SEQUENCE{2.0}, 'N_PERMUTATIONS', BEST_SEQUENCE{3.0}, 'WALL_CLOCK', BEST_SEQUENCE{4.0}, 'EXCEPTION',...
+        BEST_SEQUENCE{5.0});
+
+    % Get the optimised tensors
     TENSOR_OPTIMISED = BEST_SEQUENCE{6.0};
-    BEST_SEQUENCE{6.0} = {abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRESS_XY, 'stress_xy'), abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRESS_PLY, 'stress_aligned'),...
-        abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRAIN_XY, 'strain_xy'), abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRAIN_PLY, 'strain_aligned'),...
-        TENSOR_OPTIMISED.SYMMETRIC_ABD};
-    BEST_SEQUENCE = struct('SEQUENCE', BEST_SEQUENCE{1.0}, 'CRITICAL_VALUE', BEST_SEQUENCE{2.0}, 'N_PERMUTATIONS', BEST_SEQUENCE{3.0}, 'WALL_CLOCK', BEST_SEQUENCE{4.0}, 'EXCEPTION',...
-        BEST_SEQUENCE{5.0}, 'TENSOR', struct('STRESS_XY', BEST_SEQUENCE{6.0}(1.0), 'STRESS_PLY', BEST_SEQUENCE{6.0}(2.0), 'STRAIN_XY', BEST_SEQUENCE{6.0}(3.0), 'STRAIN_PLY',...
-        BEST_SEQUENCE{6.0}(4.0), 'SYMMETRIC_ABD', BEST_SEQUENCE{6.0}(5.0)));
+
+    % Add optimised tensors if they are available
+    if isempty(TENSOR_OPTIMISED) == false
+        % Convert arrays to tables
+        TENSOR_TABLES = {abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRESS_XY, 'stress_xy'), abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRESS_PLY, 'stress_aligned'),...
+            abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRAIN_XY, 'strain_xy'), abd.internal_getTableFromArray(TENSOR_OPTIMISED.STRAIN_PLY, 'strain_aligned'),...
+            TENSOR_OPTIMISED.SYMMETRIC_ABD};
+
+        % Add cell contents to current structure
+        OPT.TENSOR = struct('STRESS_XY', TENSOR_TABLES(1.0), 'STRESS_PLY', TENSOR_TABLES(2.0), 'STRAIN_XY', TENSOR_TABLES(3.0), 'STRAIN_PLY', TENSOR_TABLES(4.0), 'SYMMETRIC_ABD',...
+            TENSOR_TABLES(5.0));
+    end
+else
+    OPT = [];
 end
 end
