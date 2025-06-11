@@ -3,7 +3,7 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
     NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT,...
     noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, outputPoints, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE,...
     OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS,...
-    EXECUTION_MODE, JOB_NAME)
+    EXECUTION_MODE, JOB_NAME, JOB_DESCRIPTION)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -17,7 +17,7 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %%
 
 %% Open the results file and print the header
-fid = fopen([outputLocation, filesep, 'analysis_results.txt'], 'w+');
+fid = fopen([outputLocation, filesep, 'analysis_summary', '.log'], 'w+');
 
 % Get the user's machine name
 [~, hostname] = system('hostname');
@@ -33,9 +33,12 @@ fprintf(fid, 'Layup Analysis Tool 4.2.0 on machine %s\nMATLAB version %s on %s\n
 fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 10-Jun-2025 08:28:19 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
+if isempty(JOB_DESCRIPTION) == false
+    fprintf(fid, 'Job description:  %s\n', JOB_DESCRIPTION);
+end
 
 % Print the units and CSYS conventions
-if printTensor == 1.0
+if printTensor == true
     fprintf(fid, 'Length units: [mm]; Stress units: [N/mm2]; Strain units: [mm/mm]\n[xx, yy, xy] -> Global (x-y) CSYS\n[11, 22, 12] -> Layup (longitudinal-transverse) CSYS\n\n');
 end
 
@@ -48,7 +51,7 @@ SFAILRATIO_LARC05 = -1.0*ones(1.0, 5.0);
 %% Print layup summary
 fprintf(fid, 'Composite layup summary:\n');
 
-if (enableTensor == 1.0) && (printTensor == 1.0)
+if (enableTensor == true) && (printTensor == true)
     % Print layup summary header
     fprintf(fid, 'PLY    THICKNESS    ORIENTATION    MAX. FIBRE    MAX. TRANSVERSE    MAX. SHEAR    \n');
     fprintf(fid, '                                   STRESS        STRESS             STRESS        \n');
@@ -157,7 +160,7 @@ if any(any([axx; ayy; axy; bxx; byy; bxy])) == true
 end
 
 %% Print stress/strain tensors
-if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (isscalar(z_points) == true)
+if (isempty(OUTPUT_FIGURE) == false) && (printTensor == true) && (isscalar(z_points) == true)
     %{
         Inform the user if there is only one total section point for output
         and MATLAB figures were requested
@@ -165,7 +168,7 @@ if (isempty(OUTPUT_FIGURE) == false) && (printTensor == 1.0) && (isscalar(z_poin
     fprintf(fid, '\nNote: Insufficient section points for MATLAB figure output\n');
 end
 
-if printTensor == 1.0
+if printTensor == true
     % Set the ply location string
     if OUTPUT_ENVELOPE == 1.0
         % Envelope plot

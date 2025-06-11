@@ -1,4 +1,4 @@
-function [varargout] = main(varargin)
+function [] = main(settings)
 %ABD.MAIN    Analyse a user-defined composite layup.
 %   [VARARGOUT] = ABD.MAIN(VARARGIN) computes the ABD matrix from an
 %   n-layer composite layup definition, and evaluates the layup strength
@@ -450,22 +450,14 @@ function [varargout] = main(varargin)
 %%
 clc
 
-%% INITIALISE VARARGOUT
-varargout{1.0} = [];
-varargout{2.0} = [];
-varargout{3.0} = [];
-varargout{4.0} = [];
-varargout{5.0} = [];
-varargout{6.0} = [];
-varargout{7.0} = [];
-varargout{8.0} = [];
-varargout{9.0} = [];
+%% READ FLAGS AND DATA FROM THE JOB FILE
 
 %% GET USER INPUTS FROM VARARGIN
 [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
-    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
+    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, jobName,...
+    jobDescription, settings, error] =...
     ...
-    abd.internal_initialise(nargin, varargin);
+    abd.internal_initialise(settings);
 
 % An error occurred, so RETURN
 if error == true
@@ -681,7 +673,7 @@ if enableTensor == true
     end
 else
     % Initialise values to default
-    printTensor = 0.0;
+    printTensor = false;
     E_midspan = [];
     E_ply_xy = [];  E_ply_aligned = [];
     S_ply_xy = [];  S_ply_aligned = [];
@@ -769,9 +761,7 @@ for i = 1:length(dateStringFile)
 end
 
 % Construct the output location path
-% Get the function stack
-stack = dbstack;
-outputLocation = [OUTPUT_LOCATION{1.0}, [filesep, [stack(end).name, '_'], dateStringFile]];
+outputLocation = [OUTPUT_LOCATION{1.0}, filesep, jobName];
 
 % Create the folder if it does not already exist
 if exist(outputLocation, 'dir') ~= 7.0
@@ -780,7 +770,16 @@ end
 
 %% PLOT STRAINS AND STRESSES IN A MATLAB FIGURE
 if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) && (nPlies_points > 1.0)
-    abd.internal_plot.main(OUTPUT_FIGURE{1.0}, OUTPUT_FIGURE{2.0}, OUTPUT_FIGURE{3.0}, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points,...
+    % Construct the output location path
+    outputLocationFigure = [OUTPUT_LOCATION{1.0}, filesep, jobName, filesep, 'figure'];
+
+    % Create the MATLAB figure folder if it does not already exist
+    if exist(outputLocationFigure, 'dir') ~= 7.0
+        mkdir(outputLocationFigure)
+    end
+
+    % Create the MATLAB figures
+    abd.internal_plot.main(OUTPUT_FIGURE{1.0}, OUTPUT_FIGURE{2.0}, OUTPUT_FIGURE{3.0}, outputLocationFigure, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points,...
         CRITERION_BUFFER, OUTPUT_OPTIMISED, SP_COLOUR_BUFFER)
 end
 
@@ -790,26 +789,21 @@ end
     E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
-    bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, stack(end).name);
+    bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, jobName, jobDescription);
 
 %% COLLECT OUTPUT
 [ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, OPT] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
     E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN,...
     SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE);
 
-%% OUTPUT TO VARARGOUT
-varargout{1.0} = ABD;
-varargout{2.0} = ABD_INV;
-varargout{3.0} = Q;
-varargout{4.0} = E_MIDSPAN;
-varargout{5.0} = STRAIN;
-varargout{6.0} = STRESS;
-varargout{7.0} = EQ_MODULI;
-varargout{8.0} = CFAILURE;
-varargout{9.0} = OPT;
-
 % Save workspace variables to a MAT file in the output directory
-save([outputLocation, filesep, 'analysis_results.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'STRAIN', 'STRESS', 'EQ_MODULI', 'CFAILURE', 'OPT');
+if strcmp(jobName, 'outout') == true
+    outputFileName = 'output_variables_';
+else
+    outputFileName = 'output_variables';
+end
+save([outputLocation, filesep, outputFileName, '.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'STRAIN', 'STRESS', 'EQ_MODULI', 'CFAILURE', 'OPT');
+save([outputLocation, filesep, jobName, '.mat'], 'settings');
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
@@ -817,7 +811,7 @@ addpath(genpath(outputLocation));
 %% Open the results file now (if applicable)
 if OUTPUT_LOCATION{2.0} == true
     try
-        open([outputLocation, filesep, 'analysis_results.txt'])
+        open([outputLocation, filesep, 'analysis_summary.log'])
     catch
         % Do nothing
     end

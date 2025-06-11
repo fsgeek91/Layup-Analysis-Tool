@@ -18,7 +18,12 @@
 %   Layup Analysis Tool 4.2.0 Copyright Louis Vallance 2025
 %   Last modified 10-Jun-2025 08:28:19 UTC
 
-%% 1: MATERIAL DATA
+%__________________________________________________________________________
+%% 1: JOB
+
+JOB_NAME = mfilename;   JOB_DESCRIPTION = '';
+
+%% 2: MATERIAL DATA
 % MATERIAL  Mechanical material properties
 %{
     Note: When SYMMETRIC_LAYUP = true, material definitions are only
@@ -128,7 +133,7 @@ TIP:
 %}
 LARC05 = [];
 
-%% 2: LAYUP PROPERTIES
+%% 3: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up)
 STACKING_SEQUENCE = [0.0, 45.0, 90.0];
 
@@ -160,7 +165,7 @@ SYMMETRIC_LAYUP = false;
 %}
 SECTION_POINTS = 3.0;
 
-%% 3: LOAD MATRIX
+%% 4: LOAD MATRIX
 % Mechanical load (forces)
 NXX = 100.0;
 NYY = 0.0;
@@ -175,7 +180,7 @@ MXY = 0.0;
 DELTA_T = 0.0;
 DELTA_M = 0.0;
 
-%% 4: OUTPUT DEFINITION
+%% 5: OUTPUT DEFINITION
 % OUTPUT_PLY  Section points for stress/strain output
 %{
     '<location>': Default (program controlled); Top; Middle (midspan/single
@@ -273,10 +278,7 @@ OUTPUT_LOCATION = {'DEFAULT', true};
 %%
 
 % Submit the layup for analysis!
-[ABD, ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, OPT] =...
-    ...
-    abd.main({MATERIAL, FAIL_STRESS, FAIL_STRAIN, HASHIN, LARC05}, {STACKING_SEQUENCE, PLY_THICKNESS, SYMMETRIC_LAYUP, SECTION_POINTS}, {OUTPUT_PLY, OUTPUT_FIGURE,...
-    OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION}, [NXX, NYY, NXY, MXX, MYY, MXY], [DELTA_T, DELTA_M]);
-
-clear MATERIAL FAIL_STRESS FAIL_STRAIN HASHIN LARC05 STACKING_SEQUENCE PLY_THICKNESS SYMMETRIC_LAYUP SECTION_POINTS NXX NYY NXY MXX MYY MXY DELTA_T DELTA_M OUTPUT_PLY...
-    OUTPUT_FIGURE OUTPUT_STRENGTH OUTPUT_OPTIMISED OPTIMISER_SETTINGS OUTPUT_LOCATION
+abd.main(struct('jobname', JOB_NAME, 'jobdescription', JOB_DESCRIPTION, 'material', {MATERIAL}, 'failstress', {FAIL_STRESS}, 'failstrain', {FAIL_STRAIN}, 'hashin', {HASHIN},...
+    'larc05', {LARC05}, 'stackingsequence', STACKING_SEQUENCE, 'plythickness', PLY_THICKNESS, 'symmetriclayup', SYMMETRIC_LAYUP, 'sectionpoints', SECTION_POINTS, 'loadmech',...
+    [NXX, NYY, NXY; MXX, MYY, MXY], 'loadtherm', DELTA_T, 'loadmoist', DELTA_M, 'outputply', OUTPUT_PLY, 'outputfigure', {OUTPUT_FIGURE}, 'outputstrength', {OUTPUT_STRENGTH},...
+    'outputoptimised', {OUTPUT_OPTIMISED}, 'optimisersettings', {OPTIMISER_SETTINGS}, 'outputlocation', {OUTPUT_LOCATION}));

@@ -18,16 +18,28 @@ ABD_INV = inv(ABD);
 % Stiffness matrix
 Q = struct('XY', Qij, 'PLY', Qt);
 
-% Midspan 
-E_MIDSPAN = abd.internal_getTableFromArray(E_midspan, 'strain_midspan');
+% Midspan
+if isempty(E_midspan) == false
+    E_MIDSPAN = abd.internal_getTableFromArray(E_midspan, 'strain_midspan');
+else
+    E_MIDSPAN = [];
+end
 
 % Strain tensors
-STRAIN = struct('TENSOR_XY', abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
-    'THERM_XY', abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), 'THERM_PLY',  abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
-    'MOIST_XY', abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), 'MOIST_PLY', abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned'));
+if isempty(E_ply_xy) == false
+    STRAIN = struct('TENSOR_XY', abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
+        'THERM_XY', abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), 'THERM_PLY',  abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
+        'MOIST_XY', abd.internal_getTableFromArray(E_moist_xy, 'moist_xy'), 'MOIST_PLY', abd.internal_getTableFromArray(E_moist_aligned, 'moist_aligned'));
+else
+    STRAIN = [];
+end
 
 % Stress tensors
-STRESS = struct('TENSOR_XY', abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned'));
+if isempty(S_ply_xy) == false
+    STRESS = struct('TENSOR_XY', abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned'));
+else
+    STRESS = [];
+end
 
 % Equivalent extension/bending moduli
 if isempty(EXT) == false

@@ -1,6 +1,7 @@
 function [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
-    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, error] =...
-    internal_initialise(nargin, USER_INPUTS)
+    SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, jobName,...
+    jobDescription, settings, error] =...
+    internal_initialise(settings)
 %   Gather variables from user inputs.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -36,87 +37,89 @@ Myy = [];
 Mxy = [];
 deltaT = [];
 deltaM = [];
+jobName = [];
+jobDescription = [];
 error = false;
+
+requiredFields = {'jobname', 'jobdescription', 'material', 'failstress', 'failstrain', 'hashin', 'larc05', 'stackingsequence', 'plythickness', 'symmetriclayup', 'sectionpoints',...
+    'loadmech', 'loadtherm', 'loadmoist', 'outputply', 'outputfigure', 'outputstrength', 'outputoptimised', 'optimisersettings', 'outputlocation'};
+
+for i = 1:length(requiredFields)
+    % Get the current field name
+    currentField = requiredFields{i};
+
+    % Check that the current field exists
+    if isfield(settings, currentField) == false
+        % Update the user
+        fprintf('[ERROR] Undefined option ''%s''\n', upper(currentField));
+        error = true;
+        return
+    end
+end
 
 % Flag to enable tensor output
 enableTensor = true;
-printTensor = 1.0;
+printTensor = true;
 
-switch nargin
-    case 3.0 % ABD only
-        % Material data
-        materialData = USER_INPUTS{1.0};
-        materialDataMechanical = materialData(1.0);
-        materialDataFailStress = materialData(2.0);
-        materialDataFailStrain = materialData(3.0);
-        materialDataHashin = materialData(4.0);
-        materialDataLaRC05 = materialData(5.0);
+% Extract inputs from FLAGS structure
+jobName = settings.jobname;
+jobDescription = settings.jobdescription;
+materialDataMechanical = settings.material;
+materialDataFailStress = settings.failstress;
+materialDataFailStrain = settings.failstrain;
+materialDataHashin = settings.hashin;
+materialDataLaRC05 = settings.larc05;
+theta = settings.stackingsequence;
+t_ply = settings.plythickness;
+symmetricPly = settings.symmetriclayup;
+SECTION_POINTS = settings.sectionpoints;
+loadmech = settings.loadmech;
+if isempty(loadmech) == false
+    Nxx = loadmech(1.0, 1.0);
+    Nyy = loadmech(1.0, 2.0);
+    Nxy = loadmech(1.0, 3.0);
+    Mxx = loadmech(2.0, 1.0);
+    Myy = loadmech(2.0, 2.0);
+    Mxy = loadmech(2.0, 3.0);
+end
+deltaT = settings.loadtherm;
+if isempty(deltaT) == true
+    deltaT = 0.0;
+end
+deltaM = settings.loadmoist;
+if isempty(deltaM) == true
+    deltaM = 0.0;
+end
+OUTPUT_PLY = settings.outputply;
+OUTPUT_FIGURE = settings.outputfigure;
+OUTPUT_STRENGTH = settings.outputstrength;
+OUTPUT_OPTIMISED = settings.outputoptimised;
+OPTIMISER_SETTINGS = settings.optimisersettings;
+OUTPUT_LOCATION = settings.outputlocation;
 
-        % Layup data
-        [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
+% Disable tensor output if applicable
+if all(all(loadmech == 0.0)) == true && all(all([deltaT, deltaM] == 0.0)) == true
+    enableTensor = false;
+end
 
-        % Output data
-        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0},...
-            USER_INPUTS{3.0}{3.0}, USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0}, USER_INPUTS{3.0}{6.0});
+%% Process OUTPUT_FIGURE
+if iscell(OUTPUT_FIGURE) == false
+    OUTPUT_FIGURE = {OUTPUT_FIGURE};
+end
 
-        % Disable tensor output
-        enableTensor = false;
-    case 4.0 % ABD + Load matrix
-        % Material data
-        materialData = USER_INPUTS{1.0};
-        materialDataMechanical = materialData(1.0);
-        materialDataFailStress = materialData(2.0);
-        materialDataFailStrain = materialData(3.0);
-        materialDataHashin = materialData(4.0);
-        materialDataLaRC05 = materialData(5.0);
+if all(cellfun(@isempty, OUTPUT_FIGURE)) == true
+    % Set default values if necessary
+    OUTPUT_FIGURE = {'', 'POINTS', 'SPLIT'};
+end
 
-        % Layup data
-        [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
+%% Process OUTPUT_STRENGTH
+if iscell(OUTPUT_STRENGTH) == false
+    OUTPUT_STRENGTH = {OUTPUT_STRENGTH};
+end
 
-        % Output data
-        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0},...
-            USER_INPUTS{3.0}{3.0}, USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0}, USER_INPUTS{3.0}{6.0});
-
-        % Load matrix data
-        [Nxx, Nyy, Nxy, Mxx, Myy, Mxy] = deal(USER_INPUTS{4.0}(1.0), USER_INPUTS{4.0}(2.0), USER_INPUTS{4.0}(3.0), USER_INPUTS{4.0}(4.0), USER_INPUTS{4.0}(5.0),...
-            USER_INPUTS{4.0}(6.0));
-
-        % Thermo/hydro load data
-        [deltaT, deltaM] = deal(0.0, 0.0);
-    case 5.0 % ABD + Load matrix + Thermo/hydro
-        % Material data
-        materialData = USER_INPUTS{1.0};
-        materialDataMechanical = materialData(1.0);
-        materialDataFailStress = materialData(2.0);
-        materialDataFailStrain = materialData(3.0);
-        materialDataHashin = materialData(4.0);
-        materialDataLaRC05 = materialData(5.0);
-
-        % Layup data
-        [theta, t_ply, symmetricPly, SECTION_POINTS] = deal(USER_INPUTS{2.0}{1.0}, USER_INPUTS{2.0}{2.0}, USER_INPUTS{2.0}{3.0}, USER_INPUTS{2.0}{4.0});
-
-        % Output data
-        [OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION] = deal(USER_INPUTS{3.0}{1.0}, USER_INPUTS{3.0}{2.0},...
-            USER_INPUTS{3.0}{3.0}, USER_INPUTS{3.0}{4.0}, USER_INPUTS{3.0}{5.0}, USER_INPUTS{3.0}{6.0});
-
-        % Load matrix data
-        [Nxx, Nyy, Nxy, Mxx, Myy, Mxy] = deal(USER_INPUTS{4.0}(1.0), USER_INPUTS{4.0}(2.0), USER_INPUTS{4.0}(3.0), USER_INPUTS{4.0}(4.0), USER_INPUTS{4.0}(5.0),...
-            USER_INPUTS{4.0}(6.0));
-
-        % Thermo/hydro load data
-        [deltaT, deltaM] = deal(USER_INPUTS{5.0}(1.0), USER_INPUTS{5.0}(2.0));
-    otherwise
-        % Report error to the user
-        fprintf('[ERROR] An invalid number of arguments was specified\n');
-
-        if nargin == 0.0
-            % The user probably ran main.abd by mistake
-            fprintf('-> To perform a layup analysis, run the input file ''user_definitions.m '' directly');
-        end
-
-        % Set the error flag and RETURN
-        error = true;
-        return
+if all(cellfun(@isempty, OUTPUT_STRENGTH)) == true
+    % Set default values if necessary
+    OUTPUT_STRENGTH = {false, 'RESERVE'};
 end
 
 %% Process OUTPUT_OPTIMISED
@@ -161,10 +164,14 @@ else
     end
 end
 
-
 %% Process output location
 if iscell(OUTPUT_LOCATION) == false
     OUTPUT_LOCATION = {OUTPUT_LOCATION};
+end
+
+if all(cellfun(@isempty, OUTPUT_LOCATION)) == true
+    % Set default values if necessary
+    OUTPUT_LOCATION = {'DEFAULT', true};
 end
 
 if length(OUTPUT_LOCATION) < 2.0
@@ -191,5 +198,103 @@ argument = OUTPUT_LOCATION{2.0};
 
 if islogical(argument) == false
     OUTPUT_LOCATION{2.0} = false;
+end
+
+%% Get the job ID from the input structure
+% Append the job id to the job settings structure
+job_id = simon.hash.DataHash(settings, 'SHA-512', 'array');
+settings.jobid = job_id;
+
+% Append the job date to the job settings structure
+jobDate = char(datetime('now'));
+jobDate(ismember(jobDate, ':')) = [];
+settings.jobdate = deal(jobDate);
+
+if exist([OUTPUT_LOCATION{1.0}, filesep, jobName], 'dir') == 7.0
+    % Get the previous job ID (if applicable)
+    [job_id_previous, job_date_previous] = abd.internal_getPreviousJobID(OUTPUT_LOCATION{1.0}, jobName);
+
+    % Set the default check string
+    checkString = 'default';
+    
+    if strcmp(job_id, job_id_previous) == true
+        %{
+            Job settings have not been modified since the last submission.
+            Ask the user if it's OK to overwrite the previous results
+        %}
+        [response, tf] = uigetpref('latprefdialogues', 'checkOverwrite_resultsNotModified', 'Layup Analysis Tool', sprintf(['The settings for job ''%s'' have n',...
+            'ot been modified since\nthe last submission.\n\nOK to overwrite?'], jobName), ["OK", "Cancel"], "DefaultButton", "Cancel");
+    else
+        %{
+            Job settings have been modified since the last submission. Ask
+            the user if they want to keep the previous results or overwrite
+            the previous results
+        %}
+        [response, tf] = uigetpref('latprefdialogues', 'checkOverwrite_resultsAlreadyExist', 'Layup Analysis Tool', sprintf(['An output directory already exist',...
+            's for job ''%s''.\n\nOK to overwrite?'], jobName), ["Overwrite previous", "Keep previous", "Cancel"], "DefaultButton", "Cancel");
+    end
+    
+    if tf == false
+        %{
+            The dialogue was never displayed due to the user preference, so
+            overwrite if the job settings are the same, and keep previous
+            results if the job settings are different
+        %}
+        if strcmp(response, 'overwrite previous') == true
+            response = 'keep previous';
+        end
+
+        %{
+            The analysis will not be aborted, so match the response to the
+            check string
+        %}
+        checkString = response;
+    elseif (strcmp(response, 'cancel') == false) && (isempty(response) == false)
+        %{
+            The user selected an option that does not abort the analysis,
+            so match the response to the check string
+        %}
+        checkString = response;
+    elseif isempty(response) == true
+        % There was no user response, so the analysis will be aborted
+        response = 'cancel';
+    end
+
+    if (strcmp(response(1.0), 'k') == true) && (strcmp(job_id, job_id_previous) == false)
+        % Temporarily disable all warnings
+        warning('off','all')
+
+        try
+            % Old job directory name
+            oldJobDir = [pwd, filesep, 'output', filesep, jobName];
+
+            % New job directory name
+            newJobDir = [pwd, filesep, 'output', filesep, sprintf('%s_%s', jobName, job_date_previous)];
+
+            % Rename the old job directory to the new name
+            movefile(oldJobDir, newJobDir)
+
+            % Add the old job directory back to the MATLAB path
+            addpath(genpath(newJobDir))
+        catch
+
+            % The old job directory could not be renamed
+            response = questdlg('The old job directory could not be renamed. Results will be overwritten. OK to continue?', 'Quick Fatigue Tool', 'Yes', 'No', 'Yes');
+
+            if (strcmp(response, 'Yes') == true) || (strcmpi(response, 'Y') == true)
+                checkString = response;
+            end
+        end
+
+        % Re-enable all warnings
+        warning('on','all')
+    end
+
+    if strcmpi(checkString, response) == false
+        % The user aborted the analysis
+        fprintf('[ERROR] Job ''%s'' was aborted by the user\n', jobName);
+        error = 1.0;
+        return
+    end
 end
 end
