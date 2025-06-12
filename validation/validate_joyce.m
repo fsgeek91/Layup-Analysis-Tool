@@ -1,3 +1,4 @@
+function [] = validate_joyce(varargin)
 %   Validation case for Joyce. See page 22 of "Macro-mechanics of
 %   lamina.pdf".
 %

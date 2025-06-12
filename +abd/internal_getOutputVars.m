@@ -1,6 +1,6 @@
-function [ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, OPT] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy,...
-    E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW,...
-    AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE)
+function [] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT,...
+    GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT,...
+    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH, outputLocation, jobname, settings)
 %   Collect variables for output.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -8,24 +8,25 @@ function [ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, OPT] = int
 %   Layup Analysis Tool 4.2.0 Copyright Louis Vallance 2025
 %   Last modified 10-Jun-2025 08:28:19 UTC
 %
+%#ok<*NASGU>
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
 %%
-% Inverse ABD matrix
+%% Inverse ABD matrix
 ABD_INV = inv(ABD);
 
-% Stiffness matrix
+%% Stiffness matrix
 Q = struct('XY', Qij, 'PLY', Qt);
 
-% Midspan
+%% Midspan strains
 if isempty(E_midspan) == false
     E_MIDSPAN = abd.internal_getTableFromArray(E_midspan, 'strain_midspan');
 else
     E_MIDSPAN = [];
 end
 
-% Strain tensors
+%% Strain tensors
 if isempty(E_ply_xy) == false
     STRAIN = struct('TENSOR_XY', abd.internal_getTableFromArray(E_ply_xy, 'strain_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(E_ply_aligned, 'strain_aligned'),...
         'THERM_XY', abd.internal_getTableFromArray(E_therm_xy, 'therm_xy'), 'THERM_PLY',  abd.internal_getTableFromArray(E_therm_aligned, 'therm_aligned'),...
@@ -34,14 +35,14 @@ else
     STRAIN = [];
 end
 
-% Stress tensors
+%% Stress tensors
 if isempty(S_ply_xy) == false
     STRESS = struct('TENSOR_XY', abd.internal_getTableFromArray(S_ply_xy, 'stress_xy'), 'TENSOR_PLY', abd.internal_getTableFromArray(S_ply_aligned, 'stress_aligned'));
 else
     STRESS = [];
 end
 
-% Equivalent extension/bending moduli
+%% Equivalent extension/bending moduli
 if isempty(EXT) == false
     EQ_MODULI = {abd.internal_getTableFromArray([EXT, EYT, GXYT, NUXYT, NUYXT], 'moduli_eq_tension'), abd.internal_getTableFromArray([EXB, EYB, GXYB, NUXYB, NUYXB],...
         'moduli_eq_bending')};
@@ -49,14 +50,18 @@ else
     EQ_MODULI = [];
 end
 
-% Failure/damage initiation
-CFAILURE = struct('STRESS', abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [TSAIW, SFAILRATIO_STRESS(3.0)]; [AZZIT,...
-    SFAILRATIO_STRESS(4.0)]], 'cfailure_stress'), 'STRAIN', abd.internal_getTableFromArray([MSTRN, SFAILRATIO_STRAIN], 'cfailure_strain'), 'HASHIN',...
-    abd.internal_getTableFromArray([[HSNFTCRT, SFAILRATIO_HASHIN(1.0)]; [HSNFCCRT, SFAILRATIO_HASHIN(2.0)]; [HSNMTCRT, SFAILRATIO_HASHIN(3.0)]; [HSNMCCRT,...
-    SFAILRATIO_HASHIN(4.0)]], 'cfailure_hashin'), 'LARC05', abd.internal_getTableFromArray([[LARPFCRT, SFAILRATIO_LARC05(1.0)]; [LARMFCRT, SFAILRATIO_LARC05(2.0)]; [LARKFCRT,...
-    SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05'));
+%% Failure/damage initiation
+if OUTPUT_STRENGTH == true
+    CFAILURE = struct('STRESS', abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [TSAIW, SFAILRATIO_STRESS(3.0)];...
+        [AZZIT, SFAILRATIO_STRESS(4.0)]], 'cfailure_stress'), 'STRAIN', abd.internal_getTableFromArray([MSTRN, SFAILRATIO_STRAIN], 'cfailure_strain'), 'HASHIN',...
+        abd.internal_getTableFromArray([[HSNFTCRT, SFAILRATIO_HASHIN(1.0)]; [HSNFCCRT, SFAILRATIO_HASHIN(2.0)]; [HSNMTCRT, SFAILRATIO_HASHIN(3.0)];...
+        [HSNMCCRT, SFAILRATIO_HASHIN(4.0)]], 'cfailure_hashin'), 'LARC05', abd.internal_getTableFromArray([[LARPFCRT, SFAILRATIO_LARC05(1.0)]; [LARMFCRT, SFAILRATIO_LARC05(2.0)];...
+        [LARKFCRT, SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05'));
+else
+    CFAILURE = [];
+end
 
-% Stacking sequence optimiser
+%% Stacking sequence optimiser
 if isempty(BEST_SEQUENCE) == false
     % Add optimiser output to the structure
     OPT = struct('SEQUENCE', BEST_SEQUENCE{1.0}, 'CRITICAL_VALUE', BEST_SEQUENCE{2.0}, 'N_PERMUTATIONS', BEST_SEQUENCE{3.0}, 'WALL_CLOCK', BEST_SEQUENCE{4.0}, 'EXCEPTION',...
@@ -74,9 +79,33 @@ if isempty(BEST_SEQUENCE) == false
 
         % Add cell contents to current structure
         OPT.TENSOR = struct('STRESS_XY', TENSOR_TABLES(1.0), 'STRESS_PLY', TENSOR_TABLES(2.0), 'STRAIN_XY', TENSOR_TABLES(3.0), 'STRAIN_PLY', TENSOR_TABLES(4.0), 'SYMMETRIC_ABD',...
-            TENSOR_TABLES(5.0));
+            TENSOR_TABLES(5.0)); %#ok<STRNU>
     end
 else
     OPT = [];
 end
+
+%% Save workspace variables to a MAT file in the output directory
+if strcmp(jobname, 'outout') == true
+    outputFileName = 'output_variables_';
+else
+    outputFileName = 'output_variables';
+end
+
+% Get the non-empty variables
+varNames = {'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'STRAIN', 'STRESS', 'EQ_MODULI', 'CFAILURE', 'OPT'};
+
+% Initialize an empty cell array for non-empty variable names
+nonEmptyVars = {};
+
+% Loop over variable names to check if they are non-empty
+for i = 1:length(varNames)
+    if isempty(eval(varNames{i})) == false
+        nonEmptyVars{end + 1.0} = varNames{i}; %#ok<AGROW>
+    end
+end
+
+% Save the output
+save([outputLocation, filesep, jobname, '.mat'], 'settings');
+save([outputLocation, filesep, outputFileName, '.mat'], nonEmptyVars{:});
 end

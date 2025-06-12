@@ -792,18 +792,9 @@ end
     bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, jobName, jobDescription);
 
 %% COLLECT OUTPUT
-[ABD_INV, Q, E_MIDSPAN, STRAIN, STRESS, EQ_MODULI, CFAILURE, OPT] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned,...
-    E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN,...
-    SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE);
-
-% Save workspace variables to a MAT file in the output directory
-if strcmp(jobName, 'outout') == true
-    outputFileName = 'output_variables_';
-else
-    outputFileName = 'output_variables';
-end
-save([outputLocation, filesep, outputFileName, '.mat'], 'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'STRAIN', 'STRESS', 'EQ_MODULI', 'CFAILURE', 'OPT');
-save([outputLocation, filesep, jobName, '.mat'], 'settings');
+abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT,...
+    NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
+    LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH{1.0}, outputLocation, jobName, settings);
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));

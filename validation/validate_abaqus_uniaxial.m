@@ -1,3 +1,4 @@
+function [] = validate_abaqus_uniaxial(varargin)
 %   Validation case for Abaqus. See "validate_abaqus.inp" for test model.
 %
 %   RUN THIS SCRIPT.
