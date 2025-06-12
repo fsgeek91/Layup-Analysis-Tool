@@ -450,7 +450,8 @@ function [S] = main(settings)
 %%
 clc
 
-%% READ FLAGS AND DATA FROM THE JOB FILE
+%% INITIALISE OUTPUT
+varargout{1.0} = [];
 
 %% GET USER INPUTS FROM VARARGIN
 [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...

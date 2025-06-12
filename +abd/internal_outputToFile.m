@@ -35,6 +35,8 @@ fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
     fprintf(fid, 'Job description: %s\n\n', JOB_DESCRIPTION);
+else
+    fprintf(fid, 'Job description: NONE\n\n');
 end
 
 % Print the units and CSYS conventions

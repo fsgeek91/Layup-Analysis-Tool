@@ -1,4 +1,4 @@
-function [S] = user_definitions(varargin)
+function [] = user_definitions(varargin)
 %USER_DEFINITIONS    Helper script for Layup Analysis Tool.
 %   Fill out this script with your layup definitions and analysis settings.
 %   Read the tips above each option for usage hints.
@@ -180,7 +180,7 @@ DELTA_T = 0.0;
 DELTA_M = 0.0;
 
 %__________________________________________________________________________
-%% 5: OUTPUT DEFINITION
+%% 5: OUTPUT
 % OUTPUT_PLY  Section points for stress/strain output
 %{
     '<location>': Default (program controlled); Top; Middle (midspan/single
@@ -278,7 +278,17 @@ OUTPUT_LOCATION = {'DEFAULT', true};
 %%
 
 % Submit the layup for analysis!
-[S] = abd.main(struct('jobname', JOB_NAME, 'jobdescription', JOB_DESCRIPTION, 'material', {MATERIAL}, 'failstress', {FAIL_STRESS}, 'failstrain', {FAIL_STRAIN}, 'hashin', {HASHIN},...
-    'larc05', {LARC05}, 'stackingsequence', STACKING_SEQUENCE, 'plythickness', PLY_THICKNESS, 'symmetriclayup', SYMMETRIC_LAYUP, 'sectionpoints', SECTION_POINTS, 'loadmech',...
-    [NXX, NYY, NXY; MXX, MYY, MXY], 'loadtherm', DELTA_T, 'loadmoist', DELTA_M, 'outputply', OUTPUT_PLY, 'outputfigure', {OUTPUT_FIGURE}, 'outputstrength', {OUTPUT_STRENGTH},...
-    'outputoptimised', {OUTPUT_OPTIMISED}, 'optimisersettings', {OPTIMISER_SETTINGS}, 'outputlocation', {OUTPUT_LOCATION}));
+[~] = abd.main(struct(...
+    ...
+    'jobname', JOB_NAME, 'jobdescription', JOB_DESCRIPTION,...                                                                                     %% 1: JOB
+    ...
+    'material', {MATERIAL}, 'failstress', {FAIL_STRESS}, 'failstrain', {FAIL_STRAIN}, 'hashin', {HASHIN}, 'larc05', {LARC05},...                   %% 2: MATERIAL DATA
+    ...
+    'stackingsequence', STACKING_SEQUENCE, 'plythickness', PLY_THICKNESS, 'symmetriclayup', SYMMETRIC_LAYUP, 'sectionpoints', SECTION_POINTS,...   %% 3: LAYUP PROPERTIES
+    ...
+    'loadmech', [NXX, NYY, NXY; MXX, MYY, MXY], 'loadtherm', DELTA_T, 'loadmoist', DELTA_M,...                                                     %% 4: LOAD MATRIX
+    ...
+    'outputply', OUTPUT_PLY, 'outputfigure', {OUTPUT_FIGURE}, 'outputstrength', {OUTPUT_STRENGTH}, 'outputoptimised', {OUTPUT_OPTIMISED},...       %% 5: OUTPUT
+    'optimisersettings', {OPTIMISER_SETTINGS}, 'outputlocation', {OUTPUT_LOCATION})...
+    ...
+    );
