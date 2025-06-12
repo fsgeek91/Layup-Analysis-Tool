@@ -34,7 +34,7 @@ fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 10-Jun-2025 08:28:19 
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
-    fprintf(fid, 'Job description:  %s\n', JOB_DESCRIPTION);
+    fprintf(fid, 'Job description: %s\n\n', JOB_DESCRIPTION);
 end
 
 % Print the units and CSYS conventions

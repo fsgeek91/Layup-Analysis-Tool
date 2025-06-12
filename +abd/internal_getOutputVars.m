@@ -1,4 +1,4 @@
-function [] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT,...
+function [S] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT,...
     GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT,...
     HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH, outputLocation, jobname, settings)
 %   Collect variables for output.
@@ -108,4 +108,19 @@ end
 % Save the output
 save([outputLocation, filesep, jobname, '.mat'], 'settings');
 save([outputLocation, filesep, outputFileName, '.mat'], nonEmptyVars{:});
+
+%% Assign all non-empty variables to a structure (workspace output)
+% Initialise the values list
+values = cell(1.0, numel(nonEmptyVars));
+
+for i = 1:numel(nonEmptyVars)
+    % Assign the current variable into the CALLER workspace
+    assignin('caller', nonEmptyVars{i}, eval(nonEmptyVars{i}));
+
+    % Assign the variable's value to VALUES
+    values{i} = evalin('caller', nonEmptyVars{i});
+end
+
+% Convert the CELL array to STRUCT
+S = cell2struct(values, nonEmptyVars, 2.0);
 end
