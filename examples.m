@@ -103,6 +103,7 @@
     'sectionpoints', 2,...                                                 % Number of section points
     'loadmech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
     'outputply', 'BOTTOM',...                                              % Ply output location
+    'outputfigure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
     'outputstrength', {{true, 'RESERVE'}},...                              % Strength calculation
     'outputlocation', {{'DEFAULT', false}}));                              % Analysis output location
 %__________________________________________________________________________
@@ -125,7 +126,7 @@
     'sectionpoints', 2,...                                                 % Number of section points
     'loadmech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
     'outputply', 'BOTTOM',...                                              % Ply output location
-    'outputfigure', {{'DEFAULT', [], 'SPLIT'}},...                         % MATLAB figures
+    'outputfigure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
     'outputstrength', {{true, 'RESERVE'}},...                              % Strength calculation
     'outputoptimised', {{'TSAIW', 'RESERVE', 'MINMAX', 10.0}},...          % Stacking sequence optimisation
     'outputlocation', {{'DEFAULT', false}}));                              % Analysis output location
