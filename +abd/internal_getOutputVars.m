@@ -1,6 +1,7 @@
 function [S] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT,...
     GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT,...
-    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH, outputLocation, jobname, settings)
+    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH, outputLocation, jobname, settings, noFailStress, noFailStrain,...
+    noHashin, noLaRC05)
 %   Collect variables for output.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -52,11 +53,28 @@ end
 
 %% Failure/damage initiation
 if OUTPUT_STRENGTH == true
-    CFAILURE = struct('STRESS', abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [TSAIW, SFAILRATIO_STRESS(3.0)];...
-        [AZZIT, SFAILRATIO_STRESS(4.0)]], 'cfailure_stress'), 'STRAIN', abd.internal_getTableFromArray([MSTRN, SFAILRATIO_STRAIN], 'cfailure_strain'), 'HASHIN',...
-        abd.internal_getTableFromArray([[HSNFTCRT, SFAILRATIO_HASHIN(1.0)]; [HSNFCCRT, SFAILRATIO_HASHIN(2.0)]; [HSNMTCRT, SFAILRATIO_HASHIN(3.0)];...
-        [HSNMCCRT, SFAILRATIO_HASHIN(4.0)]], 'cfailure_hashin'), 'LARC05', abd.internal_getTableFromArray([[LARPFCRT, SFAILRATIO_LARC05(1.0)]; [LARMFCRT, SFAILRATIO_LARC05(2.0)];...
-        [LARKFCRT, SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05'));
+    % Add fail stress output to structure
+    if noFailStress == false
+        CFAILURE.STRESS = abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [TSAIW, SFAILRATIO_STRESS(3.0)];...
+        [AZZIT, SFAILRATIO_STRESS(4.0)]], 'cfailure_stress');
+    end
+
+    % Add fail strain output to structure
+    if noFailStrain == false
+        CFAILURE.STRAIN = abd.internal_getTableFromArray([MSTRN, SFAILRATIO_STRAIN], 'cfailure_strain');
+    end
+
+    % Add Hashin output to structure
+    if noHashin == false
+        CFAILURE.HASHIN = abd.internal_getTableFromArray([[HSNFTCRT, SFAILRATIO_HASHIN(1.0)]; [HSNFCCRT, SFAILRATIO_HASHIN(2.0)]; [HSNMTCRT, SFAILRATIO_HASHIN(3.0)];...
+        [HSNMCCRT, SFAILRATIO_HASHIN(4.0)]], 'cfailure_hashin');
+    end
+
+    % Add LaRC05 output to structure
+    if noLaRC05 == false
+        CFAILURE.LARC05 = abd.internal_getTableFromArray([[LARPFCRT, SFAILRATIO_LARC05(1.0)]; [LARMFCRT, SFAILRATIO_LARC05(2.0)];...
+        [LARKFCRT, SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05'); %#ok<STRNU>
+    end
 else
     CFAILURE = [];
 end

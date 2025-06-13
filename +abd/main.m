@@ -450,9 +450,6 @@ function [S] = main(settings)
 %%
 clc
 
-%% INITIALISE OUTPUT
-varargout{1.0} = [];
-
 %% GET USER INPUTS FROM VARARGIN
 [enableTensor, printTensor, materialDataMechanical, materialDataFailStress, materialDataFailStrain, materialDataHashin, materialDataLaRC05, theta, t_ply, symmetricPly,...
     SECTION_POINTS, OUTPUT_PLY, OUTPUT_FIGURE, OUTPUT_STRENGTH, OUTPUT_OPTIMISED, OPTIMISER_SETTINGS, OUTPUT_LOCATION, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, deltaT, deltaM, jobName,...
@@ -795,7 +792,8 @@ end
 %% COLLECT OUTPUT
 [S] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT,...
     NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
-    LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH{1.0}, outputLocation, jobName, settings);
+    LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH{1.0}, outputLocation, jobName, settings, noFailStress, noFailStrain,...
+    noHashin, noLaRC05);
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
