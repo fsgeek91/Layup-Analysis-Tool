@@ -82,6 +82,17 @@ for i = 1:length(settingsNames)
     end
 end
 
+%% Process JOB_NAME
+if isempty(job_name) == true
+    job_name = dbstack;
+    job_name = job_name(end).name;
+end
+
+% Disable tensor output if applicable
+if (all(all(load_mech == 0.0)) == true) && (all(all([load_therm, load_hydro] == 0.0)) == true)
+    enableTensor = false;
+end
+
 %% Process NXX/NYY/NXY/MXX/MYY/MXY
 % Extract inputs from SETTINGS structure
 if isempty(load_mech) == false
