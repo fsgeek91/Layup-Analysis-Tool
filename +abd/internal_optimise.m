@@ -380,36 +380,7 @@ classdef internal_optimise < handle
                 B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
                 E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                 SECTION_POINTS, objective)
-            % Create a DataQueue
-            dq = parallel.pool.DataQueue;
-
-            % Define callback function on the client
-            afterEach(dq, @(~) updateProgress());
-
-            % Progress counter
-            count = 0.0;
-
-            % Progress update function
-            function updateProgress()
-                if isempty(count) == true
-                    count = 0.0;
-                end
-
-                % Update the progress counter
-                count = count + 1.0;
-
-                % Inform the user that optimisation has started
-                clc
-                fprintf('[NOTICE] Stacking sequence optimisation started. Please be patient...\n');
-
-                % Print the current progress to the command window
-                fprintf('Progress: %d%%\n', round(100.0*count/nPermutations));
-            end
-
-            parfor i = 1.0:nPermutations
-                % Notify progress to the user
-                send(dq, i);
-                
+            parfor i = 1.0:nPermutations                
                 % Get the current stacking order
                 theta = anglePermutations(i, :);
 
@@ -508,36 +479,7 @@ classdef internal_optimise < handle
                 B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
                 E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                 SECTION_POINTS, objective)
-            % Create a DataQueue
-            dq = parallel.pool.DataQueue;
-
-            % Define callback function on the client
-            afterEach(dq, @(~) updateProgress());
-
-            % Progress counter
-            count = 0.0;
-
-            % Progress update function
-            function updateProgress()
-                if isempty(count) == true
-                    count = 0.0;
-                end
-
-                % Update the progress counter
-                count = count + 1.0;
-
-                % Inform the user that optimisation has started
-                clc
-                fprintf('[NOTICE] Stacking sequence optimisation started. Please be patient...\n');
-
-                % Print the current progress to the command window
-                fprintf('Progress: %d%%\n', round(100.0*count/nPermutations));
-            end
-
             parfor i = 1.0:nPermutations
-                % Notify progress to the user
-                send(dq, i);
-
                 % Get the current stacking order
                 theta = abd.internal_optimise.indexToStacking(i, thetaAll, numAngles, nPlies);
 
@@ -639,36 +581,7 @@ classdef internal_optimise < handle
             % Initialise the outer buffer for the PARFOR loop
             OUTER_BUFFER = cell(numChunks, 1.0);
 
-            % Create a DataQueue
-            dq = parallel.pool.DataQueue;
-
-            % Define callback function on the client
-            afterEach(dq, @(~) updateProgress());
-
-            % Progress counter
-            count = 0.0;
-
-            % Progress update function
-            function updateProgress()
-                if isempty(count) == true
-                    count = 0.0;
-                end
-
-                % Update the progress counter
-                count = count + 1.0;
-
-                % Inform the user that optimisation has started
-                clc
-                fprintf('[NOTICE] Stacking sequence optimisation started. Please be patient...\n');
-
-                % Print the current progress to the command window
-                fprintf('Progress: %d%%\n', round(100.0*count/numChunks));
-            end
-
             parfor chunkId = 1.0:numChunks
-                % Notify progress to the user
-                send(dq, chunkId);
-
                 % Get iterator parameters
                 startIdx = (chunkId - 1.0) * CHUNK_SIZE + 1.0;
                 endIdx = min(chunkId * CHUNK_SIZE, nPermutations);

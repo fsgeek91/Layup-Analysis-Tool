@@ -1,10 +1,17 @@
 function [S] = main(settings)
 %ABD.MAIN    Analyse a user-defined composite layup.
-%   [VARARGOUT] = ABD.MAIN(VARARGIN) computes the ABD matrix from an
+%   [s] = ABD.MAIN(struct) computes the ABD matrix from an
 %   n-layer composite layup definition, and evaluates the layup strength
 %   based on a range of failure and damage initiation criteria.
 %
-%   THE USER IS NOT REQUIRED TO RUN THIS FUNCTION.
+%   A summary of the analysis is written to:
+%     <output-folder>\'<job-name>\analysis_summary.log'
+%
+%   Detailed output is written to:
+%     <output-folder>\'<job-name>\output_variables.mat'
+%
+%   THE USER IS NOT REQUIRED TO RUN THIS FUNCTION. SEE USER_DEFINITIONS.M
+%   FOR ANALYSIS TEMPLATE.
 %
 %   The following output is produced:
 %
@@ -22,6 +29,7 @@ function [S] = main(settings)
 %   - Strains are assumed to vary linearly through the layup thickness
 %     (z-direction)
 %   - Linear, orthotropic elasticity is assumed
+%   - n: Number of plies defined in the layup
 %
 %   Units:
 %   Force [N]
@@ -49,50 +57,38 @@ function [S] = main(settings)
 %__________________________________________________________________________
 %   USE CASE I - Stiffness calculation only (ABD matrix output):
 %
-%   [..] = ABD.MAIN(MATERIAL, LAYUP, OUTPUT_DEF).
+%   [..] = ABD.MAIN(struct(...
+%                          'material', {<1xn>},...
+%                          'stackingsequence', [<1xn>],...
+%                          'plythickness', [<1xn>],...
+%                          'symmetriclayup', [true | false],...
+%                          'outputlocation', {<1x2>}),...
+%                          ).
 %
-%   MATERIAL. A 1x5 cell array specifying mechanical and strength material
-%   properties.
-%
-%   MATERIAL(1) is a 1xn cell array specifying the mechanical material
+%   MATERIAL. A 1xn cell array specifying the mechanical material
 %   properties, E11, E22, G12, V12, A11, A22, B11 and B22 for each ply.
-%
-%   MATERIAL(2:5) are empty ( [] )
 %
 %   Note: n = 1 for constant material properties; for ply-wise material
 %   properties, specify n sets of properties corresponding to the n ply
 %   definitions given by LAYUP.
 %
-%   LAYUP. A 1x4 cell specifying the layup orientations, laminate thickness
-%   values, stacking symmetry and the number of section points.
+%   STACKINGSEQUENCE. A 1xn array defining the layup stacking sequence.
 %
-%   LAYUP(1) is a 1xn array defining the layup stacking sequence,
-%   STACKING_SEQUENCE.
+%   PLYTHICKNESS. A 1xn array containing the ply thickness values. n = 1
+%   for a constant thickness laminate; for variable thickness laminates,
+%   specify the thickness of each ply, where
+%   n = length(STACKINGSEQUENCE).
 %
-%   LAYUP(2) is a 1xn array containing the ply thickness values,
-%   PLY_THICKNESS: n = 1 for a constant thickness laminate; for variable
-%   thickness laminates, specify the thickness of each ply, where 
-%   n = length(STACKING_SEQUENCE).
-%
-%   LAYUP(3) is a flag to make the calculated section symmetric,
-%   SYMMETRIC_LAYUP. When SYMMETRIC_LAYUP = true, the layup definition is
-%   mirrored after the last ply in the stacking sequence (the positive-z
-%   side).
+%   SYMMETRICLYUP. A flag to make the calculated section symmetric. When
+%   SYMMETRICLYUP = true, the layup definition is mirrored after the last
+%   ply in the stacking sequence (the positive-z side).
 %
 %   Note: When the symmetric layup definition is specified, material, layup
 %   stacking and ply thickness definitions are automatically reflected on
 %   the other side of the symmetry plane.
 %
-%   LAYUP(4) is empty ( [] )
-%
-%   OUTPUT_DEF. A 1x6 cell array specifying the ply output location,
-%   MATLAB figures, strength calculation, stacking sequence optimisation,
-%   optimiser solver settings and the results output location.
-%
-%   OUTPUT_DEF(1:5) are empty ( [] )
-%
-%   OUTPUT_DEF(6) is a 1x2 cell array specifying the results location,
-%   OUTPUT_LOCATION. OUTPUT_LOCATION(1) is a string specifying the results
+%   OUTPUTLOCATION. A 1x2 cell array specifying the results location.
+%   OUTPUTLOCATION(1) is a string specifying the results
 %   location. Use the parameter 'DEFAULT' to save results under the output
 %   folder in the current working directory, or specify the directory path
 %   directly; OUTPUT_LOCATION(2) is a flag to enable or disable opening of
@@ -100,25 +96,44 @@ function [S] = main(settings)
 %__________________________________________________________________________
 %   USE CASE II - Stress analysis:
 %
-%   [..] = ABD.MAIN(MATERIAL, LAYUP, OUTPUT_DEF, LOAD).
+%   [..] = ABD.MAIN(struct(...
+%                          'sectionpoints', ['DEFAULT' | sp],...
+%                          'loadmech', [<2x3>],...
+%                          'loadtherm', [<1x1>],...
+%                          'loadhydro', [<1x1>],...
+%                          'outputply', [<'param'> | [SP1,..., SPn]],...
+%                          'outputfigure', {<1x3>},...
+%                          ).
 %
 %   MATERIAL (already specified - see USE CASE I)
 %
-%   LAYUP(1:3) (already specified - see USE CASE I)
+%   STACKINGSEQUENCE (already specified - see USE CASE I)
 %
-%   LAYUP(4) is the number of stress/strain section points per ply,
-%   SECTION_POINTS. The parameter 'DEFAULT' allows the number of section
-%   point to be chosen automatically; the number of section points is
-%   specified directly with a positive integer. Since the layup section is
-%   integrated once before the stress analysis, section points are treated
-%   as sample points.
+%   PLYTHICKNESS (already specified - see USE CASE I)
 %
-%   OUTPUT_DEF(1) is the section output request, OUTPUT_PLY. When
-%   OUTPUT_PLY is a string, it specifies the output location of each ply:
+%   SYMMETRICLAYUP (already specified - see USE CASE I)
+%
+%   SECTIONPOINTS. The number of stress/strain section points per ply. The
+%   parameter 'DEFAULT' allows the number of section point to be chosen
+%   automatically; the number of section points is specified directly with
+%   a positive integer. Since the layup section is integrated once before
+%   the stress analysis, section points are treated as sample points.
+%
+%   LOADMECH. A 2x3 array specifying the applied load, [NXX, NYY, NXY; MXX,
+%   MYY, MXY].
+%
+%   LOADTHERM. A 1x1 array specifying the thermal load as the percent [%]
+%   change in temperature.
+%
+%   LOADHYDRO. A 1x1 array specifying the hydroscopic load as the percent
+%   [%/100] moisture weight content change.
+%
+%   OUTPUTPLY. The section output request. When OUTPUTPLY is a string, it
+%   specifies the output location of each ply:
 %
 %     DEFAULT: Program controlled
 %       If:
-%         SECTION_POINTS = 1: Midspans only
+%         SECTIONPOINTS = 1: Midspans only
 %       Else:
 %         Top and bottom faces
 %     TOP: Top faces only
@@ -129,70 +144,79 @@ function [S] = main(settings)
 %     ENVELOPEMAX: The largest (+ve) value for the layup
 %     ENVELOPEMIN: The largest (-ve) value for the layup
 %
-%   When OUTPUT_PLY is a 1xn array, it specifies a user-defined section
+%   When OUTPUTPLY is a 1xn array, it specifies a user-defined section
 %   point list.
 %
-%   OUTPUT_DEF(2) is a 1x2 cell array specifying settings for MATLAB figure
-%   output, OUTPUT_FIGURE. OUTPUT_FIGURE(1) is a parameter specifying the
-%   figure type ([], 'DEFAULT' or 'SMOOTH'). The parameter 'DEFAULT'
-%   creates figures from the raw stress/strain data; the parameter 'SMOOTH'
-%   uses the built-in MATLAB SMOOTHDATA function to smooth the output at
-%   the ply boundaries; an empty assignment disables MATLAB figure output;
-%   OUTPUT_FIGURE(2) is a parameter specifying the visualisation of the
+%   OUTPUTFIGURE. A 1x3 cell array specifying settings for MATLAB figure
+%   output. OUTPUTFIGURE(1) is a parameter specifying the figure type
+%   ([], 'DEFAULT' or 'SMOOTH'). The parameter 'DEFAULT' creates figures
+%   from the raw stress/strain data; the parameter 'SMOOTH' uses the
+%   built-in MATLAB SMOOTHDATA function to smooth the output at the ply
+%   boundaries; an empty assignment disables MATLAB figure output;
+%   OUTPUTFIGURE(2) is a parameter specifying the visualisation of the
 %   section points ([], 'POINTS'). The parameter 'POINTS' plots the section
 %   points over the stress/strain MATLAB figures. If a strength analysis is
-%   performed with OUTPUT_STRENGTH, then the section points are coloured
+%   performed with OUTPUTSTRENGTH, then the section points are coloured
 %   green or red for points which are safe or unsafe, respectively (Note: A
 %   section point is coloured red if it failed according to at least one
-%   failure/damage initiation criterion); OUTPUT_FIGURE(3) is a parameter
+%   failure/damage initiation criterion); OUTPUTFIGURE(3) is a parameter
 %   specifying the figure layout ('SPLIT' or 'COMPACT'). The parameter
 %   'SPLIT' creates a separate plot for each tensor component; the
 %   parameter 'COMPACT' overlays each tensor component in a single plot.
 %
-%   OUTPUT_DEF(3:5) are empty ( [] )
-%
-%   LOAD. A 1x6 array specifying the applied load, N11, N22, N12, M11, M22
-%   and M12.
-%
-%   Include thermal/hydroscopic loads:
-%
-%   [..] = ABD.MAIN(.., THERM_HYDRO).
-%
-%   THERM_HYDRO. A 1x2 array specifying the thermal and hydroscopic load,
-%   DELTA_T and DELTA_M, respectively.
+%   OUTPUTLOCATION (already specified - see USE CASE I)
 %__________________________________________________________________________
 %   USE CASE III - Strength analysis:
 %
-%   [..] = ABD.MAIN(MATERIAL, LAYUP, OUTPUT_DEF, LOAD).
+%   [..] = ABD.MAIN(struct(...
+%                          'failstress', {<1xn>},...
+%                          'failstrain', {<1xn>},...
+%                          'hashin', {<1xn>},...
+%                          'larc05', {<1xn>},...
+%                          'outputstrength', {<1x2>},...
+%                          ).
 %
-%   MATERIAL(1) (already specified - see USE CASE I)
+%   MATERIAL (already specified - see USE CASE I)
 %
-%   MATERIAL(2) is a 1xn cell array specifying the strength properties for
+%   FAILSTRESS. A 1xn cell array specifying the strength properties for
 %   stress-based failure criteria, XT, XC, YT, YC, S, C and B for each ply.
 %
-%   MATERIAL(3) is a 1xn cell array specifying the strength properties for
+%   FAILSTRAIN. A 1xn cell array specifying the strength properties for
 %   strain-based failure criteria, XET, XEC, YET, YEC and SE for each ply.
 %
-%   MATERIAL(4) is a 1xn cell array specifying the strength properties for
-%   the Hashin damage initiation criteria ALPHA, XHT, XHC, YHT, YHC, SHX
+%   HASHIN. A 1xn cell array specifying the strength properties for the
+%   Hashin damage initiation criteria ALPHA, XHT, XHC, YHT, YHC, SHX
 %   and SHY for each ply.
 %
-%   MATERIAL(5) is a 1xn cell array specifying the strength properties for
-%   the LaRC05 damage initiation criteria XLT, XLC, YLT, YLC, SLX, SLY,
-%   GL12, NL, NT, A0 and PHI0 for each ply.
+%   LARC05. A 1xn cell array specifying the strength properties for the
+%   LaRC05 damage initiation criteria XLT, XLC, YLT, YLC, SLX, SLY, GL12,
+%   NL, NT, A0 and PHI0 for each ply. The parameters YLC, SLY, NL, NT, A0
+%   and PHI0 are derived if a value of -1 is specified.
 %
 %   Note: Unspecified criteria are left empty ( [] )
 %
-%   LAYUP(1:3) (already specified - see USE CASE I)
+%   STACKINGSEQUENCE (already specified - see USE CASE I)
 %
-%   LAYUP(4) (already specified - see USE CASE II)
+%   PLYTHICKNESS (already specified - see USE CASE I)
 %
-%   OUTPUT_DEF(1:2) (already specified - see USE CASE II)
+%   SYMMETRICLAYUP (already specified - see USE CASE I)
 %
-%   OUTPUT_DEF(3) is a 1x2 cell array specifying settings for the strength
-%   assessment, OUTPUT_STRENGTH. OUTPUT_STRENGTH(1) is a flag to enable or
-%   disable the strength assessment; OUTPUT_STRENGTH(2) is the failure
-%   assessment parameter:
+%   SECTIONPOINTS (already specified - see USE CASE II)
+%
+%   LOADMECH (already specified - see USE CASE II)
+%
+%   LOADTHERM (already specified - see USE CASE II)
+%
+%   LOADHYDRO (already specified - see USE CASE II)
+%
+%   OUTPUTPLY (already specified - see USE CASE II)
+%
+%   OUTPUTFIGURE (already specified - see USE CASE II)
+%
+%   OUTPUTSTRENGTH. A 1x2 cell array specifying settings for the strength
+%   assessment. OUTPUTSTRENGTH(1) is a flag to enable or disable the
+%   strength assessment; OUTPUTSTRENGTH(2) is the failure assessment
+%   parameter:
 %   
 %     RESERVE: Strength reserve factor, R. For stress-based and
 %     strain-based failure criteria, the inverse of the strength reserve
@@ -202,8 +226,8 @@ function [S] = main(settings)
 %     VALUE: Criterion value, V. The value of the index obtained directly
 %     from the failure criterion.
 %   
-%   The strength calculation requires strength properties defined by
-%   FAIL_STRESS, FAIL_STRAIN, HASHIN or LARC05.
+%   The strength assessment is performed on the basis of the available
+%   material data given by FAILSTRESS, FAILSTRAIN, HASHIN and LARC05.
 %
 %   Note: The Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria can be
 %   expressed in terms of the strength reserve factor or the criterion
@@ -213,40 +237,56 @@ function [S] = main(settings)
 %   Note: For Hashin's theory and LaRC05, R is not evaluated; output for
 %   these criteria is quoted as the damage initiation criterion index.
 %
-%   OUTPUT_DEF(4:5) are empty ( [] )
-%
-%   OUTPUT_DEF(6) (already specified - see USE CASE I)
-%
-%   LOAD (already specified - see USE CASE II)
+%   OUTPUTLOCATION (already specified - see USE CASE I)
 %__________________________________________________________________________
 %   USE CASE IV - Stacking sequence optimisation:
 %
-%   [..] = ABD.MAIN(MATERIAL, LAYUP, OUTPUT_DEF, LOAD).
+%   [..] = ABD.MAIN(struct(...
+%                          'outputoptimised', {<1x4>},...
+%                          'optimisersettings', {<1x3>},...
+%                          ).
 %
-%   MATERIAL(1) (already specified - see USE CASE I)
+%   MATERIAL (already specified - see USE CASE I)
 %
-%   MATERIAL(2:5) (already specified - see USE CASE III)
+%   FAILSTRESS (already specified - see USE CASE III)
 %
-%   LAYUP(1:3) (already specified - see USE CASE I)
+%   FAILSTRAIN (already specified - see USE CASE III)
 %
-%   LAYUP(4) (already specified - see USE CASE II)
+%   HASHIN (already specified - see USE CASE III)
 %
-%   OUTPUT_DEF(1:2) (already specified - see USE CASE II)
+%   LARC05 (already specified - see USE CASE III)
 %
-%   OUTPUT_DEF(3) (already specified - see USE CASE III)
+%   STACKINGSEQUENCE (already specified - see USE CASE I)
 %
-%   OUTPUT_DEF(4) is a 1x4 cell array specifying settings for the stacking
-%   sequence optimiser, OUTPUT_OPTIMISED. OUTPUT_OPTIMISED(1) is the
-%   failure criterion for the optimisation ('MSTRS', 'TSAIH', 'TSAIW',
-%   'AZZIT', 'MSTRN', 'HASHIN' or 'LARC05'); OUTPUT_OPTIMISED(2) is the
-%   failure assessment parameter ('RESERVE' or 'VALUE');
-%   OUTPUT_OPTIMISED(3) is the objective function ('MINMAX' or 'MINMEAN');
-%   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
-%   permutations.
+%   PLYTHICKNESS (already specified - see USE CASE I)
 %
-%   OUTPUT_DEF(5) is a 1x3 cell array specifying the solver settings for
-%   the stacking sequence optimiser, OPTIMISER_SETTINGS.
-%   OPTIMISER_SETTINGS(1) is the solver type:
+%   SYMMETRICLAYUP (already specified - see USE CASE I)
+%
+%   SECTIONPOINTS (already specified - see USE CASE II)
+%
+%   LOADMECH (already specified - see USE CASE II)
+%
+%   LOADTHERM (already specified - see USE CASE II)
+%
+%   LOADHYDRO (already specified - see USE CASE II)
+%
+%   OUTPUTPLY (already specified - see USE CASE II)
+%
+%   OUTPUTFIGURE (already specified - see USE CASE II)
+%
+%   OUTPUTSTRENGTH (already specified - see USE CASE III)
+%
+%   OUTPUTOPTIMISED. A 1x4 cell array specifying settings for the stacking
+%   sequence optimiser. OUTPUTOPTIMISED(1) is the failure criterion for the
+%   optimisation ('MSTRS', 'TSAIH', 'TSAIW', 'AZZIT', 'MSTRN', 'HASHIN' or
+%   'LARC05'); OUTPUTOPTIMISED(2) is the failure assessment parameter
+%   ('RESERVE' or 'VALUE') %   OUTPUTOPTIMISED(3) is the objective function
+%   ('MINMAX' or 'MINMEAN'); OUTPUTOPTIMISED(4) is the angular step size
+%   for the stacking sequence permutations.
+%
+%   OPTIMISERSETTINGS. A 1x3 cell array specifying the solver settings for
+%   the stacking sequence optimiser. OPTIMISERSETTINGS(1) is the solver
+%   type:
 %
 %     FULL MATRIX: This method computes all stacking sequence combinations
 %     before the start of the optimisation. This method is not recommended.
@@ -264,12 +304,12 @@ function [S] = main(settings)
 %     to be specified. This method provides no benefit over the MIXED-RADIX
 %     method unless a parallel pool is connected.
 %
-%   OPTIMISER_SETTINGS(2) is the chunk size when the CHUNKS method is
+%   OPTIMISERSETTINGS(2) is the chunk size when the CHUNKS method is
 %   specified. The parameter 'DEFAULT' computes the chunk size
 %   automatically based on a heuristic algorithm; the chunk size is
 %   specified directly with a positive integer.
 %
-%   OPTIMISER_SETTINGS(3) is the tuning constant for the chunk size when
+%   OPTIMISERSETTINGS(3) is the tuning constant for the chunk size when
 %   the CHUNKS method is specified. The parameter 'DEFAULT' uses a default
 %   value (5); the tuning parameter is specified directly with a positive
 %   integer (typically in the range 2-10).
@@ -278,13 +318,13 @@ function [S] = main(settings)
 %   advanced users only. The use of non-standard settings may result in an
 %   increase in the analysis time, or the analysis may crash.
 %
-%   OUTPUT_DEF(6) (already specified - see USE CASE I)
-%
-%   LOAD (already specified - see USE CASE II)
+%   OUTPUTFIGURE (already specified - see USE CASE II)
 %__________________________________________________________________________
 %   Optional output arguments:
 %
-%   [ABD, ABD_INV, Q, EI, EP, SP, EMTB, CFAILURE, OPT] = ABD.MAIN(..).
+%   [S] = ABD.MAIN(..).
+%
+%   S. A structure containing the same output as 'output_variables.mat'.
 %
 %   ABD. A 6x6 matrix of the computed ABD matrix.
 %
@@ -320,10 +360,10 @@ function [S] = main(settings)
 %   STRAIN.THERM_PLY is a 3xn table of the stress-free ply strains due to
 %   thermal process in ply (1-2) coordinates.
 %
-%   STRAIN.MOIST_XY is a 3xn table of the stress-free ply strains due to
+%   STRAIN.HYDRO_XY is a 3xn table of the stress-free ply strains due to
 %   moisture process in global (X-Y) coordinates.
 %
-%   STRAIN.MOIST_PLY is a 3xn table of the stress-free ply strains due to
+%   STRAIN.HYDRO_PLY is a 3xn table of the stress-free ply strains due to
 %   moisture process in ply (1-2) coordinates.
 %
 %   Note: For stress-free thermal/moisture strains, contractions have
@@ -664,7 +704,7 @@ end
 
 %% COMPUTE TENSOR QUANTITIES
 if enableTensor == true
-    [E_midspan, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned] =...
+    [E_midspan, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned] =...
         ...
         abd.internal_getTensor(ABD, Nxx, NxxT, NxxM, Nyy, NyyT, NyyM, Nxy, NxyT, NxyM, Mxx, MxxT, MxxM, Myy, MyyT, MyyM, Mxy, MxyT, MxyM, nPlies_points, z_points, theta_points,...
         Qijt, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, tolerance);
@@ -679,7 +719,7 @@ else
     E_ply_xy = [];  E_ply_aligned = [];
     S_ply_xy = [];  S_ply_aligned = [];
     E_therm_xy = [];    E_therm_aligned = [];
-    E_moist_xy = [];    E_moist_aligned = [];
+    E_hydro_xy = [];    E_hydro_aligned = [];
 end
 
 %% DETERMINE IF ABD MATRIX IS SYMMETRIC
@@ -787,13 +827,13 @@ end
 %% WRITE RESULTS TO A TEXT FILE
 [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05] =...
     abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
-    E_therm_xy, E_moist_xy, E_therm_aligned, E_moist_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
+    E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
     HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
     plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
     bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, jobName, jobDescription);
 
 %% COLLECT OUTPUT
-[S] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_moist_xy, E_moist_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT,...
+[S] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_hydro_xy, E_hydro_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT,...
     NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
     LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH{1.0}, outputLocation, jobName, settings, noFailStress, noFailStrain,...
     noHashin, noLaRC05);
