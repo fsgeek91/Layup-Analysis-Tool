@@ -31,9 +31,9 @@ switch lower(TYPE)
     case 'therm_aligned'
         rowNames = {'E_THERM_11', 'E_THERM_22', 'E_THERM_12'};
     case 'hydro_xy'
-        rowNames = {'E_MOIST_XX', 'E_MOIST_YY', 'E_MOIST_XY'};
+        rowNames = {'E_HYDRO_XX', 'E_HYDRO_YY', 'E_HYDRO_XY'};
     case 'hydro_aligned'
-        rowNames = {'E_MOIST_11', 'E_MOIST_22', 'E_MOIST_12'};
+        rowNames = {'E_HYDRO_11', 'E_HYDRO_22', 'E_HYDRO_12'};
     case 'strain_midspan'
         rowNames = {'EXX_0', 'EYY_0', 'EXY_0', 'KAPPA_XX', 'KAPPA_YY', 'KAPPA_XY'};
         varNames = "MIDSPAN";

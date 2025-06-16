@@ -91,7 +91,7 @@ function [S] = main(settings)
 %   OUTPUTLOCATION(1) is a string specifying the results
 %   location. Use the parameter 'DEFAULT' to save results under the output
 %   folder in the current working directory, or specify the directory path
-%   directly; OUTPUT_LOCATION(2) is a flag to enable or disable opening of
+%   directly; OUTPUTLOCATION(2) is a flag to enable or disable opening of
 %   the results file after the analysis has been completed.
 %__________________________________________________________________________
 %   USE CASE II - Stress analysis:
@@ -122,11 +122,9 @@ function [S] = main(settings)
 %   LOADMECH. A 2x3 array specifying the applied load, [NXX, NYY, NXY; MXX,
 %   MYY, MXY].
 %
-%   LOADTHERM. A 1x1 array specifying the thermal load as the percent [%]
-%   change in temperature.
+%   LOADTHERM. A 1x1 array specifying the thermal load, DELTA_T.
 %
-%   LOADHYDRO. A 1x1 array specifying the hydroscopic load as the percent
-%   [%/100] moisture weight content change.
+%   LOADHYDRO. A 1x1 array specifying the hydroscopic load, DELTA_M.
 %
 %   OUTPUTPLY. The section output request. When OUTPUTPLY is a string, it
 %   specifies the output location of each ply:

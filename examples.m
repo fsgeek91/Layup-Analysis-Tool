@@ -36,28 +36,28 @@
 %   ABD calculation of a 0.1mm thick UD [45(1)/90(1)] layup; return ABD
 %   matrix and its inverse:
 [~] = abd.main(struct(...
-    'jobname', 'Use Case Ia',...                                           % Job name
-    'jobdescription', sprintf(['ABD calculation of a 0.1mm thick UD [4',...% Job description
-    '5(1)/90(1)] layup;\nreturn ABD matrix and its inverse']),...
-    'material', {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]},...         % Mechanical material properties
-    'stackingsequence', [45, 90],...                                       % Stacking sequence
-    'plythickness', 0.1,...                                                % Ply thickness values                                   
-    'outputlocation', {{'DEFAULT', false}}));                              % Analysis output location
+    'job_name', 'Use Case Ia',...                                           % Job name
+    'job_description', sprintf(['ABD calculation of a 0.1mm thick UD [',... % Job description
+    '45(1)/90(1)] layup;\nreturn ABD matrix and its inverse']),...
+    'material', {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]},...          % Mechanical material properties
+    'stacking_sequence', [45, 90],...                                       % Stacking sequence
+    'ply_thickness', 0.1,...                                                % Ply thickness values                                   
+    'output_location', {{'DEFAULT', false}}));                              % Analysis output location
 %
 %   ABD calculation of a variable thickness UD [45(1)/90(1)]-Symmetric
 %   layup, different materials; return ABD matrices and the equivalent
 %   bending/tension moduli:
 [~] = abd.main(struct(...
-    'jobname', 'Use Case Ib',...                                           % Job name
-    'jobdescription', sprintf(['ABD calculation of a variable thicknes',...% Job description
-    's UD\n[45(1)/90(1)]-Symmetric layup, different materials; return ',...
-    'ABD matrices and\nthe equivalent bending/tension moduli']),...
-    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3],...         % Mechanical material properties
+    'job_name', 'Use Case Ib',...                                           % Job name
+    'job_description', sprintf(['ABD calculation of a variable thickne',... % Job description
+    'ss UD\n[45(1)/90(1)]-Symmetric layup, different materials; return',...
+    ' ABD matrices and\nthe equivalent bending/tension moduli']),...
+    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3],...          % Mechanical material properties
     [1.5e5, 5e4, 3.5e3, 0.29, 1.2e-5, 1.2e-5, 1.5e-3, 1.5e-3]}},...
-    'stackingsequence', [45, 90],...                                       % Stacking sequence
-    'plythickness', [0.1, 0.15],...                                        % Ply thickness values
-    'symmetriclayup', true,...                                             % Symmetric layup  
-    'outputlocation', {{'DEFAULT', false}}));                              % Analysis output location
+    'stacking_sequence', [45, 90],...                                       % Stacking sequence
+    'ply_thickness', [0.1, 0.15],...                                        % Ply thickness values
+    'symmetric_layup', true,...                                             % Symmetric layup  
+    'output_location', {{'DEFAULT', false}}));                              % Analysis output location
 %__________________________________________________________________________
 %   USE CASE II - Stress analysis:
 %
@@ -66,19 +66,19 @@
 %   midspans, return midspan strains and curvatures and stress/strain
 %   tensors: 
 [~] = abd.main(struct(...
-    'jobname', 'Use Case II',...                                           % Job name
-    'jobdescription', sprintf(['Stress analysis of a 0.1mm thick UD [4',...% Job description
-    '5(1)/90(1)] layup in\npure bending (x-axis); output for 3 section',...
-    ' points per ply, output stresses\nat ply midspans, return midspan',...
-    ' strains and curvatures and stress/strain\ntensors']),...
-    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]}},...       % Mechanical material properties
-    'stackingsequence', [45, 90],...                                       % Stacking sequence
-    'plythickness', 0.1,...                                                % Ply thickness values 
-    'sectionpoints', 3,...                                                 % Number of section points
-    'loadmech', [0, 0, 0; 100, 0, 0],...                                   % Load matrix (mechanical)
-    'outputply', 'MIDDLE',...                                              % Ply output location
-    'outputfigure', {{'DEFAULT', [], 'SPLIT'}},...                         % MATLAB figures
-    'outputlocation', {{'DEFAULT', false}}));                              % Analysis output location
+    'job_name', 'Use Case II',...                                           % Job name
+    'job_description', sprintf(['Stress analysis of a 0.1mm thick UD [',... % Job description
+    '45(1)/90(1)] layup in\npure bending (x-axis); output for 3 sectio',...
+    'n points per ply, output stresses\nat ply midspans, return midspa',...
+    'n strains and curvatures and stress/strain\ntensors']),...
+    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]}},...        % Mechanical material properties
+    'stacking_sequence', [45, 90],...                                       % Stacking sequence
+    'ply_thickness', 0.1,...                                                % Ply thickness values 
+    'section_points', 3,...                                                 % Number of section points
+    'load_mech', [0, 0, 0; 100, 0, 0],...                                   % Load matrix (mechanical)
+    'output_ply', 'MIDDLE',...                                              % Ply output location
+    'output_figure', {{'DEFAULT', [], 'SPLIT'}},...                         % MATLAB figures
+    'output_location', {{'DEFAULT', false}}));                              % Analysis output location
 
 % Load matrix
 %__________________________________________________________________________
@@ -89,23 +89,23 @@
 %   for 2 section points per ply, output at bottom faces, disable MATLAB
 %   figures, return failure measure components:
 [~] = abd.main(struct(...
-    'jobname', 'Use Case III',...                                          % Job name
-    'jobdescription', sprintf(['Strength analysis of a variable thickn',...% Job description
-    'ess UD\n[45(1)/90(2)]-Symmetric layup in combined bending (x-axis',...
-    ') and tension\n(y-direciton); output for 2 section points per ply',...
-    ', output at bottom faces,\ndisable MATLAB figures, return failure',...
-    ' measure components']),...
-    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]}},...       % Mechanical material properties
-    'failstress', {{[400, 300, 400, 300, 150, 1, 0]}},...                  % Fail stress properties
-    'stackingsequence', [45, 90, 90],...                                   % Stacking sequence
-    'plythickness', [0.15, 0.2, 0.2],...                                   % Ply thickness values 
-    'symmetriclayup', true,...                                             % Symmetric layup  
-    'sectionpoints', 2,...                                                 % Number of section points
-    'loadmech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
-    'outputply', 'BOTTOM',...                                              % Ply output location
-    'outputfigure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
-    'outputstrength', {{true, 'RESERVE'}},...                              % Strength calculation
-    'outputlocation', {{'DEFAULT', false}}));                              % Analysis output location
+    'job_name', 'Use Case III',...                                          % Job name
+    'job_description', sprintf(['Strength analysis of a variable thick',... % Job description
+    'ness UD\n[45(1)/90(2)]-Symmetric layup in combined bending (x-axi',...
+    's) and tension\n(y-direciton); output for 2 section points per pl',...
+    'y, output at bottom faces,\ndisable MATLAB figures, return failur',...
+    'e measure components']),...
+    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]}},...        % Mechanical material properties
+    'fail_stress', {{[400, 300, 400, 300, 150, 1, 0]}},...                  % Fail stress properties
+    'stacking_sequence', [45, 90, 90],...                                   % Stacking sequence
+    'ply_thickness', [0.15, 0.2, 0.2],...                                   % Ply thickness values 
+    'symmetric_layup', true,...                                             % Symmetric layup  
+    'section_points', 2,...                                                 % Number of section points
+    'load_mech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
+    'output_ply', 'BOTTOM',...                                              % Ply output location
+    'output_figure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
+    'output_strength', {{true, 'RESERVE'}},...                              % Strength calculation
+    'output_location', {{'DEFAULT', false}}));                              % Analysis output location
 %__________________________________________________________________________
 %   USE CASE IV - Stacking sequence optimisation:
 %
@@ -113,20 +113,20 @@
 %   using the Tsai-Wu failure criterion (reserve); return results of the
 %   stacking sequence optimisation:
 [~] = abd.main(struct(...
-    'jobname', 'Use Case IV',...                                           % Job name
-    'jobdescription', sprintf(['Stacking sequence optimisation of the ',...% Job description
-    'layup example from\nUSE CASE III using the Tsai-Wu failure criter',...
-    'ion (reserve); return results\nof the stacking sequence optimisat',...
-    'ion']),...
-    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]}},...       % Mechanical material properties
-    'failstress', {{[400, 300, 400, 300, 150, 1, 0]}},...                  % Fail stress properties
-    'stackingsequence', [45, 90, 90],...                                   % Stacking sequence
-    'plythickness', [0.15, 0.2, 0.2],...                                   % Ply thickness values 
-    'symmetriclayup', true,...                                             % Symmetric layup  
-    'sectionpoints', 2,...                                                 % Number of section points
-    'loadmech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
-    'outputply', 'BOTTOM',...                                              % Ply output location
-    'outputfigure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
-    'outputstrength', {{true, 'RESERVE'}},...                              % Strength calculation
-    'outputoptimised', {{'TSAIW', 'RESERVE', 'MINMAX', 10.0}},...          % Stacking sequence optimisation
-    'outputlocation', {{'DEFAULT', false}}));                              % Analysis output location
+    'job_name', 'Use Case IV',...                                           % Job name
+    'job_description', sprintf(['Stacking sequence optimisation of the',... % Job description
+    ' layup example from\nUSE CASE III using the Tsai-Wu failure crite',...
+    'rion (reserve); return results\nof the stacking sequence optimisa',...
+    'tion']),...
+    'material', {{[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]}},...        % Mechanical material properties
+    'fail_stress', {{[400, 300, 400, 300, 150, 1, 0]}},...                  % Fail stress properties
+    'stacking_sequence', [45, 90, 90],...                                   % Stacking sequence
+    'ply_thickness', [0.15, 0.2, 0.2],...                                   % Ply thickness values 
+    'symmetric_layup', true,...                                             % Symmetric layup  
+    'section_points', 2,...                                                 % Number of section points
+    'load_mech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
+    'output_ply', 'BOTTOM',...                                              % Ply output location
+    'output_figure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
+    'output_strength', {{true, 'RESERVE'}},...                              % Strength calculation
+    'output_optimised', {{'TSAIW', 'RESERVE', 'MINMAX', 10.0}},...          % Stacking sequence optimisation
+    'output_location', {{'DEFAULT', false}}));                              % Analysis output location

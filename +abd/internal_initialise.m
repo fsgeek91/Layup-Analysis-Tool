@@ -1,6 +1,6 @@
-function [enableTensor, printTensor, material, failstress, failstrain, hashin, larc05, stackingsequence, plythickness, symmetriclayup, sectionpoints, outputply, outputfigure,...
-    outputstrength, outputoptimised, optimisersettings, outputlocation, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, loadtherm, loadmoist, jobname, jobdescription, settings, error] =...
-    internal_initialise(settings)
+function [enableTensor, printTensor, material, fail_stress, fail_strain, hashin, larc05, stacking_sequence, ply_thickness, symmetric_layup, section_points, output_ply,...
+    output_figure, output_strength, output_optimised, optimiser_settings, output_location, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, load_therm, load_hydro, job_name, job_description,...
+    settings, error] = internal_initialise(settings)
 %   Gather variables from user inputs.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -15,40 +15,40 @@ function [enableTensor, printTensor, material, failstress, failstrain, hashin, l
 %%
 %% Initialise output
 stack = dbstack;
-jobname = stack(end).name;
-jobdescription = [];
+job_name = stack(end).name;
+job_description = [];
 material = [];
-failstress = [];
-failstrain = [];
+fail_stress = [];
+fail_strain = [];
 hashin = [];
 larc05 = [];
-stackingsequence = [];
-plythickness = [];
-symmetriclayup = [];
-sectionpoints = [];
+stacking_sequence = [];
+ply_thickness = [];
+symmetric_layup = [];
+section_points = [];
 Nxx = 0.0;
 Nyy = 0.0;
 Nxy = 0.0;
 Mxx = 0.0;
 Myy = 0.0;
 Mxy = 0.0;
-loadtherm = [];
-loadmoist = [];
-outputply = [];
-outputfigure = [];
-outputstrength = [];
-outputoptimised = [];
-optimisersettings = [];
-outputlocation = [];
+load_therm = [];
+load_hydro = [];
+output_ply = [];
+output_figure = [];
+output_strength = [];
+output_optimised = [];
+optimiser_settings = [];
+output_location = [];
 enableTensor = true;
 printTensor = true;
 error = false;
 
 % Set the default settings structure
-defaultSettings = struct('jobname', jobname, 'jobdescription', [], 'material', {{[]}}, 'failstress', {{[]}}, 'failstrain', {{[]}}, 'hashin', {{[]}}, 'larc05', {{[]}},...
-    'stackingsequence', [0.0, 45.0, 90.0], 'plythickness', 0.1, 'symmetriclayup', false, 'sectionpoints', 'DEFAULT', 'loadmech', [0.0, 0.0, 0.0; 0.0, 0.0, 0.0], 'loadtherm', 0.0,...
-    'loadmoist', 0.0, 'outputply', 'DEFAULT', 'outputfigure', {{[], 'POINTS', 'SPLIT'}}, 'outputstrength', {{false, 'RESERVE'}}, 'outputoptimised',...
-    {{'', 'RESERVE', 'MINMAX', 5.0}}, 'optimisersettings', {{'MIXED-RADIX', 'DEFAULT', 'DEFAULT'}}, 'outputlocation', {{'DEFAULT', true}});
+defaultSettings = struct('job_name', job_name, 'job_description', [], 'material', {{[]}}, 'fail_stress', {{[]}}, 'fail_strain', {{[]}}, 'hashin', {{[]}}, 'larc05', {{[]}},...
+    'stacking_sequence', [0.0, 45.0, 90.0], 'ply_thickness', 0.1, 'symmetric_layup', false, 'section_points', 'DEFAULT', 'load_mech', [0.0, 0.0, 0.0; 0.0, 0.0, 0.0],...
+    'load_therm', 0.0, 'load_hydro', 0.0, 'output_ply', 'DEFAULT', 'output_figure', {{[], 'POINTS', 'SPLIT'}}, 'output_strength', {{false, 'RESERVE'}}, 'output_optimised',...
+    {{'', 'RESERVE', 'MINMAX', 5.0}}, 'optimiser_settings', {{'MIXED-RADIX', 'DEFAULT', 'DEFAULT'}}, 'output_location', {{'DEFAULT', true}});
 
 % Get the field name list
 settingsNames =  fieldnames(defaultSettings);
@@ -84,65 +84,65 @@ end
 
 %% Process NXX/NYY/NXY/MXX/MYY/MXY
 % Extract inputs from SETTINGS structure
-if isempty(loadmech) == false
-    Nxx = loadmech(1.0, 1.0);
-    Nyy = loadmech(1.0, 2.0);
-    Nxy = loadmech(1.0, 3.0);
-    Mxx = loadmech(2.0, 1.0);
-    Myy = loadmech(2.0, 2.0);
-    Mxy = loadmech(2.0, 3.0);
+if isempty(load_mech) == false
+    Nxx = load_mech(1.0, 1.0);
+    Nyy = load_mech(1.0, 2.0);
+    Nxy = load_mech(1.0, 3.0);
+    Mxx = load_mech(2.0, 1.0);
+    Myy = load_mech(2.0, 2.0);
+    Mxy = load_mech(2.0, 3.0);
 end
 
 % Disable tensor output if applicable
-if (all(all(loadmech == 0.0)) == true) && (all(all([loadtherm, loadmoist] == 0.0)) == true)
+if (all(all(load_mech == 0.0)) == true) && (all(all([load_therm, load_hydro] == 0.0)) == true)
     enableTensor = false;
 end
 
 %% Process OUTPUT_FIGURE
-if iscell(outputfigure) == false
-    outputfigure = {outputfigure};
+if iscell(output_figure) == false
+    output_figure = {output_figure};
 end
 
-if all(cellfun(@isempty, outputfigure)) == true
+if all(cellfun(@isempty, output_figure)) == true
     % Set default values if necessary
-    outputfigure = {'', 'POINTS', 'SPLIT'};
+    output_figure = {'', 'POINTS', 'SPLIT'};
 end
 
 %% Process OUTPUT_STRENGTH
-if iscell(outputstrength) == false
-    outputstrength = {outputstrength};
+if iscell(output_strength) == false
+    output_strength = {output_strength};
 end
 
-if all(cellfun(@isempty, outputstrength)) == true
+if all(cellfun(@isempty, output_strength)) == true
     % Set default values if necessary
-    outputstrength = {false, 'RESERVE'};
+    output_strength = {false, 'RESERVE'};
 end
 
 %% Process OUTPUT_OPTIMISED
-if iscell(outputoptimised) == false
-    outputoptimised = {outputoptimised};
+if iscell(output_optimised) == false
+    output_optimised = {output_optimised};
 end
 
-if all(cellfun(@isempty, outputoptimised)) == true
+if all(cellfun(@isempty, output_optimised)) == true
     % Set default values if necessary
-    outputoptimised = {'', 'RESERVE', 'MINMAX', 10.0};
+    output_optimised = {'', 'RESERVE', 'MINMAX', 10.0};
 end
 
 %% Process OPTIMISER_SETTINGS
-if iscell(optimisersettings) == false
-    optimisersettings = {optimisersettings};
+if iscell(optimiser_settings) == false
+    optimiser_settings = {optimiser_settings};
 end
 
-if all((cellfun(@isempty, optimisersettings) == true)) || (length(optimisersettings) < 3.0)
+if all((cellfun(@isempty, optimiser_settings) == true)) || (length(optimiser_settings) < 3.0)
     % Set default values if necessary
-    optimisersettings = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
+    optimiser_settings = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
 end
 
 % Process the first argument
-argument = optimisersettings{1.0};
+argument = optimiser_settings{1.0};
 
 if ischar(argument) == false
-    optimisersettings{1.0} = 2.0;
+    optimiser_settings{1.0} = 2.0;
 else
     argument = lower(argument);
     argument(ismember(argument, ' ')) = [];
@@ -150,50 +150,50 @@ else
 
     switch argument
         case 'fullmatrix'
-            optimisersettings{1.0} = 1.0;
+            optimiser_settings{1.0} = 1.0;
         case 'mixedradix'
-            optimisersettings{1.0} = 2.0;
+            optimiser_settings{1.0} = 2.0;
         case 'chunks'
-            optimisersettings{1.0} = 3.0;
+            optimiser_settings{1.0} = 3.0;
         otherwise
-            optimisersettings{1.0} = 2.0;
+            optimiser_settings{1.0} = 2.0;
     end
 end
 
 %% Process output location
-if iscell(outputlocation) == false
-    outputlocation = {outputlocation};
+if iscell(output_location) == false
+    output_location = {output_location};
 end
 
-if all(cellfun(@isempty, outputlocation)) == true
+if all(cellfun(@isempty, output_location)) == true
     % Set default values if necessary
-    outputlocation = {'DEFAULT', true};
+    output_location = {'DEFAULT', true};
 end
 
-if length(outputlocation) < 2.0
-    outputlocation{2.0} = false;
+if length(output_location) < 2.0
+    output_location{2.0} = false;
 end
 
 % Process the first argument
-argument = outputlocation{1.0};
+argument = output_location{1.0};
 
 if ischar(argument) == false
-    outputlocation{1.0} = 'DEFAULT';
+    output_location{1.0} = 'DEFAULT';
 else
     if strcmpi(argument, 'default') == true
         % Save results under OUTPUT folder inside user's PWD
-        outputlocation{1.0} = [pwd, filesep, 'output'];
+        output_location{1.0} = [pwd, filesep, 'output'];
     elseif strcmpi(argument, 'qft') == true
         % Save results under QFT folder structure inside user's PWD
-        outputlocation{1.0} = [pwd, filesep, 'Project', filesep, 'output'];
+        output_location{1.0} = [pwd, filesep, 'Project', filesep, 'output'];
     end
 end
 
 % Process the second argument
-argument = outputlocation{2.0};
+argument = output_location{2.0};
 
 if islogical(argument) == false
-    outputlocation{2.0} = false;
+    output_location{2.0} = false;
 end
 
 %% Get the job ID from the input structure
@@ -207,11 +207,11 @@ jobDate(ismember(jobDate, ':')) = [];
 settings.jobdate = deal(jobDate);
 
 % Get the complete path to the output directory
-outputlocationFull = [outputlocation{1.0}, filesep, jobname];
+outputlocationFull = [output_location{1.0}, filesep, job_name];
 
 if exist(outputlocationFull, 'dir') == 7.0
     % Get the previous job ID (if applicable)
-    [job_id_previous, job_date_previous] = abd.internal_getPreviousJobID(outputlocation{1.0}, jobname);
+    [job_id_previous, job_date_previous] = abd.internal_getPreviousJobID(output_location{1.0}, job_name);
 
     % Set the default check string
     checkString = 'default';
@@ -222,7 +222,7 @@ if exist(outputlocationFull, 'dir') == 7.0
             Ask the user if it's OK to overwrite the previous results
         %}
         [response, tf] = uigetpref('latprefdialogues', 'checkOverwrite_resultsNotModified', 'Layup Analysis Tool', sprintf(['The settings for job ''%s'' have n',...
-            'ot been modified since\nthe last submission.\n\nOK to overwrite?'], jobname), ["OK", "Cancel"], "DefaultButton", "Cancel");
+            'ot been modified since\nthe last submission.\n\nOK to overwrite?'], job_name), ["OK", "Cancel"], "DefaultButton", "Cancel");
     else
         %{
             Job settings have been modified since the last submission. Ask
@@ -230,7 +230,7 @@ if exist(outputlocationFull, 'dir') == 7.0
             the previous results
         %}
         [response, tf] = uigetpref('latprefdialogues', 'checkOverwrite_resultsAlreadyExist', 'Layup Analysis Tool', sprintf(['An output directory already exist',...
-            's for job ''%s''.\n\nOK to overwrite?'], jobname), ["Overwrite previous", "Keep previous", "Cancel"], "DefaultButton", "Cancel");
+            's for job ''%s''.\n\nOK to overwrite?'], job_name), ["Overwrite previous", "Keep previous", "Cancel"], "DefaultButton", "Cancel");
     end
     
     if tf == false
@@ -265,10 +265,10 @@ if exist(outputlocationFull, 'dir') == 7.0
     if (strcmp(response(1.0), 'k') == true) && (strcmp(job_id, job_id_previous) == false)
         try
             % Old job directory name
-            oldJobDir = [pwd, filesep, 'output', filesep, jobname];
+            oldJobDir = [pwd, filesep, 'output', filesep, job_name];
 
             % New job directory name
-            newJobDir = [pwd, filesep, 'output', filesep, sprintf('%s_%s', jobname, job_date_previous)];
+            newJobDir = [pwd, filesep, 'output', filesep, sprintf('%s_%s', job_name, job_date_previous)];
 
             % Rename the old job directory to the new name
             movefile(oldJobDir, newJobDir)
@@ -300,7 +300,7 @@ if exist(outputlocationFull, 'dir') == 7.0
         warning('on','all')
 
         % The user aborted the analysis
-        fprintf('[ERROR] Job ''%s'' was aborted by the user\n', jobname);
+        fprintf('[ERROR] Job ''%s'' was aborted by the user\n', job_name);
         error = 1.0;
         return
     end
