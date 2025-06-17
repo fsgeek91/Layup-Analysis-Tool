@@ -3,8 +3,8 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd, plyBuffer, nP
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.3.0 Copyright Louis Vallance 2025
-%   Last modified 17-Jun-2025 08:14:14 UTC
+%   Layup Analysis Tool 4.2.1 Copyright Louis Vallance 2025
+%   Last modified 17-Jun-2025 14:50:26 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

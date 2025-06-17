@@ -19,8 +19,8 @@ function [] = user_definitions(varargin)
 %
 %   See also abd.main, examples.
 %
-%   Layup Analysis Tool 4.3.0 Copyright Louis Vallance 2025
-%   Last modified 17-Jun-2025 08:14:14 UTC
+%   Layup Analysis Tool 4.2.1 Copyright Louis Vallance 2025
+%   Last modified 17-Jun-2025 14:50:26 UTC
 
 %__________________________________________________________________________
 %% 1: JOB
@@ -253,7 +253,7 @@ OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 5.0};
     
     Second argument (chunk size):
     'DEFAULT': Program controlled
-    n: User-defined
+    s: User-defined
     
     Third argument (tuning constant):
     'DEFAULT': Program-controlled
@@ -268,8 +268,8 @@ OPTIMISER_SETTINGS = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
     '<location>': User-specified output location
     
     Second argument (open results file);
-    true: Open results file after analysis
-    false: Do not open results file after analysis
+    true: Open analysis summary file after analysis
+    false: Do not open analysis summary file after analysis
 %}
 OUTPUT_LOCATION = {'DEFAULT', true};
 

@@ -1,13 +1,13 @@
 function [S] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_hydro_xy, E_hydro_aligned, S_ply_xy, S_ply_aligned, EXT, EYT,...
     GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT,...
-    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH, outputLocation, jobname, settings, noFailStress, noFailStrain,...
-    noHashin, noLaRC05)
+    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH, outputLocation, settings, noFailStress, noFailStrain, noHashin,...
+    noLaRC05)
 %   Collect variables for output.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.3.0 Copyright Louis Vallance 2025
-%   Last modified 17-Jun-2025 08:14:14 UTC
+%   Layup Analysis Tool 4.2.1 Copyright Louis Vallance 2025
+%   Last modified 17-Jun-2025 14:50:26 UTC
 %
 %#ok<*NASGU>
 
@@ -104,12 +104,6 @@ else
 end
 
 %% Save workspace variables to a MAT file in the output directory
-if strcmp(jobname, 'outout') == true
-    outputFileName = 'output_variables_';
-else
-    outputFileName = 'output_variables';
-end
-
 % Get the non-empty variables
 varNames = {'ABD', 'ABD_INV', 'Q', 'E_MIDSPAN', 'STRAIN', 'STRESS', 'EQ_MODULI', 'CFAILURE', 'OPT'};
 
@@ -124,8 +118,8 @@ for i = 1:length(varNames)
 end
 
 % Save the output
-save([outputLocation, filesep, jobname, '.mat'], 'settings');
-save([outputLocation, filesep, outputFileName, '.mat'], nonEmptyVars{:});
+save([outputLocation, filesep, 'settings.mat'], 'settings');
+save([outputLocation, filesep, 'output', '.mat'], nonEmptyVars{:});
 
 %% Assign all non-empty variables to a structure (workspace output)
 % Initialise the values list

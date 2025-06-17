@@ -1,20 +1,20 @@
 function [S] = main(settings)
 %ABD.MAIN    Analyse a user-defined composite layup.
-%   [s] = ABD.MAIN(struct) computes the ABD matrix from an
-%   n-layer composite layup definition, and evaluates the layup strength
-%   based on a range of failure and damage initiation criteria.
+%   [<output-structure>] = ABD.MAIN(<input-structure>) computes the ABD
+%   matrix from an n-layer composite layup, performs a stress analysis
+%   based on a user-defined load, and evaluates the layup strength from
+%   stress and strain-based failure and damage initiation criteria.
 %
 %   A summary of the analysis is written to:
-%     <output-folder>\'<job-name>\analysis_summary.log'
+%     <output-folder>\<job-name>\summary.log
 %
 %   Detailed output is written to:
-%     <output-folder>\'<job-name>\output_variables.mat'
+%     <output-folder>\<job-name>\output.mat
 %
 %   THE USER IS NOT REQUIRED TO RUN THIS FUNCTION. SEE USER_DEFINITIONS.M
 %   FOR ANALYSIS TEMPLATE.
 %
 %   The following output is produced:
-%
 %   - A, B and D matrices (and their inverses)
 %   - Induced midspan strains and curvatures
 %   - X-Y stresses and strains based on specified forces and moments
@@ -61,75 +61,94 @@ function [S] = main(settings)
 %                          'material', {<1xn>},...
 %                          'stacking_sequence', [<1xn>],...
 %                          'ply_thickness', [<1xn>],...
-%                          'symmetric_layup', [true | false],...
+%                          'symmetric_layup', [<1x1>],...
 %                          'output_location', {<1x2>}),...
 %                          ).
 %
 %   MATERIAL. A 1xn cell array specifying the mechanical material
-%   properties, E11, E22, G12, V12, A11, A22, B11 and B22 for each ply.
+%   properties:
+%     {[E11, E22, G12, V12, A11, A22, B11, B22]}(1),
+%     ...
+%     {[E11, E22, G12, V12, A11, A22, B11, B22]}(n)
 %
-%   Note: n = 1 for constant material properties; for ply-wise material
-%   properties, specify n sets of properties corresponding to the n ply
-%   definitions given by LAYUP.
+%     Note: MATERIAL(1) = Bottom; MATERIAL(n) = Top.
 %
-%   STACKING_SEQUENCE. A 1xn array defining the layup stacking sequence.
+%     E11/22: Modulus of Elasticity (longitudinal/transverse)
+%     G12: In-plane Shear Modulus
+%     V12: In-plane Poisson's Ratio
+%     A11/22: Coefficient of Thermal Expansion (longitudinal/transverse)
+%     B11/22: Coefficient of Hydroscopic Expansion
+%     (longitudinal/transverse)
 %
-%   PLY_THICKNESS. A 1xn array containing the ply thickness values. n = 1
-%   for a constant thickness laminate; for variable thickness laminates,
-%   specify the thickness of each ply, where
-%   n = length(STACKING_SEQUENCE).
+%   STACKING_SEQUENCE. A 1xn array defining the layup stacking sequence
+%   angles, THETA:
+%     [THETA(1), ... , THETA(n)]
 %
-%   SYMMETRIC_LAYUP. A flag to make the calculated section symmetric. When
-%   SYMMETRIC_LAYUP = true, the layup definition is mirrored after the last
-%   ply in the stacking sequence (the positive-z side).
+%     Note: THETA(1) = Bottom; THETA(n) = Top.
+%
+%   PLY_THICKNESS. A 1xn array containing the ply thickness values, T:
+%     [T(1), ..., T(n)]
+%
+%     Note: T(1) = Bottom; T(n) = Top.
+%
+%   SYMMETRIC_LAYUP. A flag to make the calculated section symmetric:
+%     true: Mirror the layup definition after the last ply in the stacking
+%     sequence (positive-z side)
+%     false: Do not mirror the layup
 %
 %   Note: When the symmetric layup definition is specified, material, layup
 %   stacking and ply thickness definitions are automatically reflected on
 %   the other side of the symmetry plane.
 %
-%   OUTPUT_LOCATION. A 1x2 cell array specifying the results location.
-%   OUTPUT_LOCATION(1) is a string specifying the results
-%   location. Use the parameter 'DEFAULT' to save results under the output
-%   folder in the current working directory, or specify the directory path
-%   directly; OUTPUT_LOCATION(2) is a flag to enable or disable opening of
-%   the results file after the analysis has been completed.
+%   OUTPUT_LOCATION. A 1x2 cell array specifying the results location:
+%     {'<parameter>', [true | false]}
+%
+%   OUTPUT_LOCATION(1) is a string specifying the results location:
+%     DEFAULT: Save results under the output folder in the current working
+%     directory
+%     <path>: Specify the directory path directly
+%
+%   OUTPUT_LOCATION(2) is a flag to enable or disable opening of the
+%   analysis summary file after the analysis has been completed:
+%     true: Open analysis summary file after analysis
+%     false: Do not open results file after analysis
 %__________________________________________________________________________
 %   USE CASE II - Stress analysis:
 %
 %   [..] = ABD.MAIN(struct(...
+%                          'material', {<1xn>},...
+%                          'stacking_sequence', [<1xn>],...
+%                          'ply_thickness', [<1xn>],...
+%                          'symmetric_layup', [<1x1>],...
 %                          'section_points', ['DEFAULT' | sp],...
 %                          'load_mech', [<2x3>],...
 %                          'load_therm', [<1x1>],...
 %                          'load_hydro', [<1x1>],...
 %                          'output_ply', [<'param'> | [SP1,..., SPn]],...
 %                          'output_figure', {<1x3>},...
+%                          'output_location', {<1x2>}),...
 %                          ).
 %
-%   MATERIAL (already specified - see USE CASE I)
+%   SECTION_POINTS. The number of stress/strain section points per ply:
+%     DEFAULT: Program controlled
+%     sp: User-defined number of sections points
 %
-%   STACKING_SEQUENCE (already specified - see USE CASE I)
+%   Note: Since the layup section is integrated once before the stress
+%   analysis, section points are treated as sample points.
 %
-%   PLY_THICKNESS (already specified - see USE CASE I)
+%   LOAD_MECH. A 2x3 array specifying the forces and moments:
+%     [NXX, NYY, NXY; MXX, MYY, MXY]
 %
-%   SYMMETRIC_LAYUP (already specified - see USE CASE I)
-%
-%   SECTION_POINTS. The number of stress/strain section points per ply. The
-%   parameter 'DEFAULT' allows the number of section point to be chosen
-%   automatically; the number of section points is specified directly with
-%   a positive integer. Since the layup section is integrated once before
-%   the stress analysis, section points are treated as sample points.
-%
-%   LOAD_MECH. A 2x3 array specifying the applied load, [NXX, NYY, NXY;
-%   MXX,
-%   MYY, MXY].
+%     NXX/YY: Direct forces along the x and y directions
+%     NXY: Shear force in the x-y plane
+%     MXX/YY: Moments about the x and y directions
+%     MXY: Out-of-plane shear moment
 %
 %   LOAD_THERM. A 1x1 array specifying the thermal load, DELTA_T.
 %
 %   LOAD_HYDRO. A 1x1 array specifying the hydroscopic load, DELTA_M.
 %
-%   OUTPUT_PLY. The section output request. When OUTPUTPLY is a string, it
-%   specifies the output location of each ply:
-%
+%   OUTPUT_PLY. The section output request:
 %     DEFAULT: Program controlled
 %       If:
 %         SECTION_POINTS = 1: Midspans only
@@ -142,91 +161,134 @@ function [S] = main(settings)
 %     ENVELOPEABSMAX: The largest (+ve/-ve) value for the layup
 %     ENVELOPEMAX: The largest (+ve) value for the layup
 %     ENVELOPEMIN: The largest (-ve) value for the layup
-%
-%   When OUTPUT_PLY is a 1xn array, it specifies a user-defined section
-%   point list.
+%     [SP1,..., SPn]: User-defined section point list
 %
 %   OUTPUT_FIGURE. A 1x3 cell array specifying settings for MATLAB figure
-%   output. OUTPUT_FIGURE(1) is a parameter specifying the figure type
-%   ([], 'DEFAULT' or 'SMOOTH'). The parameter 'DEFAULT' creates figures
-%   from the raw stress/strain data; the parameter 'SMOOTH' uses the
-%   built-in MATLAB SMOOTHDATA function to smooth the output at the ply
-%   boundaries; an empty assignment disables MATLAB figure output;
-%   OUTPUT_FIGURE(2) is a parameter specifying the visualisation of the
-%   section points ([], 'POINTS'). The parameter 'POINTS' plots the section
-%   points over the stress/strain MATLAB figures. If a strength analysis is
-%   performed with OUTPUT_STRENGTH, then the section points are coloured
-%   green or red for points which are safe or unsafe, respectively (Note: A
-%   section point is coloured red if it failed according to at least one
-%   failure/damage initiation criterion); OUTPUT_FIGURE(3) is a parameter
-%   specifying the figure layout ('SPLIT' or 'COMPACT'). The parameter
-%   'SPLIT' creates a separate plot for each tensor component; the
-%   parameter 'COMPACT' overlays each tensor component in a single plot.
+%   output:
+%     {['DEFAULT' | 'SMOOTH'], ['POINTS'], ['SPLIT' | 'COMPACT']}
 %
-%   OUTPUT_LOCATION (already specified - see USE CASE I)
+%   OUTPUT_FIGURE(1) is a parameter specifying the figure type:
+%     []: Do not output MATLAB figures
+%     DEFAULT: Create MATLAB figures from the raw stress/strain data
+%     SMOOTH: Use the built-in MATLAB SMOOTHDATA function to smooth the
+%     output at the ply boundaries
+%
+%   OUTPUT_FIGURE(2) is a parameter specifying the visualisation of the
+%   section points:
+%     []: Do not plot section points
+%     POINTS: Plot the section points over the stress/strain MATLAB
+%     figures. If a strength analysis is performed with OUTPUT_STRENGTH,
+%     then the section points are coloured green or red for points which
+%     are safe or unsafe, respectively
+%
+%     Note: A section point is coloured red if it failed according to at
+%     least on failure/damage initiation criterion)
+%
+%   OUTPUT_FIGURE(3) is a parameter specifying the figure layout:
+%     SPLIT: Create a separate plot for each tensor component
+%     COMPACT: Overlay each tensor component in a single plot
 %__________________________________________________________________________
 %   USE CASE III - Strength analysis:
 %
 %   [..] = ABD.MAIN(struct(...
+%                          'material', {<1xn>},...
 %                          'fail_stress', {<1xn>},...
 %                          'fail_strain', {<1xn>},...
 %                          'hashin', {<1xn>},...
 %                          'larc05', {<1xn>},...
+%                          'stacking_sequence', [<1xn>],...
+%                          'ply_thickness', [<1xn>],...
+%                          'symmetric_layup', [<1x1>],...
+%                          'section_points', ['DEFAULT' | sp],...
+%                          'load_mech', [<2x3>],...
+%                          'load_therm', [<1x1>],...
+%                          'load_hydro', [<1x1>],...
+%                          'output_ply', [<'param'> | [SP1,..., SPn]],...
+%                          'output_figure', {<1x3>},...
 %                          'output_strength', {<1x2>},...
+%                          'output_location', {<1x2>}),...
 %                          ).
 %
-%   MATERIAL (already specified - see USE CASE I)
-%
 %   FAIL_STRESS. A 1xn cell array specifying the strength properties for
-%   stress-based failure criteria, XT, XC, YT, YC, S, C and B for each ply.
+%   stress-based failure criteria:
+%     {[XT, XC, YT, YC, S, C, B]}(1),
+%     ...
+%     {[XT, XC, YT, YC, S, C, B]}(n)
+%
+%     Note: FAIL_STRESS(1) = Bottom; FAIL_STRESS(n) = Top.
+%
+%     XT/C: Tensile/compressive stress limit (longitudinal)
+%     YT/C: Tensile/compressive stress limit (transverse)
+%     S: Shear strength in the XY-plane
+%     C: Cross-product coefficient
+%     B: Biaxial stress limit
+%
+%     Note: If B = 0, the coupling term is computed from C.
 %
 %   FAIL_STRAIN. A 1xn cell array specifying the strength properties for
-%   strain-based failure criteria, XET, XEC, YET, YEC and SE for each ply.
+%   strain-based failure criteria:
+%     {[XET, XEC, YET, YEC, SE]}(1),
+%     ...
+%     {[XET, XEC, YET, YEC, SE]}(n)
+%
+%     Note: FAIL_STRAIN(1) = Bottom; FAIL_STRAIN(n) = Top.
+%
+%     XET/C: Tensile/compressive strain limit (longitudinal)
+%     YET/C: Tensile/compressive strain limit (transverse)
+%     SE: Shear strain limit in the XY-plane
 %
 %   HASHIN. A 1xn cell array specifying the strength properties for the
-%   Hashin damage initiation criteria ALPHA, XHT, XHC, YHT, YHC, SHX
-%   and SHY for each ply.
+%   Hashin damage initiation criteria:
+%     {[ALPHA, XHT, XHC, YHT, YHC, SHX, SHY]}(1),
+%     ...
+%     {[ALPHA, XHT, XHC, YHT, YHC, SHX, SHY]}(n)
+%
+%     Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
+%
+%     ALPHA: Shear influence parameter;
+%     XHT/C: Lamina tensile/compressive strength (longitudinal)
+%     YHT/C: Lamina tensile/compressive strength (transverse)
+%     SHX/Y: Lamina in-plane/transverse shear strength
 %
 %   LARC05. A 1xn cell array specifying the strength properties for the
-%   LaRC05 damage initiation criteria XLT, XLC, YLT, YLC, SLX, SLY, GL12,
-%   NL, NT, A0 and PHI0 for each ply. The parameters YLC, SLY, NL, NT, A0
-%   and PHI0 are derived if a value of -1 is specified.
+%   LaRC05 damage initiation criteria:
+%     {[XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0]}(1),
+%     ...
+%     {[XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0]}(n)
 %
-%   Note: Unspecified criteria are left empty ( [] )
+%     Note: LARC05(1) = Bottom; LARC05(n) = Top.
 %
-%   STACKING_SEQUENCE (already specified - see USE CASE I)
+%     XLT/C: Tensile/compressive strength (longitudinal)
+%     YLT/C: Tensile/compressive strength (transverse)
+%     SLX/Y: In-plane/transverse shear strength
+%     GL12: Shear modulus in the 12-plane
+%     NL/T: Longitudinal/transverse shear friction coefficient
+%     A0: Fracture plane angle for pure compression
+%     PHI0: Misalignment angle at failure for pure compression
 %
-%   PLY_THICKNESS (already specified - see USE CASE I)
-%
-%   SYMMETRIC_LAYUP (already specified - see USE CASE I)
-%
-%   SECTION_POINTS (already specified - see USE CASE II)
-%
-%   LOAD_MECH (already specified - see USE CASE II)
-%
-%   LOAD_THERM (already specified - see USE CASE II)
-%
-%   LOAD_HYDRO (already specified - see USE CASE II)
-%
-%   OUTPUT_PLY (already specified - see USE CASE II)
-%
-%   OUTPUT_FIGURE (already specified - see USE CASE II)
+%     Note: The parameters YLC, SLY, NL, NT, A0 and PHI0 are derived if a
+%     value of -1 is specified. Unspecified criteria are left empty ( [] ).
 %
 %   OUTPUT_STRENGTH. A 1x2 cell array specifying settings for the strength
-%   assessment. OUTPUT_STRENGTH(1) is a flag to enable or disable the
-%   strength assessment; OUTPUT_STRENGTH(2) is the failure assessment
-%   parameter:
-%   
+%   assessment:
+%     {[true | false], '<parameter>'}
+%
+%   OUTPUT_STRENGTH(1) is a flag to enable or disable the strength
+%   assessment:
+%     true: Enable strength assessment
+%     false: Disable strength assessment
+%
+%   OUTPUT_STRENGTH(2) is the failure assessment parameter:
 %     RESERVE: Strength reserve factor, R. For stress-based and
 %     strain-based failure criteria, the inverse of the strength reserve
 %     factor [1/R] is the scaling factor by which the load matrix must be
 %     multiplied to hit the failure surface.
-%
 %     VALUE: Criterion value, V. The value of the index obtained directly
 %     from the failure criterion.
 %   
-%   The strength assessment is performed on the basis of the available
-%   material data given by FAIL_STRESS, FAIL_STRAIN, HASHIN and LARC05.
+%   Note: The strength assessment is performed on the basis of the
+%   available material data given by FAIL_STRESS, FAIL_STRAIN, HASHIN and
+%   LARC05.
 %
 %   Note: The Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria can be
 %   expressed in terms of the strength reserve factor or the criterion
@@ -235,68 +297,63 @@ function [S] = main(settings)
 %
 %   Note: For Hashin's theory and LaRC05, R is not evaluated; output for
 %   these criteria is quoted as the damage initiation criterion index.
-%
-%   OUTPUT_LOCATION (already specified - see USE CASE I)
 %__________________________________________________________________________
 %   USE CASE IV - Stacking sequence optimisation:
 %
 %   [..] = ABD.MAIN(struct(...
+%                          'material', {<1xn>},...
+%                          'fail_stress', {<1xn>},...
+%                          'fail_strain', {<1xn>},...
+%                          'hashin', {<1xn>},...
+%                          'larc05', {<1xn>},...
+%                          'stacking_sequence', [<1xn>],...
+%                          'ply_thickness', [<1xn>],...
+%                          'symmetric_layup', [<1x1>],...
+%                          'section_points', ['DEFAULT' | sp],...
+%                          'load_mech', [<2x3>],...
+%                          'load_therm', [<1x1>],...
+%                          'load_hydro', [<1x1>],...
+%                          'output_ply', [<'param'> | [SP1,..., SPn]],...
+%                          'output_figure', {<1x3>},...
+%                          'output_strength', {<1x2>},...
 %                          'output_optimised', {<1x4>},...
 %                          'optimiser_settings', {<1x3>},...
+%                          'output_location', {<1x2>}),...
 %                          ).
 %
-%   MATERIAL (already specified - see USE CASE I)
-%
-%   FAIL_STRESS (already specified - see USE CASE III)
-%
-%   FAIL_STRAIN (already specified - see USE CASE III)
-%
-%   HASHIN (already specified - see USE CASE III)
-%
-%   LARC05 (already specified - see USE CASE III)
-%
-%   STACKING_SEQUENCE (already specified - see USE CASE I)
-%
-%   PLY_THICKNESS (already specified - see USE CASE I)
-%
-%   SYMMETRIC_LAYUP (already specified - see USE CASE I)
-%
-%   SECTION_POINTS (already specified - see USE CASE II)
-%
-%   LOAD_MECH (already specified - see USE CASE II)
-%
-%   LOAD_THERM (already specified - see USE CASE II)
-%
-%   LOAD_HYDRO (already specified - see USE CASE II)
-%
-%   OUTPUT_PLY (already specified - see USE CASE II)
-%
-%   OUTPUT_FIGURE (already specified - see USE CASE II)
-%
-%   OUTPUT_STRENGTH (already specified - see USE CASE III)
-%
 %   OUTPUT_OPTIMISED. A 1x4 cell array specifying settings for the stacking
-%   sequence optimiser. OUTPUT_OPTIMISED(1) is the failure criterion for
-%   the optimisation ('MSTRS', 'TSAIH', 'TSAIW', 'AZZIT', 'MSTRN', 'HASHIN'
-%   or 'LARC05'); OUTPUT_OPTIMISED(2) is the failure assessment parameter
-%   ('RESERVE' or 'VALUE') %   OUTPUT_OPTIMISED(3) is the objective
-%   function ('MINMAX' or 'MINMEAN'); OUTPUT_OPTIMISED(4) is the angular
-%   step size for the stacking sequence permutations.
+%   sequence optimiser:
+%     {'<criterion>', '<parameter>', '<fun>', STEP}
+%
+%   OUTPUT_OPTIMISED(1) is the failure criterion for the optimisation:
+%     <criterion>: Mstrs (Maximum stress); Tsaih (Tsai-Hill);
+%     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
+%     Hashin; LaRC05
+%
+%   OUTPUT_OPTIMISED(2) is the failure assessment parameter:
+%     <parameter>: Reserve (strength reserve factor); Value (criterion
+%     value)
+%
+%   OUTPUT_OPTIMISED(3) is the objective function:
+%     <fun>: MinMax (minimise the maximum criterion value); MinMean
+%     (minimise the average criterion value)
+%
+%   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
+%   permutations, STEP.
 %
 %   OPTIMISER_SETTINGS. A 1x3 cell array specifying the solver settings for
-%   the stacking sequence optimiser. OPTIMISER_SETTINGS(1) is the solver
-%   type:
+%   the stacking sequence optimiser:
+%     {'<solver>', '<chunk-size>', '<constant>'}
 %
+%   OPTIMISER_SETTINGS(1) is the solver type:
 %     FULL MATRIX: This method computes all stacking sequence combinations
 %     before the start of the optimisation. This method is not recommended.
 %     For large stacking sequences, the optimisation may exit with an
 %     error.
-%
 %     MIXED-RADIX: This method uses index-based generation to compute the
 %     stacking sequence combinations dynamically. This method has a much
 %     lower memory cost than the FULL MATRIX method and can handle very
 %     large stacking sequences. It is the recommended method in most cases.
-%
 %     CHUNKS: This method uses chunking and worker looping to distrubte the
 %     stacking sequence combinations between workers. It scales better than
 %     the MIXED-RADIX method for large problems, but requires a chunk size
@@ -304,20 +361,19 @@ function [S] = main(settings)
 %     method unless a parallel pool is connected.
 %
 %   OPTIMISER_SETTINGS(2) is the chunk size when the CHUNKS method is
-%   specified. The parameter 'DEFAULT' computes the chunk size
-%   automatically based on a heuristic algorithm; the chunk size is
-%   specified directly with a positive integer.
+%   specified:
+%     DEFAULT: Compute the chunk size automatically based on a heuristic
+%     algorithm
+%     s: User-specified
 %
 %   OPTIMISER_SETTINGS(3) is the tuning constant for the chunk size when
-%   the CHUNKS method is specified. The parameter 'DEFAULT' uses a default
-%   value (5); the tuning parameter is specified directly with a positive
-%   integer (typically in the range 2-10).
+%   the CHUNKS method is specified:
+%     DEFAULT: Program controlled
+%     k: User-defined (typically in the range 2-10)
 %
 %   Note: The stacking sequence optimiser solver settings are intended for
 %   advanced users only. The use of non-standard settings may result in an
 %   increase in the analysis time, or the analysis may crash.
-%
-%   OUTPUT_FIGURE (already specified - see USE CASE II)
 %__________________________________________________________________________
 %   Optional output arguments:
 %
@@ -394,7 +450,6 @@ function [S] = main(settings)
 %   CFAILURE.STRESS is a 4xN table of the stress-based failure measure
 %   components for all (N-1) section points. The Nth column contains the
 %   value of SFAILRATIO for each failure measure component:
-%
 %       MSTRS: Maximum stress theory failure measure
 %       TSAIH: Tsai-Hill theory failure measure (reserve/value)
 %       TSAIW: Tsai-Wu theory failure measure (reserve/value)
@@ -403,13 +458,11 @@ function [S] = main(settings)
 %   CFAILURE.STRAIN is a 1xN table of the strain-based failure measure
 %   component for all (N-1) section points. The Nth column contains the
 %   value of SFAILRATIO for the failure measure component:
-%
 %       MSTRN: Maximum strain theory failure measure
 %
 %   CFAILURE.HASHIN is a 4xN table of the Hashin damage initiation criteria
 %   for all (N-1) section points. The Nth column contains the value of
 %   SFAILRATIO for each damage initiation criterion:
-%
 %       HSNFTCRT: Hashin’s fibre tensile damage initiation criterion
 %       HSNFCCRT: Hashin’s fibre compression damage initiation criterion
 %       HSNMTCRT: Hashin’s matrix tensile damage initiation criterion
@@ -418,7 +471,6 @@ function [S] = main(settings)
 %   CFAILURE.LARC05 is a 4xN table of the LaCC05 damage initiation criteria
 %   for all (N-1) section points. The Nth column contains the value of
 %   SFAILRATIO for each damage initiation criterion:
-%
 %       LARPFCRT: LaRC05 polymer failure measure
 %       LARMFCRT: LaRC05 matrix failure measure
 %       LARKFCRT: LaRC05 fibre kinking failure measure
@@ -475,14 +527,14 @@ function [S] = main(settings)
 %
 %==========================================================================
 %
-%   With contributions from: Matt Fig.
+%   With contributions from: Matt Fig and Jan Simon.
 %
 %   Permission to user the above author's work is granted under the BSD and
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 4.3.0 Copyright Louis Vallance 2025
-%   Last modified 17-Jun-2025 08:14:14 UTC
+%   Layup Analysis Tool 4.2.1 Copyright Louis Vallance 2025
+%   Last modified 17-Jun-2025 14:50:26 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -834,8 +886,7 @@ end
 %% COLLECT OUTPUT
 [S] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_hydro_xy, E_hydro_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT,...
     NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
-    LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH{1.0}, outputLocation, jobName, settings, noFailStress, noFailStrain,...
-    noHashin, noLaRC05);
+    LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH{1.0}, outputLocation, settings, noFailStress, noFailStrain, noHashin, noLaRC05);
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));
@@ -843,7 +894,7 @@ addpath(genpath(outputLocation));
 %% Open the results file now (if applicable)
 if OUTPUT_LOCATION{2.0} == true
     try
-        open([outputLocation, filesep, 'analysis_summary.log'])
+        open([outputLocation, filesep, 'summary.log'])
     catch
         % Do nothing
     end
