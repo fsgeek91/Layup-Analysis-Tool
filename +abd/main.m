@@ -343,7 +343,7 @@ function [S] = main(settings)
 %
 %   OUTPUT_OPTIMISED(3) is the objective function:
 %     <fun>: MinMax (minimise the maximum criterion value); MinMean
-%     (minimise the average criterion value)
+%     (minimise the average criterion value)distrubte 
 %
 %   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
 %   permutations, STEP.
@@ -361,11 +361,11 @@ function [S] = main(settings)
 %     stacking sequence combinations dynamically. This method has a much
 %     lower memory cost than the FULL MATRIX method and can handle very
 %     large stacking sequences. It is the recommended method in most cases.
-%     CHUNKS: This method uses chunking and worker looping to distrubte the
-%     stacking sequence combinations between workers. It scales better than
-%     the MIXED-RADIX method for large problems, but requires a chunk size
-%     to be specified. This method provides no benefit over the MIXED-RADIX
-%     method unless a parallel pool is connected.
+%     CHUNKS: This method uses chunking and worker looping to distribute
+%     the stacking sequence combinations between workers. It scales better
+%     than the MIXED-RADIX method for large problems, but requires a chunk
+%     size to be specified. This method provides no benefit over the
+%     MIXED-RADIX method unless a parallel pool is connected.
 %
 %   OPTIMISER_SETTINGS(2) is the chunk size when the CHUNKS method is
 %   specified:
@@ -515,7 +515,7 @@ function [S] = main(settings)
 %   strains in ply (1-2) coordinates.
 %
 %   OPT.TENSOR.SYMMETRIC_ABD is a flag indicating if the optimised
-%   stacking sequence is syymetric.
+%   stacking sequence is symmetric.
 %
 %   Note: Replace unrequested outputs with a tilde ( ~ ) assignment.
 %
