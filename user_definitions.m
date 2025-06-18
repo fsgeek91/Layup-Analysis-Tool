@@ -153,7 +153,7 @@ SYMMETRIC_LAYUP = false;
 % SECTION_POINTS  Number of stress/strain section points per ply
 %{
     'Default': Program controlled
-    sp: User-defined
+    sp: User-defined number of section points
 
     Note: The layup section is integrated once before the stress analysis;
     section points are thus treated as sample points.
@@ -185,7 +185,8 @@ DELTA_M = 0.0;
 %{
     '<location>': Default (program controlled); Top; Middle (midspan/single
     section point); Bottom; All; EnvelopeAbsMax; EnvelopeMax; EnvelopeMin
-    [SP1,..., SPn]: Section point list (1 = Bottom; n = Top)
+    [SP1,..., SPn]: User-defined section point list
+    (SP1 = Bottom; SPn = Top)
 %}
 OUTPUT_PLY = 'DEFAULT';
 
@@ -255,11 +256,11 @@ OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 5.0};
     
     Second argument (chunk size):
     'DEFAULT': Program controlled
-    s: User-defined
+    s: User-defined chunk size
     
     Third argument (tuning constant):
     'DEFAULT': Program-controlled
-    k: User-defined
+    k: User-defined constant (typically in the range 2-10)
 %}
 OPTIMISER_SETTINGS = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
 
@@ -267,11 +268,11 @@ OPTIMISER_SETTINGS = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
 %{
     First argument (output location):
     'DEFAULT': Default output location
-    '<location>': User-specified output location
+    <path>: User-defined results location
     
     Second argument (open results file);
-    true: Open analysis summary file after analysis
-    false: Do not open analysis summary file after analysis
+    true: Open summary file after analysis
+    false: Do not open summary file after analysis
 %}
 OUTPUT_LOCATION = {'DEFAULT', true};
 

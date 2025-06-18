@@ -5,17 +5,17 @@ function [S] = main(settings)
 %   based on a user-defined load, and evaluates the layup strength from
 %   stress and strain-based failure and damage initiation criteria.
 %
-%   A summary of the analysis is written to:
+%   A summary of the analysis is written to a text file:
 %     <output-folder>\<job-name>\summary.log
 %
-%   Detailed output is written to:
+%   Detailed output is written to a MATLAB binary file:
 %     <output-folder>\<job-name>\output.mat
 %
-%   MATLAB figures are written to:
+%   Results plots are written to MATLAB figure files:
 %     <output-folder>\<job-name>\figure\<figure-name>.fig
 %
 %   THE USER IS NOT REQUIRED TO RUN THIS FUNCTION. SEE USER_DEFINITIONS.M
-%   FOR ANALYSIS TEMPLATE.
+%   FOR A LAYUP ANALYSIS TEMPLATE.
 %
 %   The following output is produced:
 %   - A, B and D matrices (and their inverses)
@@ -109,12 +109,12 @@ function [S] = main(settings)
 %   OUTPUT_LOCATION(1) is a string specifying the results location:
 %     DEFAULT: Save results under the output folder in the current working
 %     directory
-%     <path>: Specify the directory path directly
+%     <path>: User-defined results location
 %
 %   OUTPUT_LOCATION(2) is a flag to enable or disable opening of the
-%   analysis summary file after the analysis has been completed:
-%     true: Open analysis summary file after analysis
-%     false: Do not open results file after analysis
+%   summary file after the analysis has been completed:
+%     true: Open summary file after analysis
+%     false: Do not open summary file after analysis
 %__________________________________________________________________________
 %   USE CASE II - Stress analysis:
 %
@@ -134,10 +134,13 @@ function [S] = main(settings)
 %
 %   SECTION_POINTS. The number of stress/strain section points per ply:
 %     DEFAULT: Program controlled
-%     sp: User-defined number of sections points
+%     sp: User-defined number of section points
 %
-%   Note: Since the layup section is integrated once before the stress
-%   analysis, section points are treated as sample points.
+%   Note: The layup section is integrated once before the stress analysis;
+%   section points are thus treated as sample points.
+%
+%   Note: Section points are evenly distributed over the layup. The total
+%   number of section points is SECTION_POINTS*length(STACKING_SEQUENCE).
 %
 %   LOAD_MECH. A 2x3 array specifying the forces and moments:
 %     [NXX, NYY, NXY; MXX, MYY, MXY]
@@ -165,6 +168,7 @@ function [S] = main(settings)
 %     ENVELOPEMAX: The largest (+ve) value for the layup
 %     ENVELOPEMIN: The largest (-ve) value for the layup
 %     [SP1,..., SPn]: User-defined section point list
+%     (SP1 = Bottom; SPn = Top)
 %
 %   OUTPUT_FIGURE. A 1x3 cell array specifying settings for MATLAB figure
 %   output:
@@ -184,8 +188,8 @@ function [S] = main(settings)
 %     then the section points are coloured green or red for points which
 %     are safe or unsafe, respectively
 %
-%     Note: A section point is coloured red if it failed according to at
-%     least on failure/damage initiation criterion)
+%   Note: A section point is coloured red if it failed according to at
+%   least on failure/damage initiation criterion).
 %
 %   OUTPUT_FIGURE(3) is a parameter specifying the figure layout:
 %     SPLIT: Create a single MATLAB figure (separate plot for each tensor
@@ -222,7 +226,7 @@ function [S] = main(settings)
 %     ...
 %     {[XT, XC, YT, YC, S, C, B]}(n)
 %
-%     Note: FAIL_STRESS(1) = Bottom; FAIL_STRESS(n) = Top.
+%   Note: FAIL_STRESS(1) = Bottom; FAIL_STRESS(n) = Top.
 %
 %     XT/C: Tensile/compressive stress limit (longitudinal)
 %     YT/C: Tensile/compressive stress limit (transverse)
@@ -230,7 +234,7 @@ function [S] = main(settings)
 %     C: Cross-product coefficient
 %     B: Biaxial stress limit
 %
-%     Note: If B = 0, the coupling term is computed from C.
+%   Note: If B = 0, the coupling term is computed from C.
 %
 %   FAIL_STRAIN. A 1xn cell array specifying the strength properties for
 %   strain-based failure criteria:
@@ -238,7 +242,7 @@ function [S] = main(settings)
 %     ...
 %     {[XET, XEC, YET, YEC, SE]}(n)
 %
-%     Note: FAIL_STRAIN(1) = Bottom; FAIL_STRAIN(n) = Top.
+%   Note: FAIL_STRAIN(1) = Bottom; FAIL_STRAIN(n) = Top.
 %
 %     XET/C: Tensile/compressive strain limit (longitudinal)
 %     YET/C: Tensile/compressive strain limit (transverse)
@@ -250,7 +254,7 @@ function [S] = main(settings)
 %     ...
 %     {[ALPHA, XHT, XHC, YHT, YHC, SHX, SHY]}(n)
 %
-%     Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
+%   Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
 %
 %     ALPHA: Shear influence parameter;
 %     XHT/C: Lamina tensile/compressive strength (longitudinal)
@@ -263,7 +267,7 @@ function [S] = main(settings)
 %     ...
 %     {[XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0]}(n)
 %
-%     Note: LARC05(1) = Bottom; LARC05(n) = Top.
+%   Note: LARC05(1) = Bottom; LARC05(n) = Top.
 %
 %     XLT/C: Tensile/compressive strength (longitudinal)
 %     YLT/C: Tensile/compressive strength (transverse)
@@ -273,8 +277,8 @@ function [S] = main(settings)
 %     A0: Fracture plane angle for pure compression
 %     PHI0: Misalignment angle at failure for pure compression
 %
-%     Note: The parameters YLC, SLY, NL, NT, A0 and PHI0 are derived if a
-%     value of -1 is specified. Unspecified criteria are left empty ( [] ).
+%   Note: The parameters YLC, SLY, NL, NT, A0 and PHI0 are derived if a
+%   value of -1 is specified. Unspecified criteria are left empty ( [] ).
 %
 %   OUTPUT_STRENGTH. A 1x2 cell array specifying settings for the strength
 %   assessment:
@@ -371,12 +375,12 @@ function [S] = main(settings)
 %   specified:
 %     DEFAULT: Compute the chunk size automatically based on a heuristic
 %     algorithm
-%     s: User-specified
+%     s: User-defined chunk size
 %
 %   OPTIMISER_SETTINGS(3) is the tuning constant for the chunk size when
 %   the CHUNKS method is specified:
 %     DEFAULT: Program controlled
-%     k: User-defined (typically in the range 2-10)
+%     k: User-defined constant (typically in the range 2-10)
 %
 %   Note: The stacking sequence optimiser solver settings are intended for
 %   advanced users only. The use of non-standard settings may result in an
