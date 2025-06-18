@@ -517,8 +517,6 @@ function [S] = main(settings)
 %   OPT.TENSOR.SYMMETRIC_ABD is a flag indicating if the optimised
 %   stacking sequence is symmetric.
 %
-%   Note: Replace unrequested outputs with a tilde ( ~ ) assignment.
-%
 %   MATLAB figures:
 %
 %   EP. MATLAB figure of E_PLY in X-Y coordinates and ply coordinates for
