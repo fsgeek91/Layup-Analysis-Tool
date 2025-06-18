@@ -11,6 +11,9 @@ function [S] = main(settings)
 %   Detailed output is written to:
 %     <output-folder>\<job-name>\output.mat
 %
+%   MATLAB figures are written to:
+%     <output-folder>\<job-name>\figure\<figure-name>.fig
+%
 %   THE USER IS NOT REQUIRED TO RUN THIS FUNCTION. SEE USER_DEFINITIONS.M
 %   FOR ANALYSIS TEMPLATE.
 %

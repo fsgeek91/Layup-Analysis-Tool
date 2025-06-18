@@ -639,11 +639,11 @@ elseif isempty(BEST_SEQUENCE) == false
         S3_opt_iMax_reduction = 100.0 - 100.0*(S3_opt_iMax/S3iMax);
 
         % Print information for the current ply
-        fprintf(fid, '%-7.0f%-13g%-15g%-14g%-17g%-19g%-17g%-14g%-17g\n', i, t_ply(i), theta(i), S1_opt_iMax, S1_opt_iMax_reduction, S2_opt_iMax, S2_opt_iMax_reduction,...
-            S3_opt_iMax, S3_opt_iMax_reduction);
+        fprintf(fid, '%-7.0f%-13g%-15g%-14g%-17g%-19g%-17g%-14g%-17g\n', i, t_ply(i), BEST_SEQUENCE{1.0}(i), S1_opt_iMax, S1_opt_iMax_reduction, S2_opt_iMax,...
+            S2_opt_iMax_reduction, S3_opt_iMax, S3_opt_iMax_reduction);
 
         % Draw symmetry plane (if applicable)
-        if (symmetricAbd == true) && (i == nPlies/2.0)
+        if (BEST_SEQUENCE{6.0}.SYMMETRIC_ABD == true) && (i == nPlies/2.0)
             fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
         end
     end

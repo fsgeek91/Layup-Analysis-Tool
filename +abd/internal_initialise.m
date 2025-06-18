@@ -56,6 +56,64 @@ settingsNames =  fieldnames(defaultSettings);
 % Set fields which are compulsory
 compulsorySettings = [false, false, true, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false];
 
+%% Process the user settings structure
+if (ischar(settings) == true) && (exist(settings, 'file') == 2.0)
+    % Settings file name
+    settings_file = settings;
+
+    % The settings object is a file, so get its file extension
+    [~, ~, ext] = fileparts(settings_file);
+
+    if strcmpi(ext, '.mat') == true
+        %{
+            The settings object appears to be a MATLAB binary (.mat) file.
+            Try to read the job settings from the file
+        %}
+        try
+            % Load the settings file into the MATLAB workspace
+            s = load(settings);
+
+            if isfield(s, 'settings') == false
+                %{
+                    The structure does not contain the field 'SETTINGS', so
+                    exit with an error
+                %}
+                fprintf('[ERROR] Missing structure ''settings'' in file ''%s''\n-> Check the contents of the input file\n', settings_file);
+                error = 1.0;
+                return
+            else
+                % Assign the settings structure into SETTINGS
+                settings = s.settings;
+            end
+        catch MException
+            % The user aborted the analysis
+            fprintf('[ERROR] The contents of the user settings file ''%s'' are invalid\n-> MException.identifier: %s\n-> MException.message: %s\n', settings_file, MException.identifier,...
+                MException.message);
+            error = 1.0;
+            return
+        end
+    else
+        %{
+            The settings object is not a MATLAB binary (.mat) file, so exit
+            with an error
+        %}
+        fprintf(['[ERROR] The user settings file ''%s'' is invalid\n-> The user settings file must be a MATLAB binary (.mat) file containing\n   the structure ''settings'' of anal',...
+            'ysis definitions\n-> Execute the command ''help abd.main'' for instructions on creating the\n   input structure, or look at ''user_definitions.m'' for an example anal',...
+            'ysis\n'], settings_file);
+        error = 1.0;
+        return
+    end
+elseif isstruct(settings) == false
+    %{
+        The function input is not a string parameter, so it has to be a
+        structure. If not, then exist with an error
+    %}
+    fprintf(['[ERROR] The input arguments to ABD.MAIN are invalid\n-> Input must be a structure of analysis definitions\n-> Execute the command ''help abd.main'' for instructions ',...
+        'on creating the\n   input structure, or look at ''user_definitions.m'' for an example\n   analysis\n']);
+    error = 1.0;
+    return
+end
+
 % Check in setting in turn
 for i = 1:length(settingsNames)
     % Get the current field name
