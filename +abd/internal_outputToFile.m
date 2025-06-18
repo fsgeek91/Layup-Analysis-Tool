@@ -17,7 +17,7 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %%
 
 %% Open the results file and print the header
-fid = fopen([outputLocation, filesep, 'analysis_summary', '.log'], 'w+');
+fid = fopen([outputLocation, filesep, 'summary', '.log'], 'w+');
 
 % Get the user's machine name
 [~, hostname] = system('hostname');
@@ -51,7 +51,7 @@ SFAILRATIO_HASHIN = -1.0*ones(1.0, 4.0);
 SFAILRATIO_LARC05 = -1.0*ones(1.0, 5.0);
 
 %% Print layup summary
-fprintf(fid, 'Composite layup summary:\n');
+fprintf(fid, 'Composite layup summary (all section points):\n');
 
 if (enableTensor == true) && (printTensor == true)
     % Print layup summary header
@@ -592,13 +592,61 @@ elseif isempty(BEST_SEQUENCE) == false
     str_with_commas = regexprep(fliplr(str), '(\d{3})(?=\d)', '$1,');
     str_with_commas = fliplr(str_with_commas);
 
-    fprintf(fid, '\n(Checked %s stacking permutations in %g seconds)\n', str_with_commas, BEST_SEQUENCE{4.0});
+    fprintf(fid, '\n(Checked %s stacking sequence permutations in %g seconds)\n', str_with_commas, BEST_SEQUENCE{4.0});
 
     % Print the optimised stress/strain tensor
     abd.internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, BEST_SEQUENCE{6.0}.STRESS_XY, BEST_SEQUENCE{6.0}.STRESS_PLY, BEST_SEQUENCE{6.0}.STRAIN_XY,...
         BEST_SEQUENCE{6.0}.STRAIN_PLY, [], [], [], [], nPlies, outputPoints, plyBuffer, BEST_SEQUENCE{6.0}.SYMMETRIC_ABD, outputApproximate, thickness,...
         sprintf('Stress/strain calculation summary for optimised stacking sequence\nSection points per ply: <From layup definition>\nOutput locations: <From layup definition>'),...
         OUTPUT_PLY, z_points, SECTION_POINTS)
+
+    % Print post-optimisation layup summary
+    fprintf(fid, '\nPost-optimisation composite layup summary (all section points):\n');
+
+    % Print layup summary header
+    fprintf(fid, 'PLY    THICKNESS    ORIENTATION    MAX. FIBRE    (%% Reduction)    MAX. TRANSVERSE    (%% Reduction)    MAX. SHEAR    (%% Reduction)    \n');
+    fprintf(fid, '                                   STRESS                         STRESS                              STRESS        \n');
+
+    % Initialise the section point index
+    spIndex = 1.0;
+
+    for i = 1.0:nPlies
+        % Get the stresses for all section points of the current ply
+        Si = S_ply_aligned(:, spIndex:spIndex + (SECTION_POINTS - 1.0));
+
+        %{
+            Get the post-optimisation stresses for all section points of
+            the current ply
+        %}
+        Si_opt = BEST_SEQUENCE{6.0}.STRESS_PLY(:, spIndex:spIndex + (SECTION_POINTS - 1.0));
+
+        % Update the section point index
+        spIndex = spIndex + SECTION_POINTS;
+
+        % Get the numerically largest stresses over the ply (pre-optimisation)
+        S1iMax = abd.internal_getAbsMax(Si(1.0, :), 1.0);
+        S2iMax = abd.internal_getAbsMax(Si(2.0, :), 1.0);
+        S3iMax = abd.internal_getAbsMax(Si(3.0, :), 1.0);
+
+        % Get the numerically largest stresses over the ply (post-optimisation)
+        S1_opt_iMax = abd.internal_getAbsMax(Si_opt(1.0, :), 1.0);
+        S2_opt_iMax = abd.internal_getAbsMax(Si_opt(2.0, :), 1.0);
+        S3_opt_iMax = abd.internal_getAbsMax(Si_opt(3.0, :), 1.0);
+
+        % Get the % stress reduction
+        S1_opt_iMax_reduction = 100.0 - 100.0*(S1_opt_iMax/S1iMax);
+        S2_opt_iMax_reduction = 100.0 - 100.0*(S2_opt_iMax/S2iMax);
+        S3_opt_iMax_reduction = 100.0 - 100.0*(S3_opt_iMax/S3iMax);
+
+        % Print information for the current ply
+        fprintf(fid, '%-7.0f%-13g%-15g%-14g%-17g%-19g%-17g%-14g%-17g\n', i, t_ply(i), theta(i), S1_opt_iMax, S1_opt_iMax_reduction, S2_opt_iMax, S2_opt_iMax_reduction,...
+            S3_opt_iMax, S3_opt_iMax_reduction);
+
+        % Draw symmetry plane (if applicable)
+        if (symmetricAbd == true) && (i == nPlies/2.0)
+            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
+        end
+    end
 
     fprintf(fid, '\n===========================================================================\n');
 elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true))

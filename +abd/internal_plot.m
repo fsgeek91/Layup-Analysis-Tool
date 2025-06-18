@@ -22,6 +22,30 @@ classdef internal_plot < handle
             fontTicks = 12.0;
             lineWidth = 1.5;
 
+            % Set the figure title string buffer
+            switch PLOT_STYLE
+                case 'detached'
+                    figureTitles_strainXY = {'XY ply strain in XX-direction for all section points',...
+                        'XY ply strain in YY-direction for all section points',...
+                        'XY ply strain in XY-direction for all section points'};
+                    figureTitles_strainPly = {'Aligned ply strain in 11-direction for all section points',...
+                        'Aligned ply strain in 22-direction for all section points',...
+                        'Aligned ply strain in 12-direction for all section points'};
+
+                    figureTitles_stressXY = {'XY ply stress in XX-direction for all section points',...
+                        'XY ply stress in YY-direction for all section points',...
+                        'XY ply stress in XY-direction for all section points'};
+                    figureTitles_stressPly = {'Aligned ply stress in 11-direction for all section points',...
+                        'Aligned ply stress in 22-direction for all section points',...
+                        'Aligned ply stress in 12-direction for all section points'};
+                otherwise
+                    figureTitles_strainXY = {'XY ply strains for all section points'};
+                    figureTitles_strainPly = {'Aligned ply strains for all section points'};
+
+                    figureTitles_stressXY = {'XY ply stresses for all section points'};
+                    figureTitles_stressPly = {'Aligned ply stresses for all section points'};
+            end
+
             % Get the plot domain
             z_points_norm = z_points/max(z);
             z_plies_norm = z/max(z);
@@ -36,25 +60,25 @@ classdef internal_plot < handle
 
             %% EP, Ply strains in X-Y coordinates
             abd.internal_plot.now(...
-                'XY ply strains for all section points', {'\epsilon_x_x', '\epsilon_y_y', '\gamma_x_y'}, {'XY ply strain in XX-direction', 'XY ply strain in YY-direction',...
+                figureTitles_strainXY, {'\epsilon_x_x', '\epsilon_y_y', '\gamma_x_y'}, {'XY ply strain in XX-direction', 'XY ply strain in YY-direction',...
                 'XY ply strain in XY-direction'}, PLOT_STYLE, E_ply_xy, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, 'Strain [mm/mm]',...
                 outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
             %% EP, Ply strains in ply coordinates
             abd.internal_plot.now(...
-                'Aligned ply strains for all section points', {'\epsilon_f_i_b_r_e', '\epsilon_t_r_a_n_s_v_e_r_s_e', '\gamma_p_l_y'}, {'Aligned ply strain in 11-direction',...
+                figureTitles_strainPly, {'\epsilon_f_i_b_r_e', '\epsilon_t_r_a_n_s_v_e_r_s_e', '\gamma_p_l_y'}, {'Aligned ply strain in 11-direction',...
                 'Aligned ply strain in 22-direction', 'Aligned ply strain in 12-direction'}, PLOT_STYLE, E_ply_aligned, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle,...
                 fontTicks, fontX, fontY, 'Strain [mm/mm]', outputLocation, [filesep, 'EP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
             %% SP, Ply stresses in X-Y coordinates
             abd.internal_plot.now(...
-                'XY ply stresses for all section points', {'\sigma_x_x', '\sigma_y_y', '\tau_x_y'}, {'XY ply stress in XX-direction', 'XY ply stress in YY-direction',...
+                figureTitles_stressXY, {'\sigma_x_x', '\sigma_y_y', '\tau_x_y'}, {'XY ply stress in XX-direction', 'XY ply stress in YY-direction',...
                 'XY ply stress in XY-direction'}, PLOT_STYLE, S_ply_xy, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, 'Stress [N/mm2]',...
                 outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
             %% SP, Ply stresses in ply coordinates
             abd.internal_plot.now(...
-                'Aligned ply stresses for all section points', {'\sigma_f_i_b_r_e', '\sigma_t_r_a_n_s_v_e_r_s_e', '\tau_p_l_y'}, {'Aligned ply stress in 11-direction',...
+                figureTitles_stressPly, {'\sigma_f_i_b_r_e', '\sigma_t_r_a_n_s_v_e_r_s_e', '\tau_p_l_y'}, {'Aligned ply stress in 11-direction',...
                 'Aligned ply stress in 22-direction', 'Aligned ply stress in 12-direction'}, PLOT_STYLE, S_ply_aligned, z_points_norm, lineWidth, nPlies, z_plies_norm, fontTitle,...
                 fontTicks, fontX, fontY, 'Stress [N/mm2]', outputLocation, [filesep, 'SP, '], SP_COLOUR_BUFFER, SP_VIZ)
 
@@ -108,25 +132,48 @@ classdef internal_plot < handle
         %% CREATE A MATLAB FIGURE OF THE SELECTED PLOT VARIABLE
         function [] = now(figureTitle, legendStrings, plotTitle, PLOT_STYLE, VARIABLE, RANGE, lineWidth, nPlies, z_plies_norm, fontTitle, fontTicks, fontX, fontY, xlabelString,...
                 outputLocation, leadString, SP_COLOUR_BUFFER, SP_VIZ)
-            % Create the figure
-            f = abd.internal_plot.createFigure();
+            % Configure the plot layout
+            switch lower(PLOT_STYLE)
+                case 'compact'
+                    % Single figure
+                    N = ones(1.0, 3.0);
+                    P = 1.0;
+
+                    % Create the figure
+                    f = abd.internal_plot.createFigure();
+                case 'split'
+                    % Tiled figures
+                    N = 1.0:3.0;
+                    P = 3.0;
+
+                    % Create the figure
+                    f = abd.internal_plot.createFigure();
+                case 'detached'
+                    % Individual figures
+                    N = ones(1.0, 3.0);
+                    P = 1.0;
+                otherwise
+                    % This case should never be reached!
+
+                    % Tiled figures
+                    N = 1.0:3.0;
+                    P = 3.0;
+
+                    % Create the figure
+                    f = abd.internal_plot.createFigure();
+            end
 
             % Initialise figure handle buffer
             H = zeros(1.0, 3.0);
 
-            % Configure the plot layout
-            if strcmpi(PLOT_STYLE, 'compact') == true
-                % Single figure
-                N = ones(1.0, 3.0);
-                P = 1.0;
-            else
-                % Tiled figures
-                N = 1.0:3.0;
-                P = 3.0;
-            end
-
             % Plot each tensor component in turn
             for plotNumber = 1.0:3.0
+                % Create a new figure each time (detached mode only)
+                if strcmpi(PLOT_STYLE, 'detached') == true
+                    % Create the figure
+                    f = abd.internal_plot.createFigure();
+                end
+
                 % Set the current plot space
                 subplot(1.0, P, N(plotNumber))
 
@@ -138,7 +185,7 @@ classdef internal_plot < handle
                 hold on
 
                 % Plot the ply boundaries
-                if strcmpi(PLOT_STYLE, 'split') == true
+                if (strcmpi(PLOT_STYLE, 'split') == true) || (strcmpi(PLOT_STYLE, 'detached') == true)
                     abd.internal_plot.boundaries(nPlies, DOMAIN, z_plies_norm)
                 end
 
@@ -147,13 +194,25 @@ classdef internal_plot < handle
                     if (strcmpi(PLOT_STYLE, 'compact') == true) && (plotNumber == 1.0)
                         scatter(linspace(0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))), 0.5*(min(min(VARIABLE, [], 2.0)) + max(max(VARIABLE, [], 2.0))),...
                             length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
-                    elseif strcmpi(PLOT_STYLE, 'split') == true
+                    elseif (strcmpi(PLOT_STYLE, 'split') == true) || (strcmpi(PLOT_STYLE, 'detached') == true)
                         scatter(linspace(0.5*(min(DOMAIN) + max(DOMAIN)), 0.5*(min(DOMAIN) + max(DOMAIN)), length(RANGE)), RANGE, 18.0, SP_COLOUR_BUFFER)
                     end
                 end
 
                 % Set the legend and figure title
-                if (P == 1.0) && (plotNumber == 3.0)
+                if strcmpi(PLOT_STYLE, 'detached') == true
+                    % Set the legend
+                    legend(H(plotNumber), legendStrings{plotNumber});
+
+                    % Get the title of the current figure
+                    figureTitleCurrent = figureTitle{plotNumber};
+
+                    % Set the figure title
+                    title(figureTitleCurrent, 'FontSize', fontTitle)
+
+                    % Set font tick size for all plots
+                    set(gca, 'FontSize', fontTicks)
+                elseif (P == 1.0) && (plotNumber == 3.0)
                     % Set the legend
                     L = legend(H, legendStrings);
 
@@ -161,7 +220,7 @@ classdef internal_plot < handle
                     L.AutoUpdate = 'off';
 
                     % Set the figure title
-                    title(figureTitle, 'FontSize', fontTitle)
+                    title(figureTitle{1.0}, 'FontSize', fontTitle)
 
                     % Set font tick size for all plots
                     set(gca, 'FontSize', fontTicks)
@@ -186,6 +245,11 @@ classdef internal_plot < handle
                 catch
                     % Don't tighten the axis
                 end
+
+                % Save the MATLAB figure to a file now (detached mode only)
+                if strcmpi(PLOT_STYLE, 'detached') == true
+                    abd.internal_plot.save(outputLocation, leadString, figureTitleCurrent, f)
+                end
             end
 
             % Plot the ply boundaries
@@ -193,8 +257,10 @@ classdef internal_plot < handle
                 abd.internal_plot.boundaries(nPlies, [min(min(VARIABLE, [], 2.0)), max(max(VARIABLE, [], 2.0))], z_plies_norm)
             end
 
-            % Save the MATLAB figure to a file
-            abd.internal_plot.save(outputLocation, leadString, figureTitle, f)
+            % Save the MATLAB figure to a file (excludes detached mode)
+            if strcmpi(PLOT_STYLE, 'detached') == false
+                abd.internal_plot.save(outputLocation, leadString, figureTitle{1.0}, f)
+            end
         end
 
         %% PLOT THE PLY BOUNDARIES
@@ -294,9 +360,10 @@ classdef internal_plot < handle
             % Process the third argument
             argument = OUTPUT_FIGURE{3.0};
 
-            if ((isempty(argument) == false) && (ischar(argument) == false)) || ((strcmpi(argument, 'compact') == false) && (strcmpi(argument, 'split') == false))
+            if ((isempty(argument) == false) && (ischar(argument) == false)) || ((strcmpi(argument, 'compact') == false) && (strcmpi(argument, 'split') == false) &&...
+                    (strcmpi(argument, 'detached') == false))
                 % Incorrect variable type
-                fprintf('[ERROR] The setting OUTPUT_FIGURE(3) must be one of the following:\n{''COMPACT'' | ''SPLIT''}\n');
+                fprintf('[ERROR] The setting OUTPUT_FIGURE(3) must be one of the following:\n{''COMPACT'' | ''SPLIT'' | ''DETACHED''}\n');
 
                 % Reset the error flag and RETURN
                 error = true;

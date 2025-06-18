@@ -185,8 +185,12 @@ function [S] = main(settings)
 %     least on failure/damage initiation criterion)
 %
 %   OUTPUT_FIGURE(3) is a parameter specifying the figure layout:
-%     SPLIT: Create a separate plot for each tensor component
-%     COMPACT: Overlay each tensor component in a single plot
+%     SPLIT: Create a single MATLAB figure (separate plot for each tensor
+%     component)
+%     COMPACT: Create a single MATLAB figure (one plot for all tensor
+%     components)
+%     DETACHED: Create a separate MATLAB figure for each tensor component
+%     (one plot for each MATLAB figure)
 %__________________________________________________________________________
 %   USE CASE III - Strength analysis:
 %

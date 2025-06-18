@@ -194,8 +194,10 @@ OUTPUT_PLY = 'DEFAULT';
     (plot all section points)
 
     Third argument (MATLAB figure layout):
-    '<layout>': Split (one figure per tensor component); Compact (single
-    figure for all tensor components)
+    '<layout>': Split (single MATLAB figure, separate plot for each tensor
+    component); Compact (single MATLAB figure, one plot for all tensor
+    components); DETACHED (separate MATLAB figure for each tensor
+    component)
 
     Note: MATLAB figures are only generated when at least one load matrix
     component is specified with NXX/NYY/NXY or MXX/MYY/MXY.
