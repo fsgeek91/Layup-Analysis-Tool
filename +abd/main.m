@@ -684,7 +684,7 @@ if OUTPUT_STRENGTH{1.0} == true
             one of FAIL_STRESS, FAIL_STRAIN, HASHIN or LARC05 must be
             defined for the layup!
         %}
-        fprintf('[ERROR] The strength calculation requires at least\nFAIL_STRESS, FAIL_STRAIN, HASHIN or LARC05 material properties\n');
+        fprintf('[ERROR] The strength calculation requires material properties for at least\none failure/damage initiation criterion: FAIL_STRESS, FAIL_STRAIN, HASHIN\nor LARC05\n');
         return
     end
 

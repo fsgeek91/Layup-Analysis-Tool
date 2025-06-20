@@ -139,7 +139,16 @@ switch mode
 
             % Property count check
             if length(currentMaterial) ~= 8.0
-                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n-> Expected 8, got %.0f\n', tag, length(currentMaterial));
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            end
+
+            % Validity check
+            if any(currentMaterial <= 0.0)
+                fprintf('[ERROR] Mechanical properties in %s must be positive\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -170,13 +179,45 @@ switch mode
             % Get material properties for the current ply
             currentMaterial = data{i};
 
-            % Property count check
+            % Argument number check
             if length(currentMaterial) ~= 7.0
-                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n-> Expected 7, got %.0f\n', tag, length(currentMaterial));
 
                 % Reset the error flag and RETURN
                 error = true;
                 return
+            end
+
+            % Validity check
+            switch lower(tag)
+                case 'fail_stress'
+                    if any(currentMaterial(1.0:5.0) <= 0.0)
+                        fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
+
+                        % Reset the error flag and RETURN
+                        error = true;
+                        return
+                    elseif any(currentMaterial(6.0:7.0) < 0.0)
+                        fprintf('[ERROR] Stress coupling term (C) or biaxiality ratio (B) in %s\ncannot be negative\n', tag);
+
+                        % Reset the error flag and RETURN
+                        error = true;
+                        return
+                    end
+                case 'hashin'
+                    if any(currentMaterial(2.0:7.0) <= 0.0)
+                        fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
+
+                        % Reset the error flag and RETURN
+                        error = true;
+                        return
+                    elseif any(currentMaterial(1.0) < 0.0)
+                        fprintf('[ERROR] Coupling term (ALPHA) in %s cannot be negative\n', tag);
+
+                        % Reset the error flag and RETURN
+                        error = true;
+                        return
+                    end
             end
 
             % Assign values for the material property buffers
@@ -201,9 +242,18 @@ switch mode
             % Get material properties for the current ply
             currentMaterial = data{i};
 
-            % Property count check
+            % Argument number check
             if length(currentMaterial) ~= 5.0
-                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n-> Expeted 5, got %.0f\n', tag, length(currentMaterial));
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            end
+
+            % Validity check
+            if any(currentMaterial <= 0.0)
+                fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -230,9 +280,25 @@ switch mode
             % Get material properties for the current ply
             currentMaterial = data{i};
 
-            % Property count check
+            % Argument number check
             if length(currentMaterial) ~= 11.0
-                fprintf('[ERROR] Incorrect number of properties specified in %s\n', tag);
+                fprintf('[ERROR] Incorrect number of properties specified in %s\n-> Expected 11, got %.0f\n', tag, length(currentMaterial));
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            end
+
+            % Validity check
+            if (any(currentMaterial([1.0, 2.0, 3.0, 5.0, 7.0]) <= 0.0)) || (any(all([currentMaterial([4.0, 6.0]) < 0.0; currentMaterial([4.0, 6.0]) ~= -1.0])) == true)
+                fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            elseif any(all([currentMaterial(8.0:11.0) < 0.0; currentMaterial(8.0:11.0) ~= -1.0])) == true
+                fprintf(['[ERROR] Longitudinal/transverse shear friction coefficient (NL/NT),\nfracture plane angle for pure compression (A0) or misalignment angle at\nfailure for',...
+                    ' pure compression (PHI0) in %s cannot be negative\n'], tag);
 
                 % Reset the error flag and RETURN
                 error = true;
