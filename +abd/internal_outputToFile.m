@@ -8,8 +8,8 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.1 Copyright Louis Vallance 2025
-%   Last modified 17-Jun-2025 14:50:26 UTC
+%   Layup Analysis Tool 4.2.2 Copyright Louis Vallance 2025
+%   Last modified 20-Jun-2025 07:44:10 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -29,8 +29,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 4.2.1 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 17-Jun-2025 14:50:26 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 4.2.2 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 20-Jun-2025 07:44:10 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
@@ -604,7 +604,7 @@ elseif isempty(BEST_SEQUENCE) == false
     fprintf(fid, '\nPost-optimisation composite layup summary (all section points):\n');
 
     % Print layup summary header
-    fprintf(fid, 'PLY    THICKNESS    ORIENTATION    MAX. FIBRE    (%% Reduction)    MAX. TRANSVERSE    (%% Reduction)    MAX. SHEAR    (%% Reduction)    \n');
+    fprintf(fid, 'PLY    THICKNESS    ORIENTATION    MAX. FIBRE    (%% Change)       MAX. TRANSVERSE    (%% Change)       MAX. SHEAR    (%% Change)       \n');
     fprintf(fid, '                                   STRESS                         STRESS                              STRESS        \n');
 
     % Initialise the section point index
@@ -633,18 +633,47 @@ elseif isempty(BEST_SEQUENCE) == false
         S2_opt_iMax = abd.internal_getAbsMax(Si_opt(2.0, :), 1.0);
         S3_opt_iMax = abd.internal_getAbsMax(Si_opt(3.0, :), 1.0);
 
-        % Get the % stress reduction
-        S1_opt_iMax_reduction = 100.0 - 100.0*(S1_opt_iMax/S1iMax);
-        S2_opt_iMax_reduction = 100.0 - 100.0*(S2_opt_iMax/S2iMax);
-        S3_opt_iMax_reduction = 100.0 - 100.0*(S3_opt_iMax/S3iMax);
+        % Get the % stress change (symmetric formula)
+        if (S1iMax == 0.0) && (S1_opt_iMax == 0.0)
+            S1_opt_iMax_reduction = 0.0;
+        else
+            S1_opt_iMax_reduction = ((S1_opt_iMax - S1iMax) / max(abs(S1iMax), abs(S1_opt_iMax))) * 100.0;
+        end
+        if (S2iMax == 0.0) && (S2_opt_iMax == 0.0)
+            S2_opt_iMax_reduction = 0.0;
+        else
+            S2_opt_iMax_reduction = ((S2_opt_iMax - S2iMax) / max(abs(S2iMax), abs(S2_opt_iMax))) * 100.0;
+        end
+        if (S3iMax == 0.0) && (S3_opt_iMax == 0.0)
+            S3_opt_iMax_reduction = 0.0;
+        else
+            S3_opt_iMax_reduction = ((S3_opt_iMax - S3iMax) / max(abs(S3iMax), abs(S3_opt_iMax))) * 100.0;
+        end
+
+        % Format % stress change into string
+        if S1_opt_iMax_reduction >= 0.0
+            S1_opt_iMax_reduction = sprintf('+%g', S1_opt_iMax_reduction);
+        else
+            S1_opt_iMax_reduction = sprintf('%g', S1_opt_iMax_reduction);
+        end
+        if S2_opt_iMax_reduction >= 0.0
+            S2_opt_iMax_reduction = sprintf('+%g', S2_opt_iMax_reduction);
+        else
+            S2_opt_iMax_reduction = sprintf('%g', S2_opt_iMax_reduction);
+        end
+        if S3_opt_iMax_reduction >= 0.0
+            S3_opt_iMax_reduction = sprintf('+%g', S3_opt_iMax_reduction);
+        else
+            S3_opt_iMax_reduction = sprintf('%g', S3_opt_iMax_reduction);
+        end
 
         % Print information for the current ply
-        fprintf(fid, '%-7.0f%-13g%-15g%-14g%-17g%-19g%-17g%-14g%-17g\n', i, t_ply(i), BEST_SEQUENCE{1.0}(i), S1_opt_iMax, S1_opt_iMax_reduction, S2_opt_iMax,...
+        fprintf(fid, '%-7.0f%-13g%-15g%-14g%-17s%-19g%-17s%-14g%-17s\n', i, t_ply(i), BEST_SEQUENCE{1.0}(i), S1_opt_iMax, S1_opt_iMax_reduction, S2_opt_iMax,...
             S2_opt_iMax_reduction, S3_opt_iMax, S3_opt_iMax_reduction);
 
         % Draw symmetry plane (if applicable)
         if (BEST_SEQUENCE{6.0}.SYMMETRIC_ABD == true) && (i == nPlies/2.0)
-            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
+            fprintf(fid, '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - SYM\n');
         end
     end
 

@@ -17,8 +17,8 @@ function [] = validate_joyce(varargin)
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 4.2.1 Copyright Louis Vallance 2025
-%   Last modified 17-Jun-2025 14:50:26 UTC
+%   Layup Analysis Tool 4.2.2 Copyright Louis Vallance 2025
+%   Last modified 20-Jun-2025 07:44:10 UTC
 
 %__________________________________________________________________________
 %% 1: JOB

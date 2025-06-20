@@ -3,8 +3,8 @@ classdef internal_plot < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.1 Copyright Louis Vallance 2025
-%   Last modified 17-Jun-2025 14:50:26 UTC
+%   Layup Analysis Tool 4.2.2 Copyright Louis Vallance 2025
+%   Last modified 20-Jun-2025 07:44:10 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -280,8 +280,13 @@ classdef internal_plot < handle
                 DOMAIN_ELEMENT = DOMAIN(1.0);
 
                 % Adjust endpoints by a small fraction of DOMAIN_ELEMENT
-                DOMAIN(1.0) = DOMAIN_ELEMENT - 1e-12*DOMAIN_ELEMENT;
-                DOMAIN(end) = DOMAIN_ELEMENT + 1e-12*DOMAIN_ELEMENT;
+                if DOMAIN_ELEMENT == 0.0
+                    DOMAIN(1.0) = -1e-12;
+                    DOMAIN(end) = +1e-12;
+                else
+                    DOMAIN(1.0) = DOMAIN_ELEMENT - 1e-12*DOMAIN_ELEMENT;
+                    DOMAIN(end) = DOMAIN_ELEMENT + 1e-12*DOMAIN_ELEMENT;
+                end
             end
 
             %{
