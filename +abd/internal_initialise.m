@@ -265,6 +265,13 @@ if islogical(argument) == false
     output_location{2.0} = false;
 end
 
+%% The input structure must be scalar
+if isscalar(settings) == false
+    fprintf('[ERROR] Input structure must be scalar\n-> Options defined as cell arrays must be enclosed by an additional pair\n   of curly braces ({})\n')
+    error = 1.0;
+    return
+end
+
 %% Get the job ID from the input structure
 % Append the job id to the job settings structure
 job_id = simon.hash.DataHash(settings, 'SHA-512', 'array');
