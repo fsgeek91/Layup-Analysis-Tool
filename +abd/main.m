@@ -231,8 +231,8 @@ function [S] = main(settings)
 %     XT/C: Tensile/compressive stress limit (longitudinal)
 %     YT/C: Tensile/compressive stress limit (transverse)
 %     S: Shear strength in the XY-plane
-%     C: Cross-product coefficient
-%     B: Biaxial stress limit
+%     C: Cross-product coefficient {-1 <= C <= 1}
+%     B: Biaxial stress limit {B > 0}
 %
 %   Note: If B = 0, the coupling term is computed from C.
 %
@@ -256,7 +256,7 @@ function [S] = main(settings)
 %
 %   Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
 %
-%     ALPHA: Shear influence parameter;
+%     ALPHA: Shear influence parameter {0 <= ALPHA <= 1}
 %     XHT/C: Lamina tensile/compressive strength (longitudinal)
 %     YHT/C: Lamina tensile/compressive strength (transverse)
 %     SHX/Y: Lamina in-plane/transverse shear strength
@@ -274,11 +274,13 @@ function [S] = main(settings)
 %     SLX/Y: In-plane/transverse shear strength
 %     GL12: Shear modulus in the 12-plane
 %     NL/T: Longitudinal/transverse shear friction coefficient
-%     A0: Fracture plane angle for pure compression
-%     PHI0: Misalignment angle at failure for pure compression
+%     {0 <= NL/T <= 1}
+%     A0: Fracture plane angle for pure compression {0 <= A0 <= 180}
+%     PHI0: Misalignment angle at failure for pure compression {PHI0 > 0}
 %
 %   Note: The parameters YLC, SLY, NL, NT, A0 and PHI0 are derived if a
 %   value of -1 is specified. Unspecified criteria are left empty ( [] ).
+%   Derivation of PHI0 requires the Symbolic Math Toolbox.
 %
 %   OUTPUT_STRENGTH. A 1x2 cell array specifying settings for the strength
 %   assessment:

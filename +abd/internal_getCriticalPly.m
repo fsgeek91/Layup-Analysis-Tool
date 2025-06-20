@@ -40,7 +40,7 @@ FAILED_PLY_OUTER = false(nPlies, cols);
 
 for i = 1.0:cols
     % Get the current column from DATA
-    DATA_i = DATA(:, i);
+    DATA_i = real(DATA(:, i));
 
     % Get the unique values within tolerance
     [C, ~, IC] = uniquetol(DATA_i, 1e-6);

@@ -73,7 +73,7 @@ if symmetricPly == false
             must equal the number of plies if more than one material was
             specified
         %}
-        fprintf('[ERROR] The number of material definitions does not\nmatch the number of plies\n');
+        fprintf('[ERROR] The number of material definitions does not match the number of\nplies\n');
 
         % Reset the error flag and RETURN
         error = true;
@@ -93,7 +93,7 @@ elseif (symmetricPly == true) && (nMaterials > 1.0)
         data = [data, flip(data)];
     elseif nMaterials ~= nPlies
         % The number of specified materials is invalid
-        fprintf('[ERROR] The number of materials does not match the\nnumber of plies in the layup definition\n');
+        fprintf('[ERROR] The number of materials does not match the number of plies in\nthe layup definition\n');
 
         % Reset the error flag and RETURN
         error = true;
@@ -119,7 +119,7 @@ elseif any(cellfun(@isempty, data)) == true
         At least one ply is missing material properties, so RETURN with an
         error
     %}
-    fprintf('[ERROR] One or more plies are missing material\nproperties\n');
+    fprintf('[ERROR] One or more plies are missing material properties\n');
 
     % Reset the error flag and RETURN
     error = true;
@@ -143,15 +143,18 @@ switch mode
 
                 % Reset the error flag and RETURN
                 error = true;
-                return
             end
 
             % Validity check
             if any(currentMaterial <= 0.0)
-                fprintf('[ERROR] Mechanical properties in %s must be positive\n', tag);
+                fprintf('[ERROR] In %s, mechanical properties must be positive\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
+            end
+
+            % If error, RETURN
+            if error == true
                 return
             end
 
@@ -185,39 +188,44 @@ switch mode
 
                 % Reset the error flag and RETURN
                 error = true;
-                return
             end
 
             % Validity check
             switch lower(tag)
                 case 'fail_stress'
                     if any(currentMaterial(1.0:5.0) <= 0.0)
-                        fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
+                        fprintf('[ERROR] In %s, strength properties must be positive\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
-                        return
-                    elseif any(currentMaterial(6.0:7.0) < 0.0)
-                        fprintf('[ERROR] Stress coupling term (C) or biaxiality ratio (B) in %s\ncannot be negative\n', tag);
+                    elseif (currentMaterial(6.0) < -1.0) || (currentMaterial(6.0) > 1.0)
+                        fprintf('[ERROR] In %s, stress coupling term must be in the range {-1 <= C <= 1}\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
-                        return
+                    elseif currentMaterial(7.0) < 0.0
+                        fprintf('[ERROR] In %s, biaxiality ratio (B) cannot be negative\n', tag);
+
+                        % Reset the error flag and RETURN
+                        error = true;
                     end
                 case 'hashin'
                     if any(currentMaterial(2.0:7.0) <= 0.0)
-                        fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
+                        fprintf('[ERROR] In %s, strength properties must be positive\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
-                        return
-                    elseif any(currentMaterial(1.0) < 0.0)
-                        fprintf('[ERROR] Coupling term (ALPHA) in %s cannot be negative\n', tag);
+                    elseif (currentMaterial(1.0) < 0.0) || (currentMaterial(1.0) > 1.0)
+                        fprintf('[ERROR] In %s, coupling term must be in the range {0 <= ALPHA <= 1}\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
-                        return
                     end
+            end
+
+            % If error, RETURN
+            if error == true
+                return
             end
 
             % Assign values for the material property buffers
@@ -248,15 +256,18 @@ switch mode
 
                 % Reset the error flag and RETURN
                 error = true;
-                return
             end
 
             % Validity check
             if any(currentMaterial <= 0.0)
-                fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
+                fprintf('[ERROR] In %s, strength properties must be positive\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
+            end
+
+            % If error, RETURN
+            if error == true
                 return
             end
 
@@ -286,22 +297,33 @@ switch mode
 
                 % Reset the error flag and RETURN
                 error = true;
-                return
             end
 
             % Validity check
-            if (any(currentMaterial([1.0, 2.0, 3.0, 5.0, 7.0]) <= 0.0)) || (any(all([currentMaterial([4.0, 6.0]) < 0.0; currentMaterial([4.0, 6.0]) ~= -1.0])) == true)
-                fprintf('[ERROR] Strength properties in %s must be positive\n', tag);
+            if (any(currentMaterial([1.0, 2.0, 3.0, 5.0, 7.0]) <= 0.0)) || (any(all([currentMaterial([4.0, 6.0]) <= 0.0; currentMaterial([4.0, 6.0]) ~= -1.0])) == true)
+                fprintf('[ERROR] In %s, strength properties must be positive\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
-                return
-            elseif any(all([currentMaterial(8.0:11.0) < 0.0; currentMaterial(8.0:11.0) ~= -1.0])) == true
-                fprintf(['[ERROR] Longitudinal/transverse shear friction coefficient (NL/NT),\nfracture plane angle for pure compression (A0) or misalignment angle at\nfailure for',...
-                    ' pure compression (PHI0) in %s cannot be negative\n'], tag);
+            elseif any(all([any([(currentMaterial(8.0:9.0) < 0.0); (currentMaterial(8.0:9.0) > 1.0)]); currentMaterial(8.0:9.0) ~= -1.0])) == true
+                fprintf('[ERROR] In %s, longitudinal/transverse shear friction coefficient\nmust be in the range {0 <= NL/T <= 1}\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
+            elseif (currentMaterial(10.0) < 0.0 || currentMaterial(10.0) > 180.0) && (currentMaterial(10.0) ~= -1.0)
+                fprintf('[ERROR] In %s, fracture plane angle for pure compression must be in\nthe range {0 <= A0 <= 180}\n', tag);
+
+                % Reset the error flag and RETURN
+                error = true;
+            elseif (currentMaterial(11.0) <= 0.0) && (currentMaterial(11.0) ~= -1.0)
+                fprintf('[ERROR] In %s, misalignment angle at failure for pure compression\n(PHI0) must be positive\n', tag);
+
+                % Reset the error flag and RETURN
+                error = true;
+            end
+
+            % If error, RETURN
+            if error == true
                 return
             end
 

@@ -325,7 +325,7 @@ classdef internal_strength < handle
                 (1.0./(YT(B12Notzero).*YC(B12Notzero)))).*(B12(B12Notzero).^2.0));
 
             % Get F12 for zero values of B12
-            B12Zero = ~B12Notzero;
+            B12Zero = B12Notzero == false;
             F12(B12Zero) = C12(B12Zero).*sqrt(F11(B12Zero).*F22(B12Zero));
 
             if parameter == 1.0
