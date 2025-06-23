@@ -19,8 +19,8 @@ function [] = user_definitions(varargin)
 %
 %   See also abd.main, examples.
 %
-%   Layup Analysis Tool 4.2.2 Copyright Louis Vallance 2025
-%   Last modified 20-Jun-2025 07:44:10 UTC
+%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
+%   Last modified 23-Jun-2025 14:28:39 UTC
 
 %__________________________________________________________________________
 %% 1: JOB

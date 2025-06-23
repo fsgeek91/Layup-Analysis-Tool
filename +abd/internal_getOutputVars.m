@@ -6,8 +6,8 @@ function [S] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_a
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.2 Copyright Louis Vallance 2025
-%   Last modified 20-Jun-2025 07:44:10 UTC
+%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
+%   Last modified 23-Jun-2025 14:28:39 UTC
 %
 %#ok<*NASGU>
 

@@ -4,8 +4,8 @@ function [error, z_points, theta, nPlies_points, A11, A22, B11, B22, plyBuffer, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.2 Copyright Louis Vallance 2025
-%   Last modified 20-Jun-2025 07:44:10 UTC
+%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
+%   Last modified 23-Jun-2025 14:28:39 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

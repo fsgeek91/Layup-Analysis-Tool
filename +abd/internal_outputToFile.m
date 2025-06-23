@@ -8,8 +8,8 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.2 Copyright Louis Vallance 2025
-%   Last modified 20-Jun-2025 07:44:10 UTC
+%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
+%   Last modified 23-Jun-2025 14:28:39 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -29,8 +29,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 4.2.2 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 20-Jun-2025 07:44:10 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 4.2.3 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 23-Jun-2025 14:28:39 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
