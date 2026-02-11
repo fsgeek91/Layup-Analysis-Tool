@@ -1,20 +1,28 @@
 function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05] = internal_outputToFile(dateString, outputLocation, outputStrength, nPlies, t_ply, theta,...
     enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy, E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned, ABD, symmetricAbd, EXT, EYT, GXYT,...
-    NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT,...
-    noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, outputPoints, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE,...
-    OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS,...
-    EXECUTION_MODE, JOB_NAME, JOB_DESCRIPTION)
+    NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
+    LARTFCRT, UCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, outputPoints, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate,...
+    BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS,...
+    EXECUTION_MODE, JOB_NAME, JOB_DESCRIPTION, isStrengthOutput, UCRT_MException)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
 %%
+
+%% Save the MATLAB Exception object (if applicable)
+% Flag indicating that UCRT was run and failed
+ucrtFail = (isempty(UCRT_MException) == false) && (exist('UCRT_MException', 'var') == 1.0);
+
+if ucrtFail == true
+    save([outputLocation, filesep, UCRT_MException.stack(1.0).name, '_exception.mat'], 'UCRT_MException');
+end
 
 %% Open the results file and print the header
 fid = fopen([outputLocation, filesep, 'summary', '.log'], 'w+');
@@ -29,8 +37,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 4.2.3 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2025\nLast modified 23-Jun-2025 14:28:39 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 5.0.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 11-Feb-2026 08:06:52 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
@@ -49,6 +57,7 @@ SFAILRATIO_STRESS = -1.0*ones(1.0, 4.0);
 SFAILRATIO_STRAIN = -1.0;
 SFAILRATIO_HASHIN = -1.0*ones(1.0, 4.0);
 SFAILRATIO_LARC05 = -1.0*ones(1.0, 5.0);
+SFAILRATIO_UCRT = -1.0;
 
 %% Print layup summary
 fprintf(fid, 'Composite layup summary (all section points):\n');
@@ -211,21 +220,21 @@ elseif printTensor == -1.0
 end
 
 %% Print critical ply summary
-if outputStrength{1.0} == true
+if isStrengthOutput == true
     fprintf(fid, '\nFAILURE CRITERIA ASSESSMENT RESULTS\n');
     fprintf(fid, '\nCritical ply summary (all criteria):\n');
     fprintf(fid, 'CRITERION     PLY           SYMMETRIC?\n');
 
     if noFailStress == false
         % Get the critical ply and the symmetry condition
-        [MAX_MSTRS, MAX_MSTRS_VAL, MSTRS_SYM, MAX_TSAIH, MAX_TSAIH_VAL, TSAIH_SYM, MAX_TSAIW, MAX_TSAIW_VAL, TSAIW_SYM, MAX_AZZIT, MAX_AZZIT_VAL, AZZIT_SYM, SFAILRATIO_STRESS,...
-            FAILED_PLY_MSTRS] =...
+        [MAX_MSTRS, MAX_MSTRS_VAL, MSTRS_SYM, MAX_TSAIH, MAX_TSAIH_VAL, TSAIH_SYM, MAX_HOFFMAN, MAX_HOFFMAN_VAL, HOFFMAN_SYM, MAX_TSAIW, MAX_TSAIW_VAL, TSAIW_SYM, MAX_AZZIT,...
+            MAX_AZZIT_VAL, AZZIT_SYM, SFAILRATIO_STRESS, FAILED_PLY_MSTRS] =...
             ...
-            abd.internal_getCriticalPly([MSTRS', TSAIH', TSAIW', AZZIT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
+            abd.internal_getCriticalPly([MSTRS', TSAIH', HOFFMAN', TSAIW', AZZIT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
         % Print the result
-        fprintf(fid, 'MSTRS         %-14.0f%-9s\nTSAIH         %-14.0f%-9s\nTSAIW         %-14.0f%-9s\nAZZIT         %-14.0f%-9s\n', MAX_MSTRS, MSTRS_SYM, MAX_TSAIH, TSAIH_SYM,...
-            MAX_TSAIW, TSAIW_SYM, MAX_AZZIT, AZZIT_SYM);
+        fprintf(fid, 'MSTRS         %-14.0f%-9s\nTSAIH         %-14.0f%-9s\nHOFFMAN       %-14.0f%-9s\nTSAIW         %-14.0f%-9s\nAZZIT         %-14.0f%-9s\n', MAX_MSTRS,...
+            MSTRS_SYM, MAX_TSAIH, TSAIH_SYM, MAX_HOFFMAN, HOFFMAN_SYM, MAX_TSAIW, TSAIW_SYM, MAX_AZZIT, AZZIT_SYM);
     end
 
     if noFailStrain == false
@@ -262,11 +271,21 @@ if outputStrength{1.0} == true
             LARPFCRT_SYM, MAX_LARMFCRT, LARMFCRT_SYM, MAX_LARKFCRT, LARKFCRT_SYM, MAX_LARSFCRT, LARSFCRT_SYM, MAX_LARTFCRT, LARTFCRT_SYM);
     end
 
+    if (isa(outputStrength{1.0}, 'function_handle') == true) && (all(UCRT == -1.0) == false)
+        % Get the critical ply and the symmetry condition
+        [MAX_UCRT, MAX_UCRT_VAL, UCRT_SYM, SFAILRATIO_UCRT, FAILED_PLY_UCRT] =...
+            ...
+            abd.internal_getCriticalPly(UCRT', symmetricAbd, plyBuffer_sfailratio, nPlies);
+
+        % Print the result
+        fprintf(fid, 'UCRT          %-14.0f%-9s\n', MAX_UCRT, UCRT_SYM);
+    end
+
     fprintf(fid, '\n===========================================================================\n');
 end
 
 %% Print results of failure criteria analysis (stress-based)
-if (outputStrength{1.0} == true) && (noFailStress == false)
+if (isStrengthOutput == true) && (noFailStress == false)
     % Get the parameter string
     if outputStrength{2.0} == 1.0
         parameter = '(R)';
@@ -275,27 +294,30 @@ if (outputStrength{1.0} == true) && (noFailStress == false)
     end
 
     % Get maximum criterion values
-    FAIL_STRESS_ALL = [MAX_MSTRS_VAL, MAX_TSAIH_VAL, MAX_TSAIW_VAL, MAX_AZZIT_VAL];
+    FAIL_STRESS_ALL = [MAX_MSTRS_VAL, MAX_TSAIH_VAL, MAX_HOFFMAN_VAL, MAX_TSAIW_VAL, MAX_AZZIT_VAL];
     FAIL_STRESS_ALL_MAX = max(FAIL_STRESS_ALL, [], 2.0);
 
     % Print table header
     fprintf(fid, '\nAssessment summary for stress-based failure criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           MSTRS(V)      TSAIH%s      TSAIW%s      AZZIT%s      (WORST)       STATUS\n', parameter, parameter, parameter);
+    fprintf(fid, 'PLY           MSTRS(V)      TSAIH%s      HOFFMAN%s    TSAIW%s      AZZIT%s      (WORST)       STATUS\n', parameter, parameter, parameter, parameter);
 
     % Print ply-wise results
     for i = 1.0:nPlies
         if FAILED_PLY_MSTRS(i) == true
             % All section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i), FAIL_STRESS_ALL_MAX(i), 'FAILED');
+            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_HOFFMAN_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i),...
+                FAIL_STRESS_ALL_MAX(i), 'FAILED');
         elseif FAIL_STRESS_ALL_MAX(i) >= 1.0
             % At least one section point in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i), FAIL_STRESS_ALL_MAX(i), 'UNSAFE');
+            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_HOFFMAN_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i),...
+                FAIL_STRESS_ALL_MAX(i), 'UNSAFE');
         elseif MAX_MSTRS_VAL(i) == -1.0
             % There is no data for the current ply
             fprintf(fid, '%-14.0fNO RESULTS\n', i);
         else
             % No section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i), FAIL_STRESS_ALL_MAX(i), 'SAFE');
+            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_HOFFMAN_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i),...
+                FAIL_STRESS_ALL_MAX(i), 'SAFE');
         end
     end
 
@@ -304,11 +326,11 @@ if (outputStrength{1.0} == true) && (noFailStress == false)
         Note: The value of SFAILRATIO considers results over ALL section
         points
     %}
-    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n', SFAILRATIO_STRESS);
+    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g%-14g\n', SFAILRATIO_STRESS);
 end
 
 %% Print results of failure criteria analysis (strain-based)
-if (outputStrength{1.0} == true) && (noFailStrain == false)
+if (isStrengthOutput == true) && (noFailStrain == false)
     % Print table header
     fprintf(fid, '\nAssessment summary for strain-based failure criteria\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           MSTRN(V)      STATUS\n');
@@ -339,7 +361,7 @@ if (outputStrength{1.0} == true) && (noFailStrain == false)
 end
 
 %% Print parameter descriptor
-if ((outputStrength{1.0} == true) && (noFailStress == false)) || ((outputStrength{1.0} == true) && (noFailStrain == false))
+if ((isStrengthOutput == true) && (noFailStress == false)) || ((isStrengthOutput == true) && (noFailStrain == false))
     fprintf(fid, '\n(R): Strength reserve factor; (V): Criterion value\n');
 end
 
@@ -355,7 +377,7 @@ if (SFAILRATIO_STRESS(1.0) ~= -1.0) || (SFAILRATIO_STRAIN(1.0) ~= -1.0)
 end
 
 %% Print results of damage initiation criteria analysis (HASHIN)
-if (outputStrength{1.0} == true) && (noHashin == false)
+if (isStrengthOutput == true) && (noHashin == false)
     % Get maximum criterion values
     HASHIN_ALL = [MAX_HSNFTCRT_VAL, MAX_HSNFCCRT_VAL, MAX_HSNMTCRT_VAL, MAX_HSNMCCRT_VAL];
     HASHIN_ALL_MAX = max(HASHIN_ALL, [], 2.0);
@@ -404,7 +426,7 @@ if SFAILRATIO_HASHIN(1.0) ~= -1.0
 end
 
 %% Print results of damage initiation criteria analysis (LARC05)
-if (outputStrength{1.0} == true) && (noLaRC05 == false)
+if (isStrengthOutput == true) && (noLaRC05 == false)
     % Get maximum criterion values
     LARC05_ALL = [MAX_LARPFCRT_VAL, MAX_LARMFCRT_VAL, MAX_LARKFCRT_VAL, MAX_LARSFCRT_VAL, MAX_LARTFCRT_VAL];
     LARC05_ALL_MAX = max(LARC05_ALL, [], 2.0);
@@ -446,15 +468,56 @@ if SFAILRATIO_LARC05(1.0) ~= -1.0
     if any(SFAILRATIO_LARC05 == 1.0) == true
         fprintf(fid, '\nEVERY PLY IN THE LAYUP WILL BE DAMAGED BASED ON THE EVALUATED CRITERIA\n');
     elseif any(SFAILRATIO_LARC05 > 0.0) == true
-        
         fprintf(fid, '\nAT LEAST ONE PLY IN THE LAYUP WILL BE DAMAGED BASED ON THE EVALUATED CRITERIA\n');
     else
         fprintf(fid, '\nLAYUP WILL NOT BE DAMAGED BASED ON THE EVALUATED CRITERIA\n');
     end
 end
 
+%% Print results of damage initiation criterion analysis (UCRT)
+if (isStrengthOutput == true) && ((isa(outputStrength{1.0}, 'function_handle') == true) && (all(UCRT == -1.0) == false))
+    % Print table header
+    fprintf(fid, '\nAssessment summary for user-defined damage initiation criterion\nUser routine: @%s\nOutput location: <Worst section point>\n', char(outputStrength{1.0}));
+    fprintf(fid, 'PLY           UCRT          STATUS\n');
+
+    % Print ply-wise results
+    for i = 1.0:nPlies
+        if FAILED_PLY_UCRT(i) == true
+            % All section points in the current ply have failed
+            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_UCRT_VAL(i), 'FAILED');
+        elseif MAX_UCRT_VAL(i) >= 1.0
+            % At least one section point in the current ply have failed
+            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_UCRT_VAL(i), 'UNSAFE');
+        elseif MAX_UCRT_VAL(i) == -1.0
+            % There is no data for the current ply
+            fprintf(fid, '%-14.0fNO RESULTS\n', i);
+        else
+            % No section points in the current ply have failed
+            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_UCRT_VAL(i), 'SAFE');
+        end
+    end
+
+    % Print SFAILRATIO
+    %{
+        Note: The value of SFAILRATIO considers results over ALL section
+        points
+    %}
+    fprintf(fid, 'SFAILRATIO    %-14g\n', SFAILRATIO_UCRT);
+end
+
+% Print summary of assessment
+if SFAILRATIO_UCRT(1.0) ~= -1.0
+    if any(SFAILRATIO_UCRT == 1.0) == true
+        fprintf(fid, '\nEVERY PLY IN THE LAYUP WILL BE DAMAGED BASED ON THE EVALUATED CRITERION\n');
+    elseif any(SFAILRATIO_UCRT > 0.0) == true
+        fprintf(fid, '\nAT LEAST ONE PLY IN THE LAYUP WILL BE DAMAGED BASED ON THE EVALUATED CRITERION\n');
+    else
+        fprintf(fid, '\nLAYUP WILL NOT BE DAMAGED BASED ON THE EVALUATED CRITERION\n');
+    end
+end
+
 %% Print failure assessment summary
-if (outputStrength{1.0} == true) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
+if (isStrengthOutput == true) && (any(~[noFailStress, noFailStrain, noHashin]) == true)
     fprintf(fid, '\nNotes about failure/damage initiation assessment output:\n\t');
     fprintf(fid, '- The assessment is performed at every section point in the layup,\n\t  regardless of the setting of OUTPUT_PLY\n\t');
     fprintf(fid, '- The assessment criteria report the worst section point for each ply\n\t');
@@ -506,6 +569,8 @@ elseif isempty(BEST_SEQUENCE) == false
             criterionString = 'Maximum stress';
         case 'tsaih'
             criterionString = 'Tsai-Hill';
+        case 'hoffman'
+            criterionString = 'Hoffman';
         case 'tsaiw'
             criterionString = 'Tsai-Wu';
         case 'azzit'
@@ -516,18 +581,28 @@ elseif isempty(BEST_SEQUENCE) == false
             criterionString = 'Hashin (worst criterion)';
         case 'larc05'
             criterionString = 'LaRC05 (worst criterion)';
+        case 'ucrt'
+            criterionString = 'User-defined';
         otherwise
             % This condition should never be reached!
     end
 
     % Modify the criterion string (if applicable)
-    if (strcmpi(optiCriterion, 'tsaih') == true || strcmpi(optiCriterion, 'tsaiw') == true || strcmpi(optiCriterion, 'azzit') == true)
+    if (strcmpi(optiCriterion, 'tsaih') == true) || (strcmpi(optiCriterion, 'hoffman') == true) || (strcmpi(optiCriterion, 'tsaiw') == true) ||...
+            (strcmpi(optiCriterion, 'azzit') == true) || (strcmpi(optiCriterion, 'ucrt') == true)
         if OUTPUT_OPTIMISED{3.0} == 1.0
             % Criterion uses strength reserve factor
-            criterionString = [criterionString, ' (strength reserve factor)'];
+            criterionString = [criterionString, ' (strength reserve factor'];
         else
             % Criterion uses computed value
-            criterionString = [criterionString, ' (criterion value)'];
+            criterionString = [criterionString, ' (criterion value'];
+        end
+
+        % Append additional info in case criterion is UCRT
+        if strcmpi(OUTPUT_OPTIMISED{2.0}, 'ucrt') == true
+            criterionString = [criterionString, ' - requested)'];
+        else
+            criterionString = [criterionString, ')'];
         end
     end
     fprintf(fid, 'Criterion: %s', criterionString);
@@ -680,7 +755,10 @@ elseif isempty(BEST_SEQUENCE) == false
     fprintf(fid, '\n===========================================================================\n');
 elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true))
     % Print message about no optimisation output
-    if printTensor ~= -1.0
+    if (strcmpi(OUTPUT_OPTIMISED{2.0}, 'ucrt') == true) && (ucrtFail == true)
+        fprintf(fid, ['\nError: Stacking sequence optimisation results are unavailable because the\nuser-defined failure criterion failed upstream. Please select a different\nfail',...
+            'ure/damage initiation criterion.\n']);
+    elseif printTensor ~= -1.0
         fprintf(fid, '\nNote: Stacking sequence optimisation results are unavailable. The strength\ncalculation must first be enabled with OUTPUT_STRENGTH = {true, <param>}.\n');
     else
         fprintf(fid, '\nNote: Stacking sequence optimisation results are unavailable. A load matrix\ndefinition is required using NXX/NYY/NXY and MXX/MYY/MXY.\n');

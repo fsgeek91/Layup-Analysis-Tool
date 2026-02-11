@@ -3,8 +3,8 @@ function [axx, ayy, axy, bxx, byy, bxy] = internal_getThermoHydro(theta_points, 
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

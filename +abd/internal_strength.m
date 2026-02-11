@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -13,13 +13,28 @@ classdef internal_strength < handle
 
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR STRENGTH CALCULATION
-        function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C12, B12, E11,...
-                E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
-                main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT,...
-                YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, stress, nPlies, nPlies_points, SECTION_POINTS, parameter, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
-                HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT)
+        function [MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, XT, XC, YT, YC, S,...
+                C12, B12, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3,...
+                UCRT_MException]...
+                =...
+                main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, AXX, AYY, AXY, BXX, BYY, BXY, XET, XEC, YET,...
+                YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, TENSORS, nPlies, nPlies_points, SECTION_POINTS, fcnHandle,...
+                parameter, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT)
             % Initialise the output
-            S1 = [];    S2 = [];    S3 = [];
+            S1 = [];    S2 = [];    S3 = [];    UCRT_MException = [];
+
+            % Flag for user-defined failure criterion
+            userCrit = true;
+
+            % Get the stress components for criteria
+            stress = TENSORS.S_PLY_ALIGNED;
+
+            if userCrit == true
+                E11 = abd.internal_spreadProperties(E11, nPlies, SECTION_POINTS);
+                E22 = abd.internal_spreadProperties(E22, nPlies, SECTION_POINTS);
+                G12 = abd.internal_spreadProperties(G12, nPlies, SECTION_POINTS);
+                V12 = abd.internal_spreadProperties(V12, nPlies, SECTION_POINTS);
+            end
 
             % Spread material data over section points
             if noFailStress == false
@@ -71,24 +86,22 @@ classdef internal_strength < handle
                 PHI0 = abd.internal_spreadProperties(PHI0, nPlies, SECTION_POINTS);
 
                 % GET PRINCIPAL STRESS TERMS FOR LARC05
-                if noLaRC05 == false
-                    % Get the individual tensor components from S_PLY_ALIGNED
-                    S11 = stress(1.0, :);
-                    S22 = stress(2.0, :);
-                    S12 = stress(3.0, :);
+                % Get the individual tensor components from S_PLY_ALIGNED
+                S11 = stress(1.0, :);
+                S22 = stress(2.0, :);
+                S12 = stress(3.0, :);
 
-                    % % Use Eigenvalues
-                    % S = [S11(1), S12(1), 0; 0, S22(1), 0; 0, 0, 0];
-                    % I = eig(S);
-                    % S1 = max(I);
-                    % S2 = median(I);
-                    % S3 = min(I);
+                % % Use Eigenvalues
+                % S = [S11(1), S12(1), 0; 0, S22(1), 0; 0, 0, 0];
+                % I = eig(S);
+                % S1 = max(I);
+                % S2 = median(I);
+                % S3 = min(I);
 
-                    % Get the two in-plane principal stress components
-                    S1 = 0.5.*(S11 + S22) + sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
-                    S2 = 0.5.*(S11 + S22) - sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
-                    S3 = zeros(1.0, nPlies_points);
-                end
+                % Get the two in-plane principal stress components
+                S1 = 0.5.*(S11 + S22) + sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                S2 = 0.5.*(S11 + S22) - sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                S3 = zeros(1.0, nPlies_points);
             end
 
             if noFailStress == false
@@ -101,6 +114,11 @@ classdef internal_strength < handle
                 TSAIH =...
                     ...
                     abd.internal_strength.getTsaih(parameter, stress, XT, XC, YT, YC, S);
+
+                % Failure calculation: HOFFMAN
+                HOFFMAN =...
+                    ...
+                    abd.internal_strength.getHoffman(parameter, stress, XT, XC, YT, YC, S, zeros(1.0, nPlies_points), linspace(-1.0, -1.0, nPlies_points));
 
                 % Failure calculation: TSAIW
                 TSAIW =...
@@ -133,6 +151,89 @@ classdef internal_strength < handle
                     ...
                     abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS);
             end
+
+            % Failure calculation: UCRT
+            if isa(fcnHandle, 'function_handle') == true
+                INFO = struct('PLY_COUNT', nPlies, 'SECTION_POINTS', SECTION_POINTS, 'TOTAL_POINTS', nPlies_points, 'FAILURE_PARAMETER', parameter);
+                MATERIAL_MECH = struct('E11', E11, 'E22', E22, 'G12', G12, 'V12', V12, 'AXX', AXX, 'AYY', AYY, 'AXY', AXY, 'BXX', BXX, 'BYY', BYY, 'BXY', BXY);
+                MATERIAL_FAIL = struct('STRESS', struct('XT', XT, 'XC', XC, 'YT', YT, 'YC', YC, 'S', S, 'C12', C12, 'B12', B12),...
+                    'STRAIN', struct('XET', XET, 'XEC', XEC, 'YET', YET, 'YEC', YEC, 'SE', SE),...
+                    'HASHIN', struct('ALPHA', ALPHA, 'XHT', XHT, 'XHC', XHC, 'YHT', YHT, 'YHC', YHC, 'SHX', SHX, 'SHY', SHY),...
+                    'LARC05', struct('XLT', XLT, 'XLC', XLC, 'YLT', YLT, 'YLC', YLC, 'SLX', SLX, 'SLY', SLY, 'GL12', GL12, 'NL', NL, 'NT', NT, 'A0', A0, 'PHI0', PHI0)...
+                    );
+
+                % Save the initial state of UCRT
+                UCRT_initial = UCRT;
+
+                % Try to run the user-defined failure criterion
+                try
+                    UCRT = fcnHandle(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS);
+                catch UCRT_MException
+                    %{
+                        Do not evaluate the user-defined failure criterion
+                        and save the exception object to the workspace
+                    %}
+                    try
+                        fprintf('[ERROR] Exception encountered on line %.0f in user routine ''%s.m''\n', UCRT_MException.stack(1.0).line, char(fcnHandle));
+                        fid = fopen(UCRT_MException.stack(1.0).file, 'r');
+
+                        for k = 1:UCRT_MException.stack(1.0).line
+                            line = fgetl(fid);
+                            if ischar(line) == false
+                                % Do nothing
+                                break
+                            end
+                        end
+
+                        fclose(fid);
+                        fprintf('        Line image: %s\n', line);
+                    catch
+                        % Do nothing
+                    end
+
+                    fprintf('        MException identifier: %s\n', UCRT_MException.identifier);
+                    fprintf('        MException message: %s\n', UCRT_MException.message);
+                    fprintf('[NOTICE] The complete MATLAB Exception object will be saved in the specified output location\n');
+                    fprintf('[ERROR] The user-defined failure criterion has not been evaluated\n');
+
+                    % Reset the values of UCRT
+                    UCRT = UCRT_initial;
+                end
+
+                % Check for negative values
+                if all(UCRT == -1.0) == true
+                    % Validity check
+                    fprintf('[ERROR] In user routine ''@%s'', UCRT values are all unset (-1). The user-defined failure criterion will be excluded from the output\n', char(fcnHandle));
+
+                    % Reset the values of UCRT
+                    UCRT = UCRT_initial;
+                elseif any(UCRT < 0.0) == true
+                    % Negative value check
+                    fprintf(['[WARNING] In user routine ''@%s'', some UCRT values are negative. The expected range of output is {UCRT >= 0}. Please check the routine for programmi',...
+                        'ng errors\n'], char(fcnHandle));
+                end
+
+                if isvector(UCRT) == false
+                    % Dimension check
+                    fprintf('[ERROR] In user routine ''@%s'', UCRT must be one-dimensional. The user-defined failure criterion will be excludced from the output\n', char(fcnHandle));
+
+                    % Reset the values of UCRT
+                    UCRT = UCRT_initial;
+                end
+
+                if numel(UCRT) ~= nPlies_points
+                    % NUMEL check
+                    fprintf('[ERROR] In user routine ''@%s'', UCRT contains %d elements (expected %d). The user-defined failure criterion will be excludced from the output\n',...
+                        char(fcnHandle), numel(UCRT), nPlies_points);
+                    % Found %.0f inputs (expected %.0f)
+
+                    % Reset the values of UCRT
+                    UCRT = UCRT_initial;
+                end
+
+                % Ensure UCRT is 1xTOTAL_POINTS
+                UCRT = UCRT(:).';
+            end
         end
 
         %% GET DATA FROM OUTPUT_STRENGTH
@@ -153,7 +254,7 @@ classdef internal_strength < handle
 
             if length(OUTPUT_STRENGTH) ~= 2.0
                 % Incorrect number of arguments
-                fprintf('[ERROR] The setting OUTPUT_STRENGTH requires two\narguments: {''<flag>'', ''<parameter>''}\n');
+                fprintf('[ERROR] The setting OUTPUT_STRENGTH requires two\narguments:\n{{[false | true] | [@<ucrt> | ''<file-name>'']}, ''<parameter>''}\n');
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -166,13 +267,75 @@ classdef internal_strength < handle
             % Check validity of the argument
             if isempty(argument) == true
                 output{1.0} = false;
-            elseif (islogical(argument) == false) && (argument ~= 0.0) && (argument ~= 1.0)
-                % Incorrect argument type
-                fprintf('[ERROR] OUTPUT_STRENGTH(1) must be a logical:\n{false | true}\n');
+            elseif (ischar(argument) == true) || (isa(argument, 'function_handle') == true)
+                %{
+                    The user has specified a string or a function handle.
+                    If it is a file, convert it to a function handle;
+                    otherwise, assume it's a function handle
+                %}
+
+                % Check if argument is a function handle
+                if isa(argument, 'function_handle') == false
+                    % Get function name from file path
+                    [path, name, ext] = fileparts(which(argument));
+
+                    if isempty(name) == true
+                        if (isempty(path) == true) && (isempty(ext) == true) && (isempty(argument) == false) && (strcmp(argument(1.0), '@') == true)
+                            %{
+                                The user may have mistakenly specified a
+                                function handle as a string. If so, try to
+                                convert back to a valid handle
+                            %}
+                            argument = str2func(argument);
+                        else
+                            % The user routine could not be found
+                            fprintf(['[ERROR] OUTPUT_STRENGTH(1) was specified as a string, but it does not match any file on the MATLAB path. The value must be a logical or a valid f',...
+                                'unction handle or file name:\n{[false | true] | [@<ucrt> | ''<file-name>'']}\n']);
+
+                            % Reset the error flag and RETURN
+                            error = true;
+                            return
+                        end
+                    else
+                        % Convert to function handle
+                        argument = str2func(name);
+                    end
+                end
+
+                % Make sure function handle points to valid M-file
+                fcnInfo = functions(argument);
+
+                % Check for function file existence
+                if (isempty(fcnInfo.file) == true) || (exist(fcnInfo.file, 'file') ~= 2.0)
+                    % Incorrect argument type
+                    fprintf('[ERROR] OUTPUT_STRENGTH(1) must be a valid function handle or file name:\n{@<ucrt> | ''<file-name>''}\n');
 
                     % Reset the error flag and RETURN
                     error = true;
                     return
+                end
+
+                if (nargin(argument) ~= 5.0) || (nargout(argument) ~= 1.0)
+                    % Incorrect number of input/output arguments
+                    fprintf(['[ERROR] In user routine ''@%s'', the number of input/output arguments is incorrect: Found %.0f inputs (expected %.0f); Found %.0f outputs (expected %',...
+                        '.0f)\n        The user-defined failure criterion uses the following function interface:\n        \tfunction [UCRT] = <function_handle>(INFO, UCRT, MATERIA',...
+                        'L_MECH, MATERIAL_FAIL, TENSORS)\n\n        Note: In case of doubt, use the command >> abd.internal_createUcrt(''<file-name>'') to create a template user r',...
+                        'outine file\n'], char(argument), nargin(argument), 5.0, nargout(argument), 1.0);
+
+                    % Reset the error flag and RETURN
+                    error = true;
+                    return
+                end
+
+                % Everything is OK
+                output{1.0} = argument;
+            elseif (islogical(argument) == false) && (argument ~= 0.0) && (argument ~= 1.0)
+                % Incorrect argument type
+                fprintf('[ERROR] OUTPUT_STRENGTH(1) must be a logical:\n{false | true}\n');
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
             else
                 % Everything is OK
                 output{1.0} = argument;
@@ -193,11 +356,11 @@ classdef internal_strength < handle
         end
 
         %% GET COLOUR MAP FOR FAILED SETION POINT VISUALISATION
-        function [SP_COLOUR_BUFFER] = getFailedSpBuffer(MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
-                LARTFCRT, SP_COLOUR_BUFFER, nPlies_points)
+        function [SP_COLOUR_BUFFER] = getFailedSpBuffer(MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
+                LARTFCRT, UCRT, SP_COLOUR_BUFFER, nPlies_points)
             % Collect the results of the strength analysis into a cell array
-            STRENGTH_RESULTS = {MSTRS >= 1.0, TSAIH >= 1.0, TSAIW >= 1.0, AZZIT >= 1.0, MSTRN >= 1.0, HSNFTCRT >= 1.0, HSNFCCRT >= 1.0, HSNMTCRT >= 1.0, HSNMCCRT >= 1.0,...
-                LARPFCRT >= 1.0, LARMFCRT >= 1.0, LARKFCRT >= 1.0, LARSFCRT >= 1.0, LARTFCRT >= 1.0};
+            STRENGTH_RESULTS = {MSTRS >= 1.0, TSAIH >= 1.0, HOFFMAN >= 1.0, TSAIW >= 1.0, AZZIT >= 1.0, MSTRN >= 1.0, HSNFTCRT >= 1.0, HSNFCCRT >= 1.0, HSNMTCRT >= 1.0,...
+                HSNMCCRT >= 1.0, LARPFCRT >= 1.0, LARMFCRT >= 1.0, LARKFCRT >= 1.0, LARSFCRT >= 1.0, LARTFCRT >= 1.0, UCRT >= 1.0};
 
             %{
                 Initialize failed section points buffer with logical FALSE
@@ -226,14 +389,15 @@ classdef internal_strength < handle
 
             % Assign colors based on BUFFER (Red -> true; Green -> false)
             SP_COLOUR_BUFFER(FAILED_SP_BUFFER, :) = repmat([1.0, 0.0, 0.0], sum(FAILED_SP_BUFFER), 1.0);
-            SP_COLOUR_BUFFER(~FAILED_SP_BUFFER, :) = repmat([0.0, 1.0, 0.0], sum(~FAILED_SP_BUFFER), 1.0);
+            SP_COLOUR_BUFFER(FAILED_SP_BUFFER == false, :) = repmat([0.0, 1.0, 0.0], sum(FAILED_SP_BUFFER == false), 1.0);
         end
 
         %% INITIALISE FAILURE CRITERIA BUFFERS
-        function [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = init(nPlies_points)
+        function [MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT] = init(nPlies_points)
             % Initialise output
             MSTRS = linspace(-1.0, -1.0, nPlies_points);
             TSAIH = MSTRS;
+            HOFFMAN = MSTRS;
             TSAIW = MSTRS;
             AZZIT = MSTRS;
             MSTRN = MSTRS;
@@ -246,6 +410,7 @@ classdef internal_strength < handle
             LARKFCRT = MSTRS;
             LARSFCRT = MSTRS;
             LARTFCRT = MSTRS;
+            UCRT = MSTRS;
         end
     end
     methods(Static = true, Access = public)
@@ -304,8 +469,53 @@ classdef internal_strength < handle
             end
         end
 
+        %% FAILURE CRITERION: HOFFMAN
+        function [HOFFMAN] = getHoffman(parameter, stress, XT, XC, YT, YC, S, S3, C)
+            %{
+                The actual HOFFMAN criterion considerrs the action of both
+                the in-plane and out-of-plane shear stresses. Since Layup
+                Analysis Tool only considers plane stress, the following
+                simplifying assumptions are made:
+                   [I]: ZT = XT; ZC = XC
+                   [II]: SHR12 = SHR13 = SHR23 = S
+                   [III]: S3 = S23 = S13 = 0
+            %}
+
+            ZT = XT;    ZC = XC; % Simplifying assumption [I]
+            C1 = 0.5.*((1.0./(XC.*XT)) - (1.0./(YC.*YT)) - (1.0./(ZC.*ZT)));
+            C2 = 0.5.*(-(1.0./(XC.*XT)) + (1.0./(YC.*YT)) - (1.0./(ZC.*ZT)));
+            C3 = 0.5.*(-(1.0./(XC.*XT)) - (1.0./(YC.*YT)) + (1.0./(ZC.*ZT)));
+            C4 = (1.0./XT) + (1.0./XC);
+            C5 = (1.0./YT) + (1.0./YC);
+            C6 = (1.0./ZT) + (1.0./ZC);
+
+            SHR23 = S;  SHR13 = S;  SHR12 = S; % Simplifying assumption [II]
+            C7 = 1.0./SHR23.^2.0;
+            C8 = 1.0./SHR13.^2.0;
+            C9 = 1.0./SHR12.^2.0;
+
+            % Get stresses for each section point
+            S1 = stress(1.0, :);
+            S2 = stress(2.0, :);
+
+            T12 = stress(3.0, :);
+            S23 = S3;  S13 = S3;  S12 = T12; % Simplifying assumption [III]
+
+            A = C1.*(S1 - S3).^2.0 + C2.*(S3 - S1).^2.0 + C3.*(S1 - S2).^2.0 + C7.*S23.^2.0 + C8.*S13.^2.0 + C9.*S12.^2.0;
+            B = C4.*S1 + C5.*S2 + C6.*S3;
+
+            % Compute the parameter based on user setting
+            if parameter == 1.0
+                % Strength reserve factor (failure index)
+                HOFFMAN = abs(1.0./min([(-B + sqrt(B.^2.0 - (4.0.*A.*C)))./(2.0.*A); (-B - sqrt(B.^2.0 - (4.0.*A.*C)))./(2.0.*A)], [], 1.0));
+            else
+                % Criterion value
+                HOFFMAN = abs(A + B);
+            end
+        end
+
         %% FAILURE CRITERION: TSAI-WU
-        function [TSAIW] = getTsaiw(parameter, stress,XT, XC, YT, YC, S, C12, B12)
+        function [TSAIW] = getTsaiw(parameter, stress, XT, XC, YT, YC, S, C12, B12)
             % Get stresses for each section point
             S1 = stress(1.0, :);
             S2 = stress(2.0, :);

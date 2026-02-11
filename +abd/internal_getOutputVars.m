@@ -1,13 +1,13 @@
 function [S] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_hydro_xy, E_hydro_aligned, S_ply_xy, S_ply_aligned, EXT, EYT,...
-    GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT,...
-    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH, outputLocation, settings, noFailStress, noFailStrain, noHashin,...
-    noLaRC05)
+    GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT,...
+    HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, isStrengthOutput, outputLocation, settings, noFailStress, noFailStrain,...
+    noHashin, noLaRC05)
 %   Collect variables for output.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 %
 %#ok<*NASGU>
 
@@ -52,11 +52,11 @@ else
 end
 
 %% Failure/damage initiation
-if OUTPUT_STRENGTH == true
+if isStrengthOutput == true
     % Add fail stress output to structure
     if noFailStress == false
-        CFAILURE.STRESS = abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [TSAIW, SFAILRATIO_STRESS(3.0)];...
-        [AZZIT, SFAILRATIO_STRESS(4.0)]], 'cfailure_stress');
+        CFAILURE.STRESS = abd.internal_getTableFromArray([[MSTRS, SFAILRATIO_STRESS(1.0)]; [TSAIH, SFAILRATIO_STRESS(2.0)]; [HOFFMAN, SFAILRATIO_STRESS(3.0)];...
+            [TSAIW, SFAILRATIO_STRESS(4.0)]; [AZZIT, SFAILRATIO_STRESS(5.0)]], 'cfailure_stress');
     end
 
     % Add fail strain output to structure

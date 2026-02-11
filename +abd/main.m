@@ -11,6 +11,13 @@ function [S] = main(settings)
 %   Detailed output is written to a MATLAB binary file:
 %     <output-folder>\<job-name>\output.mat
 %
+%   The input structure is written to a MATLAB binary file:
+%     <output-folder>\<job-name>\settings.mat
+%
+%   Note: This file contains the settings of the previously completed
+%   analysis. It can be resubmitted directly using the following syntax:
+%     >> [S] = abd.main('settings.mat');
+%
 %   Results plots are written to MATLAB figure files:
 %     <output-folder>\<job-name>\figure\<figure-name>.fig
 %
@@ -23,8 +30,11 @@ function [S] = main(settings)
 %   - X-Y stresses and strains based on specified forces and moments
 %   - Ply stresses and strains based on specified forces and moments
 %   - Equivalent extensional and bending moduli (symmetric layups only)
-%   - Stress and strain-based failure criteria
+%   - Stress and strain-based failure criteria:
+%     - Maximum Stress, Tsai-Hill, 2D Hoffman, Tsai-Wu, Azzi-Tsai-Hill,
+%       Maximum Strain
 %   - Stress-based damage initiation criteria
+%     - Hashin's Theory, LaRC05
 %   - Stacking sequence optimisation
 %
 %   Notes:
@@ -33,6 +43,12 @@ function [S] = main(settings)
 %     (z-direction)
 %   - Linear, orthotropic elasticity is assumed
 %   - n: Number of plies defined in the layup
+%   - The included 2D Hoffman failure theory criterion is a two-dimensional
+%     version of the triaxial Hoffman criterion. The following simplifying
+%     assumptions are made:
+%       I: ZT = XT; ZC = XC
+%       II: SHR12 = SHR13 = SHR23 = S
+%       III: S3 = S23 = S13 = 0
 %
 %   Units:
 %   Force [N]
@@ -284,12 +300,21 @@ function [S] = main(settings)
 %
 %   OUTPUT_STRENGTH. A 1x2 cell array specifying settings for the strength
 %   assessment:
-%     {[true | false], '<parameter>'}
+%     {{[false | true] | [@<ucrt>, '<file-name>']}, '<parameter>'}
 %
 %   OUTPUT_STRENGTH(1) is a flag to enable or disable the strength
 %   assessment:
 %     true: Enable strength assessment
 %     false: Disable strength assessment
+%     @<ucrt>: Function handle of user routine containing user-defined
+%     failure criterion
+%     '<file-name>': User routine file name containing user-defined failure
+%     criterion
+%
+%   Note: When the strength assessment is a user-defined failure criterion,
+%   the user criterion is evaluated in addition to all previously evaluated
+%   critera. Run the following command to generate a template user routine
+%   file: >> abd.createUcrt('<criterion-name>').
 %
 %   OUTPUT_STRENGTH(2) is the failure assessment parameter:
 %     RESERVE: Strength reserve factor, R. For stress-based and
@@ -303,10 +328,10 @@ function [S] = main(settings)
 %   available material data given by FAIL_STRESS, FAIL_STRAIN, HASHIN and
 %   LARC05.
 %
-%   Note: The Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria can be
-%   expressed in terms of the strength reserve factor or the criterion
-%   value; for all other failure criteria, the criterion value is identical
-%   to the strength reserve factor.
+%   Note: The Tsai-Hill, 2D Hoffman, Tsai-Wu and Azzi-Tsai-Hill failure
+%   criteria can be expressed in terms of the strength reserve factor or
+%   the criterion value; for all other failure criteria, the criterion
+%   value is identical to the strength reserve factor.
 %
 %   Note: For Hashin's theory and LaRC05, R is not evaluated; output for
 %   these criteria is quoted as the damage initiation criterion index.
@@ -340,8 +365,9 @@ function [S] = main(settings)
 %
 %   OUTPUT_OPTIMISED(1) is the failure criterion for the optimisation:
 %     <criterion>: Mstrs (Maximum stress); Tsaih (Tsai-Hill);
-%     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-%     Hashin; LaRC05
+%     Hoffman; Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill);
+%     Mstrn (Maximum strain); Hashin; LaRC05; Ucrt (User-defined failure
+%     criterion)
 %
 %   OUTPUT_OPTIMISED(2) is the failure assessment parameter:
 %     <parameter>: Reserve (strength reserve factor); Value (criterion
@@ -371,7 +397,7 @@ function [S] = main(settings)
 %     the stacking sequence combinations between workers. It scales better
 %     than the MIXED-RADIX method for large problems, but requires a chunk
 %     size to be specified. This method provides no benefit over the
-%     MIXED-RADIX method unless a parallel pool is connected.
+%     MIXED-RADIX method if no parallel pool is connected.
 %
 %   OPTIMISER_SETTINGS(2) is the chunk size when the CHUNKS method is
 %   specified:
@@ -465,6 +491,7 @@ function [S] = main(settings)
 %   value of SFAILRATIO for each failure measure component:
 %       MSTRS: Maximum stress theory failure measure
 %       TSAIH: Tsai-Hill theory failure measure (reserve/value)
+%       HOFFMAN: 2D Hoffman theory failure measure (reserve/value)
 %       TSAIW: Tsai-Wu theory failure measure (reserve/value)
 %       AZZIT: Azzi-Tsai-Hill theory failure measure (reserve/value)
 %
@@ -544,8 +571,8 @@ function [S] = main(settings)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -608,7 +635,10 @@ if error == true
 end
 
 %% GET MATERIAL DATA (STRENGTH)
-if OUTPUT_STRENGTH{1.0} == true
+% Flag indicating if strength output is requested
+isStrengthOutput = (isa(OUTPUT_STRENGTH{1.0}, 'function_handle') == true) || ((islogical(OUTPUT_STRENGTH{1.0}) == true) && (OUTPUT_STRENGTH{1.0} == true));
+
+if isStrengthOutput == true
     % Get fail stress properties
     [error, noFailStress, XT, XC, YT, YC, S, C, B] =...
         ...
@@ -736,7 +766,7 @@ end
 if isempty(OUTPUT_OPTIMISED{1.0}) == false
     [error, OUTPUT_OPTIMISED] =...
         ...
-        abd.internal_optimise.getSettings(OUTPUT_OPTIMISED, noFailStress, noFailStrain, noHashin, noLaRC05, OUTPUT_STRENGTH{1.0});
+        abd.internal_optimise.getSettings(OUTPUT_OPTIMISED, noFailStress, noFailStrain, noHashin, noLaRC05, isStrengthOutput, isa(OUTPUT_STRENGTH{1.0}, 'function_handle'));
 
     % An error occurred, so RETURN
     if error == true
@@ -809,32 +839,38 @@ SP_COLOUR_BUFFER = repmat([0.0, 0.0, 0.0], [nPlies_points, 1.0]);
 CHUNK_SIZE = [];
 N_CHUNKS = [];
 EXECUTION_MODE = [];
+UCRT_MException = [];
 
 % Initialise failure criteria component buffers
-[MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = abd.internal_strength.init(nPlies_points);
+[MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT] = abd.internal_strength.init(nPlies_points);
 
-if (OUTPUT_STRENGTH{1.0} == true) && (printTensor == 1.0)
-    [MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET,...
-        XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3] =...
+if (isStrengthOutput == true) && (printTensor == 1.0)
+    % Get the tensor data into a structure
+    TENSORS = struct('E_MIDSPAN', E_midspan, 'E_PLY_XY', E_ply_xy, 'S_PLY_XY', S_ply_xy, 'E_PLY_ALIGNED', E_ply_aligned, 'S_PLY_ALIGNED', S_ply_aligned, 'E_THERM_XY', E_therm_xy,...
+        'E_HYDRO_XY', E_hydro_xy, 'E_THERM_ALIGNED', E_therm_aligned, 'E_HYDRO_ALIGNED', E_hydro_aligned);
+
+    [MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, XT, XC, YT, YC, S, C, B, E11, E22,...
+        G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S1, S2, S3, UCRT_MException] =...
         ...
-        abd.internal_strength.main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, XET, XEC, YET, YEC, SE, ALPHA, XHT,...
-        XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, S_ply_aligned, nPlies, nPlies_points, SECTION_POINTS, OUTPUT_STRENGTH{2.0}, MSTRS, TSAIH,...
-        TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT);
+        abd.internal_strength.main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, axx, ayy, axy, bxx, byy, bxy, XET,...
+        XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, TENSORS, nPlies, nPlies_points, SECTION_POINTS,...
+        OUTPUT_STRENGTH{1.0}, OUTPUT_STRENGTH{2.0}, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
+        LARTFCRT, UCRT);
 
-    if OUTPUT_OPTIMISED{1.0} == true
+    if (isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true) && (isempty(UCRT_MException) == true)
         %% FIND THE OPTIMUM STACKING SEQUENCE
         [BEST_SEQUENCE, CRITERION_BUFFER, ~, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
-            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OPTIMISER_SETTINGS);
+            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS);
     else
         CRITERION_BUFFER = [];
     end
 
     % Set failed section points colour buffer (for plotting)
-    SP_COLOUR_BUFFER = abd.internal_strength.getFailedSpBuffer(MSTRS, TSAIH, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
-        LARTFCRT, SP_COLOUR_BUFFER, nPlies_points);
+    SP_COLOUR_BUFFER = abd.internal_strength.getFailedSpBuffer(MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT,...
+        LARSFCRT, LARTFCRT, UCRT, SP_COLOUR_BUFFER, nPlies_points);
 else
     % Initialise values to default
     CRITERION_BUFFER = [];
@@ -889,15 +925,16 @@ end
 %% WRITE RESULTS TO A TEXT FILE
 [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05] =...
     abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
-    E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, TSAIW, AZZIT, MSTRN,...
-    HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, OUTPUT_PLY_POINTS,...
-    plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy,...
-    bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, jobName, jobDescription);
+    E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT,...
+    MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS,...
+    OUTPUT_PLY_POINTS, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx,...
+    ayy, axy, bxx, byy, bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, jobName, jobDescription, isStrengthOutput, UCRT_MException);
 
 %% COLLECT OUTPUT
 [S] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_hydro_xy, E_hydro_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT,...
-    NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT, HSNMCCRT,...
-    LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, OUTPUT_STRENGTH{1.0}, outputLocation, settings, noFailStress, noFailStrain, noHashin, noLaRC05);
+    NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT,...
+    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, isStrengthOutput, outputLocation, settings, noFailStress, noFailStrain,...
+    noHashin, noLaRC05);
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));

@@ -17,8 +17,8 @@ function [] = validate_joyce(varargin)
 %
 %   See also abd.main.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 
 %__________________________________________________________________________
 %% 1: JOB
@@ -209,13 +209,19 @@ OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
 %{
     First argument (strength assessment):
     status: false (do not evaluate); true (evaluate based on available
-    material data)
+    material data); @<ucrt> (function handle of user routine containing 
+    user-defined failure criterion)
+    
+    Note: When the strength assessment is a user-defined failure criterion,
+    the user criterion is evaluated in addition to all previously evaluated
+    critera. Run the following command to generate a template user routine
+    file: >> abd.createUcrt('<criterion-name>').
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)
 
     Note: The setting of the failure parameter only applies to the
-    Tsai-Hill, Tsai-Wu and Azzi-Tsai-Hill failure criteria.
+    Tsai-Hill, 2D Hoffman, Tsai-Wu and Azzi-Tsai-Hill failure criteria.
 %}
 OUTPUT_STRENGTH = {false, 'RESERVE'};
 
@@ -227,9 +233,9 @@ OUTPUT_STRENGTH = {false, 'RESERVE'};
     strength evaluation using OUTPUT_STRENGTH = {true, <param>}.
 
     First argument (failure/damage initiation criterion):
-    '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill);
+    '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill); Hoffman;
     Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-    Hashin; LaRC05
+    Hashin; LaRC05; Ucrt (User-defined failure criterion)
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)

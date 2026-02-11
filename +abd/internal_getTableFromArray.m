@@ -3,8 +3,8 @@ function [T] = internal_getTableFromArray(VAR, TYPE)
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -44,7 +44,7 @@ switch lower(TYPE)
         rowNames = {'MODULUS'};
         varNames = ["E_X_B", "E_Y_B", "G_XY_B", "NU_XY_B", "NU_YX_B"];
     case 'cfailure_stress'
-        rowNames = {'MSTRS', 'TSAIH', 'TSAIW', 'AZZIT'};
+        rowNames = {'MSTRS', 'TSAIH', 'HOFFMAN', 'TSAIW', 'AZZIT'};
         varNames = [strcat("SP_", string(1.0:width(VAR) - 1.0)), "SFAILRATIO"];
     case 'cfailure_strain'
         rowNames = {'MSTRN'};

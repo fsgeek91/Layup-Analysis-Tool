@@ -3,8 +3,8 @@ function [error, noStrength, varargout] = internal_getMaterial(data, nPlies, sym
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 4.2.3 Copyright Louis Vallance 2025
-%   Last modified 23-Jun-2025 14:28:39 UTC
+%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
+%   Last modified 11-Feb-2026 08:06:52 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -193,29 +193,29 @@ switch mode
             % Validity check
             switch lower(tag)
                 case 'fail_stress'
-                    if any(currentMaterial(1.0:5.0) <= 0.0)
+                    if (length(currentMaterial) > 4.0) && (any(currentMaterial(1.0:5.0) <= 0.0) == true)
                         fprintf('[ERROR] In %s, strength properties must be positive\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
-                    elseif (currentMaterial(6.0) < -1.0) || (currentMaterial(6.0) > 1.0)
+                    elseif (length(currentMaterial) > 5.0) && ((currentMaterial(6.0) < -1.0) || (currentMaterial(6.0) > 1.0))
                         fprintf('[ERROR] In %s, stress coupling term must be in the range {-1 <= C <= 1}\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
-                    elseif currentMaterial(7.0) < 0.0
+                    elseif (length(currentMaterial) > 6.0) && (currentMaterial(7.0) < 0.0)
                         fprintf('[ERROR] In %s, biaxiality ratio (B) cannot be negative\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
                     end
                 case 'hashin'
-                    if any(currentMaterial(2.0:7.0) <= 0.0)
+                    if (length(currentMaterial) > 6.0) && (any(currentMaterial(2.0:7.0) <= 0.0) == true)
                         fprintf('[ERROR] In %s, strength properties must be positive\n', tag);
 
                         % Reset the error flag and RETURN
                         error = true;
-                    elseif (currentMaterial(1.0) < 0.0) || (currentMaterial(1.0) > 1.0)
+                    elseif (isempty(currentMaterial) == false) && ((currentMaterial(1.0) < 0.0) || (currentMaterial(1.0) > 1.0))
                         fprintf('[ERROR] In %s, coupling term must be in the range {0 <= ALPHA <= 1}\n', tag);
 
                         % Reset the error flag and RETURN
@@ -300,22 +300,23 @@ switch mode
             end
 
             % Validity check
-            if (any(currentMaterial([1.0, 2.0, 3.0, 5.0, 7.0]) <= 0.0)) || (any(all([currentMaterial([4.0, 6.0]) <= 0.0; currentMaterial([4.0, 6.0]) ~= -1.0])) == true)
+            if ((length(currentMaterial) > 6.0) && (any(currentMaterial([1.0, 2.0, 3.0, 5.0, 7.0]) <= 0.0))) ||...
+                    ((length(currentMaterial) > 5.0) && (any(all([currentMaterial([4.0, 6.0]) <= 0.0; currentMaterial([4.0, 6.0]) ~= -1.0])) == true))
                 fprintf('[ERROR] In %s, strength properties must be positive\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
-            elseif any(all([any([(currentMaterial(8.0:9.0) < 0.0); (currentMaterial(8.0:9.0) > 1.0)]); currentMaterial(8.0:9.0) ~= -1.0])) == true
+            elseif (length(currentMaterial) > 8.0) && (any(all([any([(currentMaterial(8.0:9.0) < 0.0); (currentMaterial(8.0:9.0) > 1.0)]); currentMaterial(8.0:9.0) ~= -1.0])) == true)
                 fprintf('[ERROR] In %s, longitudinal/transverse shear friction coefficient\nmust be in the range {0 <= NL/T <= 1}\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
-            elseif (currentMaterial(10.0) < 0.0 || currentMaterial(10.0) > 180.0) && (currentMaterial(10.0) ~= -1.0)
+            elseif (length(currentMaterial) > 9.0) && ((currentMaterial(10.0) < 0.0 || currentMaterial(10.0) > 180.0) && (currentMaterial(10.0) ~= -1.0))
                 fprintf('[ERROR] In %s, fracture plane angle for pure compression must be in\nthe range {0 <= A0 <= 180}\n', tag);
 
                 % Reset the error flag and RETURN
                 error = true;
-            elseif (currentMaterial(11.0) <= 0.0) && (currentMaterial(11.0) ~= -1.0)
+            elseif (length(currentMaterial) > 10.0) && ((currentMaterial(11.0) <= 0.0) && (currentMaterial(11.0) ~= -1.0))
                 fprintf('[ERROR] In %s, misalignment angle at failure for pure compression\n(PHI0) must be positive\n', tag);
 
                 % Reset the error flag and RETURN
