@@ -351,7 +351,7 @@ if (isStrengthOutput == true) && (noFailStress == false)
 
     % Print table header
     fprintf(fid, '\nAssessment summary for stress-based failure criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           MSTRS(V)      (SP)  TSAIH%s      (SP)  HOFFMAN%s    (SP)  TSAIW%s      (SP)  AZZIT%s      (SP)  (WORST)       STATUS\n', parameter, parameter,...
+    fprintf(fid, 'PLY           MSTRS(V)      @SP   TSAIH%s      @SP   HOFFMAN%s    @SP   TSAIW%s      @SP   AZZIT%s      @SP   (WORST)       STATUS\n', parameter, parameter,...
         parameter, parameter);
 
     % Print ply-wise results
@@ -386,7 +386,7 @@ end
 if (isStrengthOutput == true) && (noFailStrain == false)
     % Print table header
     fprintf(fid, '\nAssessment summary for strain-based failure criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           MSTRN(V)      (SP)  STATUS\n');
+    fprintf(fid, 'PLY           MSTRN(V)      @SP   STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
@@ -437,7 +437,7 @@ if (isStrengthOutput == true) && (noHashin == false)
 
     % Print table header
     fprintf(fid, '\nAssessment summary for Hashin''s damage initiation criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           HSNFTCRT      (SP)  HSNFCCRT      (SP)  HSNMTCRT      (SP)  HSNMCCRT      (SP)  (WORST)       STATUS\n');
+    fprintf(fid, 'PLY           HSNFTCRT      @SP   HSNFCCRT      @SP   HSNMTCRT      @SP   HSNMCCRT      @SP   (WORST)       STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
@@ -486,7 +486,7 @@ if (isStrengthOutput == true) && (noLaRC05 == false)
 
     % Print table header
     fprintf(fid, '\nAssessment summary for LaRC05 damage initiation criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           LARPFCRT      (SP)  LARMFCRT      (SP)  LARKFCRT      (SP)  LARSFCRT      (SP)  LARTFCRT      (SP)  (WORST)       STATUS\n');
+    fprintf(fid, 'PLY           LARPFCRT      @SP   LARMFCRT      @SP   LARKFCRT      @SP   LARSFCRT      @SP   LARTFCRT      @SP   (WORST)       STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
@@ -533,7 +533,7 @@ end
 if (isStrengthOutput == true) && ((isa(outputStrength{1.0}, 'function_handle') == true) && (all(UCRT == -1.0) == false))
     % Print table header
     fprintf(fid, '\nAssessment summary for user-defined damage initiation criterion\nUser routine: @%s\nOutput location: <Worst section point>\n', char(outputStrength{1.0}));
-    fprintf(fid, 'PLY           UCRT          (SP)  STATUS\n');
+    fprintf(fid, 'PLY           UCRT          @SP   STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
