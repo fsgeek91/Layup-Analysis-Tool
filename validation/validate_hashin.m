@@ -1,6 +1,5 @@
-function [] = validate_joyce(varargin)
-%   Validation case for Joyce. See page 22 of "Macro-mechanics of
-%   lamina.pdf".
+function [] = validate_hashin(varargin)
+%   Validation case for Hashin. See "hashin_abaqus.inp".
 %
 %   RUN THIS SCRIPT.
 %
@@ -23,8 +22,9 @@ function [] = validate_joyce(varargin)
 %__________________________________________________________________________
 %% 1: JOB
 
-JOB_NAME = mfilename;   JOB_DESCRIPTION = '';
+JOB_NAME = mfilename;   JOB_DESCRIPTION = 'Sandwich structure subjected to biaxial load';
 
+%__________________________________________________________________________
 %% 2: MATERIAL DATA
 % MATERIAL  Mechanical material properties
 %{
@@ -46,11 +46,34 @@ TIP:
 
     Note: MATERIAL(1) = Bottom; MATERIAL(n) = Top.
 %}
-MATERIAL = [181e3, 10.3e3, 7179.0, 0.28, 1e-5, 1e-5, 2e-3, 2e-3];
+MATERIAL = {[2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3],...
+    [4e4, 4e4, 1e2, 0.49, 1e-5, 1e-5, 2e-3, 2e-3],...
+    [2e5, 7e4, 5e3, 0.3, 1e-5, 1e-5, 2e-3, 2e-3]};
 
+% HASHIN  Strength properties for Hashin damage initiation criteria
+%{
+TIP:
+
+    Specify strength properties for n plies as a 1xn cell array:
+    Shear influence parameter;
+    Lamina tensile/compressive strength (longitudinal);
+    Lamina tensile/compressive strength (transverse);
+    Lamina in-plane/transverse shear strength.
+
+    HASHIN = {[ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](1),
+              ...,
+              [ALPHA, XHT, XHC, YHT, YHC, SHX, SHY](n)}
+
+    Note: HASHIN(1) = Bottom; HASHIN(n) = Top.
+%}
+HASHIN = {[0.2, 400, 1000, 400, 1000, 350, 350],...
+    [0.2, 25, 25, 25, 25, 5, 5],...
+    [0.2, 400, 1000, 400, 1000, 350, 350]};
+
+%__________________________________________________________________________
 %% 3: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up)
-STACKING_SEQUENCE = 0.0;
+STACKING_SEQUENCE = [-5.0, 15.0, 20.0];
 
 % PLY_THICKNESS  Ply thickness list
 %{
@@ -59,10 +82,10 @@ STACKING_SEQUENCE = 0.0;
 
     Note: (t1) = Bottom; (tn) = Top.
 
-	Note: When SYMMETRIC_LAYUP = true, ply thickness values are only
+    Note: When SYMMETRIC_LAYUP = true, ply thickness values are only
     required on one side of the symmetry plane.
 %}
-PLY_THICKNESS = 1.0;
+PLY_THICKNESS = [0.15, 0.95, 0.15];
 
 % SYMMETRIC_LAYUP  Make the calculated section symmetric
 SYMMETRIC_LAYUP = false;
@@ -80,11 +103,12 @@ SYMMETRIC_LAYUP = false;
 %}
 SECTION_POINTS = 'DEFAULT';
 
+%__________________________________________________________________________
 %% 4: LOAD MATRIX
 % Mechanical load (forces)
-NXX = 2.0;
-NYY = -3.0;
-NXY = 4.0;
+NXX = 100.0;
+NYY = -30.0;
+NXY = 0.0;
 
 % Mechanical load (moments)
 MXX = 0.0;
@@ -95,6 +119,7 @@ MXY = 0.0;
 DELTA_T = 0.0;
 DELTA_M = 0.0;
 
+%__________________________________________________________________________
 %% 5: OUTPUT
 % OUTPUT_PLY  Section points for stress/strain output
 %{
@@ -126,6 +151,26 @@ OUTPUT_PLY = 'DEFAULT';
 %}
 OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
 
+% OUTPUT_STRENGTH  Evaluate static failure/damage initiation criteria
+%{
+    First argument (strength assessment):
+    status: false (do not evaluate); true (evaluate based on available
+    material data); @<ucrt> (function handle of user routine containing 
+    user-defined failure criterion)
+    
+    Note: When the strength assessment is a user-defined failure criterion,
+    the user criterion is evaluated in addition to all previously evaluated
+    critera. Run the following command to generate a template user routine
+    file: >> abd.createUcrt('<criterion-name>').
+
+    Second argument (failure parameter):
+    '<param>': Reserve (strength reserve factor); Value (criterion value)
+
+    Note: The setting of the failure parameter only applies to the
+    Tsai-Hill, 2D Hoffman, Tsai-Wu and Azzi-Tsai-Hill failure criteria.
+%}
+OUTPUT_STRENGTH = {true, 'RESERVE'};
+
 % OUTPUT_LOCATION  Results output location
 %{
     First argument (output location):
@@ -148,7 +193,7 @@ OUTPUT_LOCATION = {'DEFAULT', true};
     'job_name', JOB_NAME, 'job_description', JOB_DESCRIPTION,...           %% 1: JOB
     ...
     'material', {MATERIAL}, 'fail_stress', {[]}, 'fail_strain', {[]},...   %% 2: MATERIAL DATA
-    'hashin', {[]}, 'larc05', {[]},...
+    'hashin', {HASHIN}, 'larc05', {[]},...
     ...
     'stacking_sequence', STACKING_SEQUENCE, 'ply_thickness',...            %% 3: LAYUP PROPERTIES
     PLY_THICKNESS, 'symmetric_layup', SYMMETRIC_LAYUP, 'section_points',...
@@ -158,8 +203,8 @@ OUTPUT_LOCATION = {'DEFAULT', true};
     'load_hydro', DELTA_M,...
     ...
     'output_ply', OUTPUT_PLY, 'output_figure', {OUTPUT_FIGURE},...         %% 5: OUTPUT
-    'output_strength', {{false, 'RESERVE'}}, 'output_optimised',...
-    {{'', 'RESERVE', 'MINMAX', 5.0}},...
+    'output_strength', {OUTPUT_STRENGTH}, 'output_optimised',...
+    {{'', 'RESERVE', 'MINMAX', 1.0}},...
     'optimiser_settings', {{'MIXED-RADIX', 'DEFAULT', 'DEFAULT'}},...
     'output_location', {OUTPUT_LOCATION})...
     ...

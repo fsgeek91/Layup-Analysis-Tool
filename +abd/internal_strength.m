@@ -165,71 +165,8 @@ classdef internal_strength < handle
                 % Save the initial state of UCRT
                 UCRT_initial = UCRT;
 
-                % Try to run the user-defined failure criterion
-                try
-                    UCRT = fcnHandle(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS);
-                catch UCRT_MException
-                    %{
-                        Do not evaluate the user-defined failure criterion
-                        and save the exception object to the workspace
-                    %}
-                    try
-                        fprintf('[ERROR] Exception encountered on line %.0f in user routine ''%s.m''\n', UCRT_MException.stack(1.0).line, char(fcnHandle));
-                        fid = fopen(UCRT_MException.stack(1.0).file, 'r');
-
-                        for k = 1:UCRT_MException.stack(1.0).line
-                            line = fgetl(fid);
-                            if ischar(line) == false
-                                % Do nothing
-                                break
-                            end
-                        end
-
-                        fclose(fid);
-                        fprintf('        Line image: %s\n', line);
-                    catch
-                        % Do nothing
-                    end
-
-                    fprintf('        MException identifier: %s\n', UCRT_MException.identifier);
-                    fprintf('        MException message: %s\n', UCRT_MException.message);
-                    fprintf('[NOTICE] The complete MATLAB Exception object will be saved in the specified output location\n');
-                    fprintf('[ERROR] The user-defined failure criterion has not been evaluated\n');
-
-                    % Reset the values of UCRT
-                    UCRT = UCRT_initial;
-                end
-
-                % Check for negative values
-                if all(UCRT == -1.0) == true
-                    % Validity check
-                    fprintf('[ERROR] In user routine ''@%s'', UCRT values are all unset (-1). The user-defined failure criterion will be excluded from the output\n', char(fcnHandle));
-
-                    % Reset the values of UCRT
-                    UCRT = UCRT_initial;
-                elseif any(UCRT < 0.0) == true
-                    % Negative value check
-                    fprintf(['[WARNING] In user routine ''@%s'', some UCRT values are negative. The expected range of output is {UCRT >= 0}. Please check the routine for programmi',...
-                        'ng errors\n'], char(fcnHandle));
-                end
-
-                if isvector(UCRT) == false
-                    % Dimension check
-                    fprintf('[ERROR] In user routine ''@%s'', UCRT must be one-dimensional. The user-defined failure criterion will be excludced from the output\n', char(fcnHandle));
-
-                    % Reset the values of UCRT
-                    UCRT = UCRT_initial;
-                end
-
-                if numel(UCRT) ~= nPlies_points
-                    % NUMEL check
-                    fprintf('[ERROR] In user routine ''@%s'', UCRT contains %d elements (expected %d). The user-defined failure criterion will be excludced from the output\n',...
-                        char(fcnHandle), numel(UCRT), nPlies_points);
-                    % Found %.0f inputs (expected %.0f)
-
-                    % Reset the values of UCRT
-                    UCRT = UCRT_initial;
-                end
+                % Run the user-defined failure criterion
+                [UCRT, UCRT_MException] = abd.internal_strength.validateUserRoutine(fcnHandle, INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS, nPlies_points, UCRT_initial);
 
                 % Ensure UCRT is 1xTOTAL_POINTS
                 UCRT = UCRT(:).';
@@ -317,7 +254,7 @@ classdef internal_strength < handle
 
                 if (nargin(argument) ~= 5.0) || (nargout(argument) ~= 1.0)
                     % Incorrect number of input/output arguments
-                    fprintf(['[ERROR] In user routine ''@%s'', the number of input/output arguments is incorrect: Found %.0f inputs (expected %.0f); Found %.0f outputs (expected %',...
+                    fprintf(['[ERROR] In user routine @%s, the number of input/output arguments is incorrect: Found %.0f inputs (expected %.0f); Found %.0f outputs (expected %',...
                         '.0f)\n        The user-defined failure criterion uses the following function interface:\n        \tfunction [UCRT] = <function_handle>(INFO, UCRT, MATERIA',...
                         'L_MECH, MATERIAL_FAIL, TENSORS)\n\n        Note: In case of doubt, use the command >> abd.internal_createUcrt(''<file-name>'') to create a template user r',...
                         'outine file\n'], char(argument), nargin(argument), 5.0, nargout(argument), 1.0);
@@ -411,6 +348,91 @@ classdef internal_strength < handle
             LARSFCRT = MSTRS;
             LARTFCRT = MSTRS;
             UCRT = MSTRS;
+        end
+
+        %% VALIDATE OUTPUT OF USER ROUTINE
+        function [UCRT, UCRT_MException] = validateUserRoutine(fcnHandle, INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS, nPlies_points, UCRT_initial)
+            % Initialise output
+            UCRT_MException = [];
+            
+            % Try to run the user-defined failure criterion
+            try
+                % Inform the user that the routine started
+                fprintf('[NOTICE] Start user routine @%s\n', char(fcnHandle));
+
+                % Run the user routine
+                UCRT = fcnHandle(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS);
+            catch UCRT_MException
+                %{
+                    Do not evaluate the user-defined failure criterion and
+                    save the exception object to the workspace
+                %}
+                try
+                    fprintf('[ERROR] Exception encountered on line %.0f in user routine file ''%s.m''\n', UCRT_MException.stack(1.0).line, char(fcnHandle));
+                    fid = fopen(UCRT_MException.stack(1.0).file, 'r');
+
+                    % Extract the line image
+                    for k = 1:UCRT_MException.stack(1.0).line
+                        line = fgetl(fid);
+                        if ischar(line) == false
+                            % Do nothing
+                            break
+                        end
+                    end
+
+                    % Print the line image to the command window
+                    fclose(fid);
+                    fprintf('        Line image: %s\n', line);
+                catch
+                    % Do nothing
+                end
+
+                fprintf('        MException identifier: %s\n', UCRT_MException.identifier);
+                fprintf('        MException message: %s\n', UCRT_MException.message);
+                fprintf('[NOTICE] The complete MATLAB Exception object will be saved in the specified output location\n');
+                fprintf('[ERROR] The user-defined failure criterion has not been evaluated\n');
+
+                % Reset the values of UCRT
+                UCRT = UCRT_initial;
+            end
+
+            if (isnumeric(UCRT) == false) || (iscell(UCRT) == true)
+                % Validity check
+                fprintf('[ERROR] In user routine @%s, UCRT must be numeric. The user-defined failure criterion will be excluded from the output\n', char(fcnHandle));
+
+                % Reset the values of UCRT
+                UCRT = UCRT_initial;
+            elseif isvector(UCRT) == false
+                % Dimension check
+                fprintf('[ERROR] In user routine @%s, UCRT must be one-dimensional. The user-defined failure criterion will be excludced from the output\n', char(fcnHandle));
+
+                % Reset the values of UCRT
+                UCRT = UCRT_initial;
+            elseif all(UCRT == -1.0) == true
+                % Validity check
+                fprintf('[ERROR] In user routine @%s, UCRT values are all unset (-1). The user-defined failure criterion will be excluded from the output\n', char(fcnHandle));
+
+                % Reset the values of UCRT
+                UCRT = UCRT_initial;
+            elseif numel(UCRT) ~= nPlies_points
+                % NUMEL check
+                fprintf('[ERROR] In user routine @%s, UCRT contains %d elements (expected %d). The user-defined failure criterion will be excludced from the output\n',...
+                    char(fcnHandle), numel(UCRT), nPlies_points);
+
+                % Reset the values of UCRT
+                UCRT = UCRT_initial;
+            elseif any(UCRT < 0.0) == true
+                % Negative value check
+                fprintf(['[WARNING] In user routine @%s, some UCRT values are negative. The expected range of output is {UCRT >= 0}. Please check the routine for programmi',...
+                    'ng errors\n'], char(fcnHandle));
+            elseif (any(isnan(UCRT) == true) == true) || (any(isinf(UCRT) == true) == true)
+                % Validity check
+                fprintf(['[WARNING] In user routine @%s, UCRT contains INF/NAN values. The expected range of output is {UCRT >= 0}. Please check the routine for programmin',...
+                    'g errors\n'], char(fcnHandle));
+            else
+                % Inform the user that the routine ended
+                fprintf('[NOTICE] End user routine @%s\n', char(fcnHandle));
+            end
         end
     end
     methods(Static = true, Access = public)

@@ -1,5 +1,5 @@
-function [] = validate_abaqus_uniaxial(varargin)
-%   Validation case for Abaqus. See "validate_abaqus.inp" for test model.
+function [] = validate_uniaxial(varargin)
+%   Validation case for Abaqus. See "uniaxial_abaqus.inp".
 %
 %   RUN THIS SCRIPT.
 %
@@ -110,30 +110,6 @@ HASHIN = {[0.1, 400, 400, 200, 200, 150, 150],...
           [0.1, 200, 200, 100, 100, 75, 75],...
           [0.1, 400, 400, 200, 200, 150, 150]};
 
-% LARC05  Strength properties for LaRC05 damage initiation criteria
-%{
-TIP:
-
-    Specify strength properties for n plies as a 1xn cell array:
-    Tensile/compressive strength (longitudinal);
-    Tensile/compressive strength (transverse);
-    In-plane/transverse shear strength;
-    Shear modulus in the 12-plane;
-    Longitudinal/transverse shear friction coefficient;
-    Fracture plane angle for pure compression;
-    Misalignment angle at failure for pure compression.
-
-    LARC05 = {[XLT, XLC, YLT, YLC*, SLX, SLY*, GL12, NL*, NT*, A0*, PHI0*](1),
-              ...,
-              [XLT, XLC, YLT, YLC*, SLX, SLY*, GL12, NL*, NT*, A0*, PHI0*](n)}
-
-    Note: LARC05(1) = Bottom; LARC05(n) = Top.
-    
-    Note: Parameters marked with an asterisk (*) are derived if a value of
-    -1 is specified.
-%}
-LARC05 = [];
-
 %% 3: LAYUP PROPERTIES
 % STACKING_SEQUENCE  Layup stacking sequence (bottom-up)
 STACKING_SEQUENCE = [0.0, 45.0, 90.0];
@@ -232,45 +208,6 @@ OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
 %}
 OUTPUT_STRENGTH = {true, 'RESERVE'};
 
-% OUTPUT_OPTIMISED  Compute the optimised stacking sequence
-%{
-    Note: The stacking optimisation properties are taken from the number of
-    plies and section points in the layup definition. The optimisation
-    requires a load matrix definition (see Section 3) and the results of a
-    strength evaluation using OUTPUT_STRENGTH = {true, <param>}.
-
-    First argument (failure/damage initiation criterion):
-    '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill); Hoffman;
-    Tsaiw (Tsai-Wu); Azzit (Azzi-Tsai-Hill); Mstrn (Maximum strain);
-    Hashin; LaRC05; Ucrt (User-defined failure criterion)
-
-    Second argument (failure parameter):
-    '<param>': Reserve (strength reserve factor); Value (criterion value)
-
-    Third argument (objective function):
-    '<fun>': MinMax (minimise the maximum criterion value); MinMean
-    (minimise the average criterion value)
-
-    Fourth argument (precision):
-    theta: Angular step size
-%}
-OUTPUT_OPTIMISED = {'', 'RESERVE', 'MINMAX', 5.0};
-
-% OPTIMISER_SETTINGS  Optimiser solver settings (advanced)
-%{
-    First argument (solver):
-    '<param>': Full matrix; Mixed-radix; Chunks
-    
-    Second argument (chunk size):
-    'DEFAULT': Program controlled
-    s: User-defined chunk size
-    
-    Third argument (tuning constant):
-    'DEFAULT': Program-controlled
-    k: User-defined constant (typically in the range 2-10)
-%}
-OPTIMISER_SETTINGS = {'MIXED-RADIX', 'DEFAULT', 'DEFAULT'};
-
 % OUTPUT_LOCATION  Results output location
 %{
     First argument (output location):
@@ -290,15 +227,22 @@ OUTPUT_LOCATION = {'DEFAULT', true};
 % Submit the layup for analysis!
 [~] = abd.main(struct(...
     ...
-    'job_name', JOB_NAME, 'job_description', JOB_DESCRIPTION,...                                                                                       %% 1: JOB
+    'job_name', JOB_NAME, 'job_description', JOB_DESCRIPTION,...           %% 1: JOB
     ...
-    'material', {MATERIAL}, 'fail_stress', {FAIL_STRESS}, 'fail_strain', {FAIL_STRAIN}, 'hashin', {HASHIN}, 'larc05', {LARC05},...                     %% 2: MATERIAL DATA
+    'material', {MATERIAL}, 'fail_stress', {FAIL_STRESS}, 'fail_strain',...%% 2: MATERIAL DATA
+    {FAIL_STRAIN}, 'hashin', {HASHIN}, 'larc05', {[]},...
     ...
-    'stacking_sequence', STACKING_SEQUENCE, 'ply_thickness', PLY_THICKNESS, 'symmetric_layup', SYMMETRIC_LAYUP, 'section_points', SECTION_POINTS,...   %% 3: LAYUP PROPERTIES
+    'stacking_sequence', STACKING_SEQUENCE, 'ply_thickness',...            %% 3: LAYUP PROPERTIES
+    PLY_THICKNESS, 'symmetric_layup', SYMMETRIC_LAYUP, 'section_points',...
+    SECTION_POINTS,...
     ...
-    'load_mech', [NXX, NYY, NXY; MXX, MYY, MXY], 'load_therm', DELTA_T, 'load_hydro', DELTA_M,...                                                      %% 4: LOAD MATRIX
+    'load_mech', [NXX, NYY, NXY; MXX, MYY, MXY], 'load_therm', DELTA_T,... %% 4: LOAD MATRIX
+    'load_hydro', DELTA_M,...
     ...
-    'output_ply', OUTPUT_PLY, 'output_figure', {OUTPUT_FIGURE}, 'output_strength', {OUTPUT_STRENGTH}, 'output_optimised', {OUTPUT_OPTIMISED},...       %% 5: OUTPUT
-    'optimiser_settings', {OPTIMISER_SETTINGS}, 'output_location', {OUTPUT_LOCATION})...
+    'output_ply', OUTPUT_PLY, 'output_figure', {OUTPUT_FIGURE},...         %% 5: OUTPUT
+    'output_strength', {OUTPUT_STRENGTH}, 'output_optimised',...
+    {{'', 'RESERVE', 'MINMAX', 5.0}},...
+    'optimiser_settings', {{'MIXED-RADIX', 'DEFAULT', 'DEFAULT'}},...
+    'output_location', {OUTPUT_LOCATION})...
     ...
     );
