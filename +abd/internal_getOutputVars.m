@@ -1,13 +1,13 @@
 function [S] = internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_hydro_xy, E_hydro_aligned, S_ply_xy, S_ply_aligned, EXT, EYT,...
     GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT,...
-    HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, isStrengthOutput, outputLocation, settings, noFailStress, noFailStrain,...
-    noHashin, noLaRC05)
+    HSNMTCRT, HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, SFAILRATIO_UCRT, BEST_SEQUENCE, isStrengthOutput, outputLocation, settings,...
+    noFailStress, noFailStrain, noHashin, noLaRC05, noUcrt)
 %   Collect variables for output.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
-%   Last modified 11-Feb-2026 08:06:52 UTC
+%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
+%   Last modified 12-Feb-2026 12:33:07 UTC
 %
 %#ok<*NASGU>
 
@@ -73,7 +73,12 @@ if isStrengthOutput == true
     % Add LaRC05 output to structure
     if noLaRC05 == false
         CFAILURE.LARC05 = abd.internal_getTableFromArray([[LARPFCRT, SFAILRATIO_LARC05(1.0)]; [LARMFCRT, SFAILRATIO_LARC05(2.0)];...
-        [LARKFCRT, SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05'); %#ok<STRNU>
+        [LARKFCRT, SFAILRATIO_LARC05(3.0)]; [LARSFCRT, SFAILRATIO_LARC05(4.0)]; [LARTFCRT, SFAILRATIO_LARC05(5.0)]], 'cfailure_larc05');
+    end
+
+    % Add user-defined failure criterion output to structure
+    if noUcrt == false
+        CFAILURE.UCRT = abd.internal_getTableFromArray([UCRT, SFAILRATIO_UCRT], 'cfailure_ucrt'); %#ok<STRNU>
     end
 else
     CFAILURE = [];

@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
-%   Last modified 11-Feb-2026 08:06:52 UTC
+%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
+%   Last modified 12-Feb-2026 12:33:07 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -156,7 +156,7 @@ classdef internal_strength < handle
             if isa(fcnHandle, 'function_handle') == true
                 INFO = struct('PLY_COUNT', nPlies, 'SECTION_POINTS', SECTION_POINTS, 'TOTAL_POINTS', nPlies_points, 'FAILURE_PARAMETER', parameter);
                 MATERIAL_MECH = struct('E11', E11, 'E22', E22, 'G12', G12, 'V12', V12, 'AXX', AXX, 'AYY', AYY, 'AXY', AXY, 'BXX', BXX, 'BYY', BYY, 'BXY', BXY);
-                MATERIAL_FAIL = struct('STRESS', struct('XT', XT, 'XC', XC, 'YT', YT, 'YC', YC, 'S', S, 'C12', C12, 'B12', B12),...
+                MATERIAL_FAIL = struct('STRESS', struct('XT', XT, 'XC', XC, 'YT', YT, 'YC', YC, 'S', S, 'C', C12, 'B', B12),...
                     'STRAIN', struct('XET', XET, 'XEC', XEC, 'YET', YET, 'YEC', YEC, 'SE', SE),...
                     'HASHIN', struct('ALPHA', ALPHA, 'XHT', XHT, 'XHC', XHC, 'YHT', YHT, 'YHC', YHC, 'SHX', SHX, 'SHY', SHY),...
                     'LARC05', struct('XLT', XLT, 'XLC', XLC, 'YLT', YLT, 'YLC', YLC, 'SLX', SLX, 'SLY', SLY, 'GL12', GL12, 'NL', NL, 'NT', NT, 'A0', A0, 'PHI0', PHI0)...

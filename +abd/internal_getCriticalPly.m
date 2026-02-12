@@ -3,8 +3,8 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd, plyBuffer, nP
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
-%   Last modified 11-Feb-2026 08:06:52 UTC
+%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
+%   Last modified 12-Feb-2026 12:33:07 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -51,6 +51,9 @@ for i = 1.0:cols
     % Compute the single worst value over all section points for each ply
     DATA_ply = zeros(nPlies, 1.0);
 
+    % Worst section point for each criterion value at each ply
+    SP = -1.0.*ones(nPlies, 1.0);
+
     % Buffer to record failed plies
     FAILED_PLY_INNER = false(1.0, nPlies);
 
@@ -69,7 +72,11 @@ for i = 1.0:cols
             %}
             DATA_ply(p) = -1.0;
         else
-            DATA_ply(p) = max(DATA_i_all);
+            % Record the criterion value
+            [DATA_ply(p), SP_i] = max(DATA_i_all);
+
+            % Record the worst section point
+            SP(p) = currentOutputPoints(SP_i);
         end
 
         if all(DATA_i_all >= 1.0)
@@ -89,7 +96,7 @@ for i = 1.0:cols
 
     % Update VARARGOUT
     varargout{dataIndexes(i)} = find(DATA_ply == max(DATA_ply), 1.0);
-    varargout{valueIndexes(i)} = DATA_ply;
+    varargout{valueIndexes(i)} = [DATA_ply, SP];
 
     %% Check if the critical ply has a symmetric failure
     if symmetricAbd == true

@@ -61,7 +61,7 @@ rows = num2cell(TENSORS.S_PLY_ALIGNED, 2.0);
 
 % Get the stress-based failure parameters
 STRESS = MATERIAL_FAIL.STRESS;
-[XT, XC, YT, YC, S, C, B] = deal(STRESS.XT, STRESS.XC, STRESS.YT, STRESS.YC, STRESS.S, STRESS.C12, STRESS.B12);
+[XT, XC, YT, YC, S, C, B] = deal(STRESS.XT, STRESS.XC, STRESS.YT, STRESS.YC, STRESS.S, STRESS.C, STRESS.B);
 
 % Tension-compression split (longitudinal)
 X(S11 >= 0.0) = XT(S11 >= 0.0);

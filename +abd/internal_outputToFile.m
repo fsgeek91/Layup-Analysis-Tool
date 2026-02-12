@@ -1,15 +1,15 @@
-function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05] = internal_outputToFile(dateString, outputLocation, outputStrength, nPlies, t_ply, theta,...
-    enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy, E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned, ABD, symmetricAbd, EXT, EYT, GXYT,...
-    NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
-    LARTFCRT, UCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS, outputPoints, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate,...
-    BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy, bxx, byy, bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS,...
-    EXECUTION_MODE, JOB_NAME, JOB_DESCRIPTION, isStrengthOutput, UCRT_MException)
+function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05, SFAILRATIO_UCRT] =...
+    internal_outputToFile(dateString, outputLocation, outputStrength, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
+    E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT,...
+    MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, noFailStress, noFailStrain, noHashin, noLaRC05, noUcrt, SECTION_POINTS,...
+    outputPoints, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE, plyBuffer_sfailratio, axx, ayy, axy,...
+    bxx, byy, bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, JOB_NAME, JOB_DESCRIPTION, isStrengthOutput, UCRT_MException)
 %   Write results output to a text file.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
-%   Last modified 11-Feb-2026 08:06:52 UTC
+%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
+%   Last modified 12-Feb-2026 12:33:07 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -37,8 +37,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 5.0.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 11-Feb-2026 08:06:52 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 5.1.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 12-Feb-2026 12:33:07 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
@@ -227,58 +227,110 @@ if isStrengthOutput == true
 
     if noFailStress == false
         % Get the critical ply and the symmetry condition
-        [MAX_MSTRS, MAX_MSTRS_VAL, MSTRS_SYM, MAX_TSAIH, MAX_TSAIH_VAL, TSAIH_SYM, MAX_HOFFMAN, MAX_HOFFMAN_VAL, HOFFMAN_SYM, MAX_TSAIW, MAX_TSAIW_VAL, TSAIW_SYM, MAX_AZZIT,...
-            MAX_AZZIT_VAL, AZZIT_SYM, SFAILRATIO_STRESS, FAILED_PLY_MSTRS] =...
+        [MAX_MSTRS, MAX_MSTRS_DATA, MSTRS_SYM, MAX_TSAIH, MAX_TSAIH_DATA, TSAIH_SYM, MAX_HOFFMAN, MAX_HOFFMAN_DATA, HOFFMAN_SYM, MAX_TSAIW, MAX_TSAIW_DATA, TSAIW_SYM, MAX_AZZIT,...
+            MAX_AZZIT_DATA, AZZIT_SYM, SFAILRATIO_STRESS, FAILED_PLY_MSTRS] =...
             ...
             abd.internal_getCriticalPly([MSTRS', TSAIH', HOFFMAN', TSAIW', AZZIT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
         % Print the result
         fprintf(fid, 'MSTRS         %-14.0f%-9s\nTSAIH         %-14.0f%-9s\nHOFFMAN       %-14.0f%-9s\nTSAIW         %-14.0f%-9s\nAZZIT         %-14.0f%-9s\n', MAX_MSTRS,...
             MSTRS_SYM, MAX_TSAIH, TSAIH_SYM, MAX_HOFFMAN, HOFFMAN_SYM, MAX_TSAIW, TSAIW_SYM, MAX_AZZIT, AZZIT_SYM);
+
+        % Get worst criterion values (per ply)
+        MAX_MSTRS_VAL = MAX_MSTRS_DATA(:, 1.0);
+        MAX_TSAIH_VAL = MAX_TSAIH_DATA(:, 1.0);
+        MAX_HOFFMAN_VAL = MAX_HOFFMAN_DATA(:, 1.0);
+        MAX_TSAIW_VAL = MAX_TSAIW_DATA(:, 1.0);
+        MAX_AZZIT_VAL = MAX_AZZIT_DATA(:, 1.0);
+
+        % Get worst section point per criterion value (per ply)
+        MAX_MSTRS_SP = MAX_MSTRS_DATA(:, 2.0);
+        MAX_TSAIH_SP = MAX_TSAIH_DATA(:, 2.0);
+        MAX_HOFFMAN_SP = MAX_HOFFMAN_DATA(:, 2.0);
+        MAX_TSAIW_SP = MAX_TSAIW_DATA(:, 2.0);
+        MAX_AZZIT_SP = MAX_AZZIT_DATA(:, 2.0);
     end
 
     if noFailStrain == false
         % Get the critical ply and the symmetry condition
-        [MAX_MSTRN, MAX_MSTRN_VAL, MSTRN_SYM, SFAILRATIO_STRAIN, FAILED_PLY_MSTRN] =...
+        [MAX_MSTRN, MAX_MSTRN_DATA, MSTRN_SYM, SFAILRATIO_STRAIN, FAILED_PLY_MSTRN] =...
             ...
             abd.internal_getCriticalPly(MSTRN', symmetricAbd, plyBuffer_sfailratio, nPlies);
 
         % Print the result
         fprintf(fid, 'MSTRN         %-14.0f%-9s\n', MAX_MSTRN, MSTRN_SYM);
+
+        % Get worst criterion values (per ply)
+        MAX_MSTRN_VAL = MAX_MSTRN_DATA(:, 1.0);
+
+        % Get worst section point per criterion value (per ply)
+        MAX_MSTRN_SP = MAX_MSTRN_DATA(:, 2.0);
     end
 
     if noHashin == false
         % Get the critical ply and the symmetry condition
-        [MAX_HSNFTCRT, MAX_HSNFTCRT_VAL, HSNFTCRT_SYM, MAX_HSNFCCRT, MAX_HSNFCCRT_VAL, HSNFCCRT_SYM, MAX_HSNMTCRT, MAX_HSNMTCRT_VAL, HSNMTCRT_SYM, MAX_HSNMCCRT, MAX_HSNMCCRT_VAL,...
-            HSNMCCRT_SYM, SFAILRATIO_HASHIN, FAILED_PLY_HSN] =...
+        [MAX_HSNFTCRT, MAX_HSNFTCRT_DATA, HSNFTCRT_SYM, MAX_HSNFCCRT, MAX_HSNFCCRT_DATA, HSNFCCRT_SYM, MAX_HSNMTCRT, MAX_HSNMTCRT_DATA, HSNMTCRT_SYM, MAX_HSNMCCRT,...
+            MAX_HSNMCCRT_DATA, HSNMCCRT_SYM, SFAILRATIO_HASHIN, FAILED_PLY_HSN] =...
             ...
             abd.internal_getCriticalPly([HSNFTCRT', HSNFCCRT', HSNMTCRT', HSNMCCRT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
         % Print the result
         fprintf(fid, 'HSNFTCRT      %-14.0f%-9s\nHSNFCCRT      %-14.0f%-9s\nHSNMTCRT      %-14.0f%-9s\nHSNMCCRT      %-14.0f%-9s\n', MAX_HSNFTCRT, HSNFTCRT_SYM, MAX_HSNFCCRT,...
             HSNFCCRT_SYM, MAX_HSNMTCRT, HSNMTCRT_SYM, MAX_HSNMCCRT, HSNMCCRT_SYM);
+
+        % Get worst criterion values (per ply)
+        MAX_HSNFTCRT_VAL = MAX_HSNFTCRT_DATA(:, 1.0);
+        MAX_HSNFCCRT_VAL = MAX_HSNFCCRT_DATA(:, 1.0);
+        MAX_HSNMTCRT_VAL = MAX_HSNMTCRT_DATA(:, 1.0);
+        MAX_HSNMCCRT_VAL = MAX_HSNMCCRT_DATA(:, 1.0);
+
+        % Get worst section point per criterion value (per ply)
+        MAX_HSNFTCRT_SP = MAX_HSNFTCRT_DATA(:, 2.0);
+        MAX_HSNFCCRT_SP = MAX_HSNFCCRT_DATA(:, 2.0);
+        MAX_HSNMTCRT_SP = MAX_HSNMTCRT_DATA(:, 2.0);
+        MAX_HSNMCCRT_SP = MAX_HSNMCCRT_DATA(:, 2.0);
     end
 
     if noLaRC05 == false
         % Get the critical ply and the symmetry condition
-        [MAX_LARPFCRT, MAX_LARPFCRT_VAL, LARPFCRT_SYM, MAX_LARMFCRT, MAX_LARMFCRT_VAL, LARMFCRT_SYM, MAX_LARKFCRT, MAX_LARKFCRT_VAL, LARKFCRT_SYM, MAX_LARSFCRT, MAX_LARSFCRT_VAL,...
-            LARSFCRT_SYM, MAX_LARTFCRT, MAX_LARTFCRT_VAL, LARTFCRT_SYM, SFAILRATIO_LARC05, FAILED_PLY_LARC05] =...
+        [MAX_LARPFCRT, MAX_LARPFCRT_DATA, LARPFCRT_SYM, MAX_LARMFCRT, MAX_LARMFCRT_DATA, LARMFCRT_SYM, MAX_LARKFCRT, MAX_LARKFCRT_DATA, LARKFCRT_SYM, MAX_LARSFCRT,...
+            MAX_LARSFCRT_DATA, LARSFCRT_SYM, MAX_LARTFCRT, MAX_LARTFCRT_DATA, LARTFCRT_SYM, SFAILRATIO_LARC05, FAILED_PLY_LARC05] =...
             ...
             abd.internal_getCriticalPly([LARPFCRT', LARMFCRT', LARKFCRT', LARSFCRT', LARTFCRT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
         % Print the result
         fprintf(fid, 'LARPFCRT      %-14.0f%-9s\nLARMFCRT      %-14.0f%-9s\nLARKFCRT      %-14.0f%-9s\nLARSFCRT      %-14.0f%-9s\nLARTFCRT      %-14.0f%-9s\n', MAX_LARPFCRT,...
             LARPFCRT_SYM, MAX_LARMFCRT, LARMFCRT_SYM, MAX_LARKFCRT, LARKFCRT_SYM, MAX_LARSFCRT, LARSFCRT_SYM, MAX_LARTFCRT, LARTFCRT_SYM);
+
+        % Get worst criterion values (per ply)
+        MAX_LARPFCRT_VAL = MAX_LARPFCRT_DATA(:, 1.0);
+        MAX_LARMFCRT_VAL = MAX_LARMFCRT_DATA(:, 1.0);
+        MAX_LARKFCRT_VAL = MAX_LARKFCRT_DATA(:, 1.0);
+        MAX_LARSFCRT_VAL = MAX_LARSFCRT_DATA(:, 1.0);
+        MAX_LARTFCRT_VAL = MAX_LARTFCRT_DATA(:, 1.0);
+
+        % Get worst section point per criterion value (per ply)
+        MAX_LARPFCRT_SP = MAX_LARPFCRT_DATA(:, 2.0);
+        MAX_LARMFCRT_SP = MAX_LARMFCRT_DATA(:, 2.0);
+        MAX_LARKFCRT_SP = MAX_LARKFCRT_DATA(:, 2.0);
+        MAX_LARSFCRT_SP = MAX_LARSFCRT_DATA(:, 2.0);
+        MAX_LARTFCRT_SP = MAX_LARTFCRT_DATA(:, 2.0);
     end
 
-    if (isa(outputStrength{1.0}, 'function_handle') == true) && (all(UCRT == -1.0) == false)
+    if noUcrt == false
         % Get the critical ply and the symmetry condition
-        [MAX_UCRT, MAX_UCRT_VAL, UCRT_SYM, SFAILRATIO_UCRT, FAILED_PLY_UCRT] =...
+        [MAX_UCRT, MAX_UCRT_DATA, UCRT_SYM, SFAILRATIO_UCRT, FAILED_PLY_UCRT] =...
             ...
             abd.internal_getCriticalPly(UCRT', symmetricAbd, plyBuffer_sfailratio, nPlies);
 
         % Print the result
         fprintf(fid, 'UCRT          %-14.0f%-9s\n', MAX_UCRT, UCRT_SYM);
+
+        % Get worst criterion values (per ply)
+        MAX_UCRT_VAL = MAX_UCRT_DATA(:, 1.0);
+
+        % Get worst section point per criterion value (per ply)
+        MAX_UCRT_SP = MAX_UCRT_DATA(:, 2.0);
     end
 
     fprintf(fid, '\n===========================================================================\n');
@@ -299,25 +351,26 @@ if (isStrengthOutput == true) && (noFailStress == false)
 
     % Print table header
     fprintf(fid, '\nAssessment summary for stress-based failure criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           MSTRS(V)      TSAIH%s      HOFFMAN%s    TSAIW%s      AZZIT%s      (WORST)       STATUS\n', parameter, parameter, parameter, parameter);
+    fprintf(fid, 'PLY           MSTRS(V)      (SP)  TSAIH%s      (SP)  HOFFMAN%s    (SP)  TSAIW%s      (SP)  AZZIT%s      (SP)  (WORST)       STATUS\n', parameter, parameter,...
+        parameter, parameter);
 
     % Print ply-wise results
     for i = 1.0:nPlies
         if FAILED_PLY_MSTRS(i) == true
             % All section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_HOFFMAN_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i),...
-                FAIL_STRESS_ALL_MAX(i), 'FAILED');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_MSTRS_SP(i), MAX_TSAIH_VAL(i), MAX_TSAIH_SP(i),...
+                MAX_HOFFMAN_VAL(i), MAX_HOFFMAN_SP(i), MAX_TSAIW_VAL(i), MAX_TSAIW_SP(i), MAX_AZZIT_VAL(i), MAX_AZZIT_SP(i), FAIL_STRESS_ALL_MAX(i), 'FAILED');
         elseif FAIL_STRESS_ALL_MAX(i) >= 1.0
             % At least one section point in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_HOFFMAN_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i),...
-                FAIL_STRESS_ALL_MAX(i), 'UNSAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_MSTRS_SP(i), MAX_TSAIH_VAL(i), MAX_TSAIH_SP(i),...
+                MAX_HOFFMAN_VAL(i), MAX_HOFFMAN_SP(i), MAX_TSAIW_VAL(i), MAX_TSAIW_SP(i), MAX_AZZIT_VAL(i), MAX_AZZIT_SP(i), FAIL_STRESS_ALL_MAX(i), 'UNSAFE');
         elseif MAX_MSTRS_VAL(i) == -1.0
             % There is no data for the current ply
             fprintf(fid, '%-14.0fNO RESULTS\n', i);
         else
             % No section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_TSAIH_VAL(i), MAX_HOFFMAN_VAL(i), MAX_TSAIW_VAL(i), MAX_AZZIT_VAL(i),...
-                FAIL_STRESS_ALL_MAX(i), 'SAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_MSTRS_VAL(i), MAX_MSTRS_SP(i), MAX_TSAIH_VAL(i), MAX_TSAIH_SP(i),...
+                MAX_HOFFMAN_VAL(i), MAX_HOFFMAN_SP(i), MAX_TSAIW_VAL(i), MAX_TSAIW_SP(i), MAX_AZZIT_VAL(i), MAX_AZZIT_SP(i), FAIL_STRESS_ALL_MAX(i), 'SAFE');
         end
     end
 
@@ -326,29 +379,29 @@ if (isStrengthOutput == true) && (noFailStress == false)
         Note: The value of SFAILRATIO considers results over ALL section
         points
     %}
-    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g%-14g\n', SFAILRATIO_STRESS);
+    fprintf(fid, 'SFAILRATIO    %-20g%-20g%-20g%-20g%-20g\n', SFAILRATIO_STRESS);
 end
 
 %% Print results of failure criteria analysis (strain-based)
 if (isStrengthOutput == true) && (noFailStrain == false)
     % Print table header
     fprintf(fid, '\nAssessment summary for strain-based failure criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           MSTRN(V)      STATUS\n');
+    fprintf(fid, 'PLY           MSTRN(V)      (SP)  STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
         if FAILED_PLY_MSTRN(i) == true
             % All section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_MSTRN_VAL(i), 'FAILED');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-6s\n', i, MAX_MSTRN_VAL(i), MAX_MSTRN_SP(i), 'FAILED');
         elseif MSTRN(i) >= 1.0
             % At least one section point in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_MSTRN_VAL(i), 'UNSAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-6s\n', i, MAX_MSTRN_VAL(i), MAX_MSTRN_SP(i), 'UNSAFE');
         elseif MAX_MSTRN_VAL(i) == -1.0
             % There is no data for the current ply
             fprintf(fid, '%-14.0fNO RESULTS\n', i);
         else
             % No section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_MSTRN_VAL(i), 'SAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-6s\n', i, MAX_MSTRN_VAL(i), MAX_MSTRN_SP(i), 'SAFE');
         end
     end
 
@@ -384,25 +437,25 @@ if (isStrengthOutput == true) && (noHashin == false)
 
     % Print table header
     fprintf(fid, '\nAssessment summary for Hashin''s damage initiation criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           HSNFTCRT      HSNFCCRT      HSNMTCRT      HSNMCCRT      (WORST)       STATUS\n');
+    fprintf(fid, 'PLY           HSNFTCRT      (SP)  HSNFCCRT      (SP)  HSNMTCRT      (SP)  HSNMCCRT      (SP)  (WORST)       STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
         if FAILED_PLY_HSN(i) == true
             % All section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_HSNFTCRT_VAL(i), MAX_HSNFCCRT_VAL(i), MAX_HSNMTCRT_VAL(i), MAX_HSNMCCRT_VAL(i), HASHIN_ALL_MAX(i),...
-                'FAILED');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_HSNFTCRT_VAL(i), MAX_HSNFTCRT_SP(i), MAX_HSNFCCRT_VAL(i), MAX_HSNFCCRT_SP(i),...
+                MAX_HSNMTCRT_VAL(i), MAX_HSNMTCRT_SP(i), MAX_HSNMCCRT_VAL(i), MAX_HSNMCCRT_SP(i), HASHIN_ALL_MAX(i), 'FAILED');
         elseif HASHIN_ALL_MAX(i) >= 1.0
             % At least one section point in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_HSNFTCRT_VAL(i), MAX_HSNFCCRT_VAL(i), MAX_HSNMTCRT_VAL(i), MAX_HSNMCCRT_VAL(i), HASHIN_ALL_MAX(i),...
-                'UNSAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_HSNFTCRT_VAL(i), MAX_HSNFTCRT_SP(i), MAX_HSNFCCRT_VAL(i), MAX_HSNFCCRT_SP(i),...
+                MAX_HSNMTCRT_VAL(i), MAX_HSNMTCRT_SP(i), MAX_HSNMCCRT_VAL(i), MAX_HSNMCCRT_SP(i), HASHIN_ALL_MAX(i), 'UNSAFE');
         elseif MAX_HSNFTCRT_VAL(i) == -1.0
             % There is no data for the current ply
             fprintf(fid, '%-14.0fNO RESULTS\n', i);
         else
             % No section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_HSNFTCRT_VAL(i), MAX_HSNFCCRT_VAL(i), MAX_HSNMTCRT_VAL(i), MAX_HSNMCCRT_VAL(i), HASHIN_ALL_MAX(i),...
-                'SAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_HSNFTCRT_VAL(i), MAX_HSNFTCRT_SP(i), MAX_HSNFCCRT_VAL(i), MAX_HSNFCCRT_SP(i),...
+                MAX_HSNMTCRT_VAL(i), MAX_HSNMTCRT_SP(i), MAX_HSNMCCRT_VAL(i), MAX_HSNMCCRT_SP(i), HASHIN_ALL_MAX(i), 'SAFE');
         end
     end
 
@@ -411,7 +464,7 @@ if (isStrengthOutput == true) && (noHashin == false)
         Note: The value of SFAILRATIO considers results over ALL section
         points
     %}
-    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g\n', SFAILRATIO_HASHIN);
+    fprintf(fid, 'SFAILRATIO    %-20g%-20g%-20g%-20g\n', SFAILRATIO_HASHIN);
 end
 
 % Print summary of assessment
@@ -433,25 +486,27 @@ if (isStrengthOutput == true) && (noLaRC05 == false)
 
     % Print table header
     fprintf(fid, '\nAssessment summary for LaRC05 damage initiation criteria\nOutput location: <Worst section point>\n');
-    fprintf(fid, 'PLY           LARPFCRT      LARMFCRT      LARKFCRT      LARSFCRT      LARTFCRT      (WORST)       STATUS\n');
+    fprintf(fid, 'PLY           LARPFCRT      (SP)  LARMFCRT      (SP)  LARKFCRT      (SP)  LARSFCRT      (SP)  LARTFCRT      (SP)  (WORST)       STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
         if FAILED_PLY_LARC05(i) == true
             % All section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARMFCRT_VAL(i), MAX_LARKFCRT_VAL(i), MAX_LARSFCRT_VAL(i), MAX_LARTFCRT_VAL(i),...
-                LARC05_ALL_MAX(i), 'FAILED');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARPFCRT_SP(i), MAX_LARMFCRT_VAL(i),...
+            MAX_LARMFCRT_SP(i), MAX_LARKFCRT_VAL(i), MAX_LARKFCRT_SP(i), MAX_LARSFCRT_VAL(i), MAX_LARSFCRT_SP(i), MAX_LARTFCRT_VAL(i), MAX_LARTFCRT_SP(i), LARC05_ALL_MAX(i),...
+            'FAILED');
         elseif LARC05_ALL_MAX(i) >= 1.0
             % At least one section point in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARMFCRT_VAL(i), MAX_LARKFCRT_VAL(i), MAX_LARSFCRT_VAL(i), MAX_LARTFCRT_VAL(i),...
-                LARC05_ALL_MAX(i), 'UNSAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARPFCRT_SP(i), MAX_LARMFCRT_VAL(i),...
+                MAX_LARMFCRT_SP(i), MAX_LARKFCRT_VAL(i), MAX_LARKFCRT_SP(i), MAX_LARSFCRT_VAL(i), MAX_LARSFCRT_SP(i), MAX_LARTFCRT_VAL(i), MAX_LARTFCRT_SP(i), LARC05_ALL_MAX(i),...
+                'UNSAFE');
         elseif MAX_LARPFCRT_VAL(i) == -1.0
             % There is no data for the current ply
             fprintf(fid, '%-14.0fNO RESULTS\n', i);
         else
             % No section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-14g%-14g%-14g%-14g%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARMFCRT_VAL(i), MAX_LARKFCRT_VAL(i), MAX_LARSFCRT_VAL(i), MAX_LARTFCRT_VAL(i),...
-                LARC05_ALL_MAX(i), 'SAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6.0f%-14g%-6s\n', i, MAX_LARPFCRT_VAL(i), MAX_LARPFCRT_SP(i), MAX_LARMFCRT_VAL(i),...
+                MAX_LARMFCRT_SP(i), MAX_LARKFCRT_VAL(i), MAX_LARKFCRT_SP(i), MAX_LARSFCRT_VAL(i), MAX_LARSFCRT_SP(i), MAX_LARTFCRT_VAL(i), MAX_LARTFCRT_SP(i), LARC05_ALL_MAX(i), 'SAFE');
         end
     end
 
@@ -460,7 +515,7 @@ if (isStrengthOutput == true) && (noLaRC05 == false)
         Note: The value of SFAILRATIO considers results over ALL section
         points
     %}
-    fprintf(fid, 'SFAILRATIO    %-14g%-14g%-14g%-14g%-14g\n', SFAILRATIO_LARC05);
+    fprintf(fid, 'SFAILRATIO    %-20g%-20g%-20g%-20g%-20g\n', SFAILRATIO_LARC05);
 end
 
 % Print summary of assessment
@@ -478,22 +533,22 @@ end
 if (isStrengthOutput == true) && ((isa(outputStrength{1.0}, 'function_handle') == true) && (all(UCRT == -1.0) == false))
     % Print table header
     fprintf(fid, '\nAssessment summary for user-defined damage initiation criterion\nUser routine: @%s\nOutput location: <Worst section point>\n', char(outputStrength{1.0}));
-    fprintf(fid, 'PLY           UCRT          STATUS\n');
+    fprintf(fid, 'PLY           UCRT          (SP)  STATUS\n');
 
     % Print ply-wise results
     for i = 1.0:nPlies
         if FAILED_PLY_UCRT(i) == true
             % All section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_UCRT_VAL(i), 'FAILED');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-6s\n', i, MAX_UCRT_VAL(i), MAX_UCRT_SP(i), 'FAILED');
         elseif MAX_UCRT_VAL(i) >= 1.0
             % At least one section point in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_UCRT_VAL(i), 'UNSAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-6s\n', i, MAX_UCRT_VAL(i), MAX_UCRT_SP(i), 'UNSAFE');
         elseif MAX_UCRT_VAL(i) == -1.0
             % There is no data for the current ply
             fprintf(fid, '%-14.0fNO RESULTS\n', i);
         else
             % No section points in the current ply have failed
-            fprintf(fid, '%-14.0f%-14g%-6s\n', i, MAX_UCRT_VAL(i), 'SAFE');
+            fprintf(fid, '%-14.0f%-14g%-6.0f%-6s\n', i, MAX_UCRT_VAL(i), MAX_UCRT_SP(i), 'SAFE');
         end
     end
 
@@ -502,7 +557,7 @@ if (isStrengthOutput == true) && ((isa(outputStrength{1.0}, 'function_handle') =
         Note: The value of SFAILRATIO considers results over ALL section
         points
     %}
-    fprintf(fid, 'SFAILRATIO    %-14g\n', SFAILRATIO_UCRT);
+    fprintf(fid, 'SFAILRATIO    %-20g\n', SFAILRATIO_UCRT);
 end
 
 % Print summary of assessment

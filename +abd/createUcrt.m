@@ -10,8 +10,8 @@ function createUcrt(criterionName)
 %
 %     OUTPUT_STRENGTH = {@<criterion-name>, '<param>'};
 %
-%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
-%   Last modified 11-Feb-2026 08:06:52 UTC
+%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
+%   Last modified 12-Feb-2026 12:33:07 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

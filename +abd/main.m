@@ -571,8 +571,8 @@ function [S] = main(settings)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.0.0 Copyright Louis Vallance 2026
-%   Last modified 11-Feb-2026 08:06:52 UTC
+%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
+%   Last modified 12-Feb-2026 12:33:07 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -840,6 +840,7 @@ CHUNK_SIZE = [];
 N_CHUNKS = [];
 EXECUTION_MODE = [];
 UCRT_MException = [];
+noUcrt = true;
 
 % Initialise failure criteria component buffers
 [MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT] = abd.internal_strength.init(nPlies_points);
@@ -856,6 +857,9 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
         XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, TENSORS, nPlies, nPlies_points, SECTION_POINTS,...
         OUTPUT_STRENGTH{1.0}, OUTPUT_STRENGTH{2.0}, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
         LARTFCRT, UCRT);
+
+    % Update UCRT flag based on outcome of routine
+    noUcrt = ((isa(OUTPUT_STRENGTH{1.0}, 'function_handle') == true) & (all(UCRT == -1.0) == false)) == false;
 
     if (isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true) && (isempty(UCRT_MException) == true)
         %% FIND THE OPTIMUM STACKING SEQUENCE
@@ -923,18 +927,18 @@ if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) && (nPlies_poi
 end
 
 %% WRITE RESULTS TO A TEXT FILE
-[SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05] =...
+[SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LARC05, SFAILRATIO_UCRT] =...
     abd.internal_outputToFile(dateString, outputLocation, OUTPUT_STRENGTH, nPlies, t_ply, theta, enableTensor, printTensor, S_ply_aligned, S_ply_xy, E_ply_aligned, E_ply_xy,...
     E_therm_xy, E_hydro_xy, E_therm_aligned, E_hydro_aligned, ABD, symmetricAbd, EXT, EYT, GXYT, NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT,...
-    MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, noFailStress, noFailStrain, noHashin, noLaRC05, SECTION_POINTS,...
+    MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, noFailStress, noFailStrain, noHashin, noLaRC05, noUcrt, SECTION_POINTS,...
     OUTPUT_PLY_POINTS, plyBuffer, thickness, OUTPUT_ENVELOPE, ENVELOPE_MODE, outputApproximate, BEST_SEQUENCE, OUTPUT_OPTIMISED, OUTPUT_FIGURE{1.0}, plyBuffer_sfailratio, axx,...
     ayy, axy, bxx, byy, bxy, E_midspan, OUTPUT_PLY, z_points, OPTIMISER_SETTINGS, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE, jobName, jobDescription, isStrengthOutput, UCRT_MException);
 
 %% COLLECT OUTPUT
 [S] = abd.internal_getOutputVars(ABD, Qij, Qt, E_midspan, E_ply_xy, E_ply_aligned, E_therm_xy, E_therm_aligned, E_hydro_xy, E_hydro_aligned, S_ply_xy, S_ply_aligned, EXT, EYT, GXYT,...
     NUXYT, NUYXT, EXB, EYB, GXYB, NUXYB, NUYXB, MSTRS, SFAILRATIO_STRESS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, SFAILRATIO_STRAIN, HSNFTCRT, SFAILRATIO_HASHIN, HSNFCCRT, HSNMTCRT,...
-    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, BEST_SEQUENCE, isStrengthOutput, outputLocation, settings, noFailStress, noFailStrain,...
-    noHashin, noLaRC05);
+    HSNMCCRT, LARPFCRT, SFAILRATIO_LARC05, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, SFAILRATIO_UCRT, BEST_SEQUENCE, isStrengthOutput, outputLocation, settings, noFailStress,...
+    noFailStrain, noHashin, noLaRC05, noUcrt);
 
 %% Add the output location to the MATLAB path
 addpath(genpath(outputLocation));

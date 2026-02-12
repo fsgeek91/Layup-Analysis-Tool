@@ -1,5 +1,4 @@
-SynologyDrive/desktop.ini
-.git_fix_error_500.txt
-internal_test.m
-docs/
-/.SynologyWorkingDirectory
+.SynologyWorkingDirectory
+.gitattributes
+desktop.ini
+README.md
