@@ -8,8 +8,8 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
-%   Last modified 12-Feb-2026 12:33:07 UTC
+%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
+%   Last modified 13-Feb-2026 11:01:37 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -37,8 +37,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 5.1.0 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 12-Feb-2026 12:33:07 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 5.1.1 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 13-Feb-2026 11:01:37 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
@@ -718,11 +718,8 @@ elseif isempty(BEST_SEQUENCE) == false
     fprintf(fid, '\nCritical value: %g', BEST_SEQUENCE{2.0});
 
     % Print other calculation data
-    str = sprintf('%.0f', BEST_SEQUENCE{3.0});
-    str_with_commas = regexprep(fliplr(str), '(\d{3})(?=\d)', '$1,');
-    str_with_commas = fliplr(str_with_commas);
-
-    fprintf(fid, '\n(Checked %s stacking sequence permutations in %g seconds)\n', str_with_commas, BEST_SEQUENCE{4.0});
+    fprintf(fid, '\n(Checked %s stacking sequence permutations in %g seconds)\n', fliplr(regexprep(fliplr(sprintf('%.0f', BEST_SEQUENCE{3.0})), '(\d{3})(?=\d)', '$1,')),...
+        BEST_SEQUENCE{4.0});
 
     % Print the optimised stress/strain tensor
     abd.internal_printTensor(fid, OUTPUT_ENVELOPE, ENVELOPE_MODE, BEST_SEQUENCE{6.0}.STRESS_XY, BEST_SEQUENCE{6.0}.STRESS_PLY, BEST_SEQUENCE{6.0}.STRAIN_XY,...

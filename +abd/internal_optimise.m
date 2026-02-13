@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
-%   Last modified 12-Feb-2026 12:33:07 UTC
+%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
+%   Last modified 13-Feb-2026 11:01:37 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -17,7 +17,7 @@ classdef internal_optimise < handle
         function [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
                 main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, nSectionPoints, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points, B22_points, tolerance,...
                 XT, XC, YT, YC, S, C12, B12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, deltaT, deltaM,...
-                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS)
+                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS, pctAvail)
             % Initialise output
             %{
                 BEST_SEQUENCE(1) = Optimum stacking sequence
@@ -50,29 +50,24 @@ classdef internal_optimise < handle
             numAngles = numel(thetaAll);
 
             % Get the number of permutations
-            nPermutations = length(thetaAll)^nPlies;
+            precision = length(thetaAll);
+            nPermutations = precision^nPlies;
 
             % Warn the user if a large number of iteration will be required
             if nPermutations > 1e6
-                fprintf('[WARNING] More than one million iterations are required by the stacking\nsequence optimiser\n');
+                fprintf('[WARNING] More than one million iterations are required by the stacking sequence optimiser\n');
                 fprintf('-> The analysis may take a long time to complete\n');
-                fprintf('-> The required number of iterations is given by ANGLE_PRECISION^NUMBER_OF_PLIES\n');
             end
+
+            % Inform user about the required number of iterations
+            fprintf('[NOTICE] The number of iterations required by the stacking sequence optimiser is: ANGULAR_PRECISION(%.0f)^NUMBER_OF_PLIES(%.0f) = %s\n', precision, nPlies,...
+                fliplr(regexprep(fliplr(sprintf('%.0f', nPermutations)), '(\d{3})(?=\d)', '$1,')));
 
             % Set dummy variable
             dummy = zeros(1.0, nPlies);
             
-            % Get the MATLAB parallel pool object
-            poolObj = gcp("nocreate");
-
-            % Get the execution mode
-            if isempty(poolObj) == true
-                EXECUTION_MODE = 'Serial';
-            elseif poolObj.Connected == true
-                EXECUTION_MODE = 'Parallel';
-            else
-                EXECUTION_MODE = 'Unknown';
-            end
+            % Check the user's parallel pool configuration
+            EXECUTION_MODE = abd.internal_optimise.checkParforConfig(pctAvail, EXECUTION_MODE);
 
             % Save number of analysed permutations
             BEST_SEQUENCE{3.0} = nPermutations;
@@ -752,6 +747,46 @@ classdef internal_optimise < handle
 
             % Collect outer buffers into function output
             CRITERION_BUFFER = cell2mat(vertcat(OUTER_BUFFER{:})');
+        end
+
+        %% Check the user's parallel pool configuration
+        function [EXECUTION_MODE] = checkParforConfig(pctAvail, EXECUTION_MODE)
+            try
+                if pctAvail == true
+                    % Get the parallel pool object
+                    poolObj = gcp("nocreate");
+
+                    % Set the execution mode
+                    if isempty(poolObj) == true
+                        EXECUTION_MODE = 'Serial';
+
+                        % Notify the user about enabling a parallel pool
+                        fprintf('[NOTICE] For best performance, please start a parallel pool (>> parpool) before running the stacking sequence optimiser\n');
+                        fprintf('-> Automatic parallel pool creation is controlled by the setting "Automatically create a parallel pool" in Settings > Parallel Computing Toolbox\n');
+                    elseif poolObj.Connected == true
+                        EXECUTION_MODE = 'Parallel';
+
+                        % Notify the user about enabling a parallel pool
+                        fprintf('[NOTICE] Parallel computation enabled for stacking sequence optimisation\n');
+                    else
+                        % Set the default execution mode
+                        EXECUTION_MODE = 'Unknown';
+
+                        % Notify the user about enabling a parallel pool
+                        fprintf('[WARNING] Unable to determine the execution mode for stacking sequence optimisation\n');
+                    end
+                else
+                    % Set the default execution mode
+                    EXECUTION_MODE = 'Serial';
+
+                    % Notify the user about enabling a parallel pool
+                    fprintf('[NOTICE] The Parallel Computing Toolbox is recommended for best performance when using the stacking sequence optimiser!\n');
+                end
+            catch MException
+                % Notify the user about enabling a parallel pool
+                fprintf('[ERROR] Unable to determine the execution mode for stacking sequence optimisation\n-> MException.identifier: %s\n-> MException.message: %s\n',...
+                    MException.identifier, MException.message);
+            end
         end
     end
 end

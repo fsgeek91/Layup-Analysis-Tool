@@ -571,8 +571,8 @@ function [S] = main(settings)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
-%   Last modified 12-Feb-2026 12:33:07 UTC
+%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
+%   Last modified 13-Feb-2026 11:01:37 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -862,12 +862,15 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
     noUcrt = ((isa(OUTPUT_STRENGTH{1.0}, 'function_handle') == true) & (all(UCRT == -1.0) == false)) == false;
 
     if (isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true) && (isempty(UCRT_MException) == true)
+        % Flag indicating if Parallel Computing Toolbox is available
+        pctAvail = abd.internal_checkToolbox('Parallel Computing Toolbox');
+
         %% FIND THE OPTIMUM STACKING SEQUENCE
         [BEST_SEQUENCE, CRITERION_BUFFER, ~, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
-            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS);
+            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS, pctAvail);
     else
         CRITERION_BUFFER = [];
     end

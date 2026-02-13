@@ -3,8 +3,8 @@ function [isAvailable] = internal_checkToolbox(toolboxName)
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.0 Copyright Louis Vallance 2026
-%   Last modified 12-Feb-2026 12:33:07 UTC
+%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
+%   Last modified 13-Feb-2026 11:01:37 UTC
 %
     
     %%
@@ -16,17 +16,17 @@ isAvailable = any(strcmp(cellstr(char(versionData.Name)), toolboxName));
 % Create appdata variable name
 switch toolboxName
     case 'Image Processing Toolbox'
-        tag = 'qft_noIPT';
+        tag = 'lat_noIPT';
     case 'Symbolic Math Toolbox'
-        tag = 'qft_noSMT';
+        tag = 'lat_noSMT';
     case 'Statistics Toolbox'
-        tag = 'qft_noSMLT';
+        tag = 'lat_noSMLT';
     case 'Statistics and Machine Learning Toolbox'
-        tag = 'qft_noSMLT';
+        tag = 'lat_noSMLT';
     case 'Signal Processing Toolbox'
-        tag = 'qft_noSPT';
+        tag = 'lat_noSPT';
     case 'Parallel Computing Toolbox'
-        tag = 'qft_noPCT';
+        tag = 'lat_noPCT';
     otherwise
         isAvailable = -1.0;
         return
