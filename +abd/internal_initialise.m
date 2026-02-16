@@ -101,8 +101,8 @@ if (ischar(settings) == true) && (exist(settings, 'file') == 2.0)
             with an error
         %}
         fprintf(['[ERROR] The user settings file ''%s'' is invalid\n-> The user settings file must be a MATLAB binary (.mat) file containing\n   the structure ''settings'' of anal',...
-            'ysis definitions\n-> Execute the command ''help abd.main'' for instructions on creating the\n   input structure, or look at ''user_definitions.m'' for an example anal',...
-            'ysis\n'], settings_file);
+            'ysis definitions\n-> Execute the command ''help lat'' for instructions on creating the\n   input structure, or look at ''user_definitions.m'' for an example analysis\n'],...
+            settings_file);
         error = 1.0;
         return
     end
@@ -111,8 +111,8 @@ elseif isstruct(settings) == false
         The function input is not a string parameter, so it has to be a
         structure. If not, then exist with an error
     %}
-    fprintf(['[ERROR] The input arguments to ABD.MAIN are invalid\n-> Input must be a structure of analysis definitions\n-> Execute the command ''help abd.main'' for instructions ',...
-        'on creating the\n   input structure, or look at ''user_definitions.m'' for an example\n   analysis\n']);
+    fprintf(['[ERROR] The input arguments to ABD.MAIN are invalid\n-> Input must be a structure of analysis definitions\n-> Execute the command ''help lat'' for instructions on cr',...
+        'eating the\n   input structure, or look at ''user_definitions.m'' for an example\n   analysis\n']);
     error = 1.0;
     return
 end

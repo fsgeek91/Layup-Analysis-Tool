@@ -32,7 +32,7 @@ function [UCRT] = ucrt_example(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS
 %        E_HYDRO_ALIGNED [3xTOTAL_POINTS double], Stress-free ply strains due to moisture process in ply (1-2) coordinates
 %
 %    NOTE: For a description of the mechanical material/composite strength
-%    property identifieres, run the command >> help abd.main
+%    property identifieres, run the command >> help lat
 %    and consult the sections "USE CASE I" and "USE CASE III",
 %    respectively.
 %
