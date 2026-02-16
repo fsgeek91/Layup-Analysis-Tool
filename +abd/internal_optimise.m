@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
-%   Last modified 13-Feb-2026 11:01:37 UTC
+%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
+%   Last modified 16-Feb-2026 12:06:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -82,9 +82,12 @@ classdef internal_optimise < handle
                         indexPermutations =...
                             ...
                             fig.combinator(numAngles, nPlies, 'p', 'r');
-                    catch seqException
+                    catch MException
                         % A problem occurred while getting the combinations
-                        BEST_SEQUENCE{5.0} = seqException;
+                        BEST_SEQUENCE{5.0} = MException;
+
+                        % Save the MATLAB exception object
+                        abd.internal_saveMExceptionObj(MException)
                         return
                     end
 
@@ -108,9 +111,12 @@ classdef internal_optimise < handle
                             A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT,...
                             XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12,...
                             XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle);
-                    catch seqException
+                    catch MException
                         % A problem occurred while running the optimisation
-                        BEST_SEQUENCE{5.0} = seqException;
+                        BEST_SEQUENCE{5.0} = MException;
+
+                        % Save the MATLAB exception object
+                        abd.internal_saveMExceptionObj(MException)
                         return
                     end
                     
@@ -152,9 +158,12 @@ classdef internal_optimise < handle
                             Q11, Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
                             failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
                             symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle);
-                    catch seqException
+                    catch MException
                         % A problem occurred while running the optimisation
-                        BEST_SEQUENCE{5.0} = seqException;
+                        BEST_SEQUENCE{5.0} = MException;
+
+                        % Save the MATLAB exception object
+                        abd.internal_saveMExceptionObj(MException)
                         return
                     end
                     
@@ -786,6 +795,9 @@ classdef internal_optimise < handle
                 % Notify the user about enabling a parallel pool
                 fprintf('[ERROR] Unable to determine the execution mode for stacking sequence optimisation\n-> MException.identifier: %s\n-> MException.message: %s\n',...
                     MException.identifier, MException.message);
+
+                % Save the MATLAB exception object
+                abd.internal_saveMExceptionObj(MException)
             end
         end
     end

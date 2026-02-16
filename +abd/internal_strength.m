@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
-%   Last modified 13-Feb-2026 11:01:37 UTC
+%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
+%   Last modified 16-Feb-2026 12:06:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -362,17 +362,17 @@ classdef internal_strength < handle
 
                 % Run the user routine
                 UCRT = fcnHandle(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS);
-            catch UCRT_MException
+            catch MException
                 %{
                     Do not evaluate the user-defined failure criterion and
                     save the exception object to the workspace
                 %}
                 try
-                    fprintf('[ERROR] Exception encountered on line %.0f in user routine file ''%s.m''\n', UCRT_MException.stack(1.0).line, char(fcnHandle));
-                    fid = fopen(UCRT_MException.stack(1.0).file, 'r');
+                    fprintf('[ERROR] Exception encountered on line %.0f in user routine file ''%s.m''\n', MException.stack(1.0).line, char(fcnHandle));
+                    fid = fopen(MException.stack(1.0).file, 'r');
 
                     % Extract the line image
-                    for k = 1:UCRT_MException.stack(1.0).line
+                    for k = 1:MException.stack(1.0).line
                         line = fgetl(fid);
                         if ischar(line) == false
                             % Do nothing
@@ -383,12 +383,13 @@ classdef internal_strength < handle
                     % Print the line image to the command window
                     fclose(fid);
                     fprintf('        Line image: %s\n', line);
-                catch
-                    % Do nothing
+                catch MException
+                    % Save the MATLAB exception object
+                    abd.internal_saveMExceptionObj(MException)
                 end
 
-                fprintf('        MException identifier: %s\n', UCRT_MException.identifier);
-                fprintf('        MException message: %s\n', UCRT_MException.message);
+                fprintf('        MException identifier: %s\n', MException.identifier);
+                fprintf('        MException message: %s\n', MException.message);
                 fprintf('[NOTICE] The complete MATLAB Exception object will be saved in the specified output location\n');
                 fprintf('[ERROR] The user-defined failure criterion has not been evaluated\n');
 

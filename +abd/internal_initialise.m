@@ -5,8 +5,8 @@ function [enableTensor, printTensor, material, fail_stress, fail_strain, hashin,
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
-%   Last modified 13-Feb-2026 11:01:37 UTC
+%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
+%   Last modified 16-Feb-2026 12:06:38 UTC
 %
 %#ok<*NODEF>
 
@@ -90,6 +90,9 @@ if (ischar(settings) == true) && (exist(settings, 'file') == 2.0)
             fprintf('[ERROR] The contents of the user settings file ''%s'' are invalid\n-> MException.identifier: %s\n-> MException.message: %s\n', settings_file, MException.identifier,...
                 MException.message);
             error = 1.0;
+
+            % Save the MATLAB exception object
+            abd.internal_saveMExceptionObj(MException)
             return
         end
     else
@@ -351,14 +354,17 @@ if exist(outputlocationFull, 'dir') == 7.0
 
             % Add the old job directory back to the MATLAB path
             addpath(genpath(newJobDir))
-        catch
-
+        catch MException
             % The old job directory could not be renamed
             response = questdlg('The old job directory could not be renamed. Results will be overwritten. OK to continue?', 'Quick Fatigue Tool', 'Yes', 'No', 'Yes');
 
+            % Process the user's response
             if (strcmp(response, 'Yes') == true) || (strcmpi(response, 'Y') == true)
                 checkString = response;
             end
+
+            % Save the MATLAB exception object
+            abd.internal_saveMExceptionObj(MException)
         end
     end
 
@@ -368,8 +374,9 @@ if exist(outputlocationFull, 'dir') == 7.0
             if exist(outputlocationFull, 'dir') == 7.0
                 rmdir(outputlocationFull, 's');
             end
-        catch 
-            % Do nothing
+        catch MException
+            % Save the MATLAB exception object
+            abd.internal_saveMExceptionObj(MException)
         end
     else
         % Re-enable all warnings

@@ -3,8 +3,8 @@ function [job_id_previous, job_date_previous] = internal_getPreviousJobID(folder
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
-%   Last modified 13-Feb-2026 11:01:37 UTC
+%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
+%   Last modified 16-Feb-2026 12:06:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -34,8 +34,11 @@ if isempty(previousJobSettings) == false
 
         % Extract the date of the previous job
         job_date_previous = x.settings.jobdate;
-    catch
+    catch MException
         % Something went wrong while extracting the data
+        
+        % Save the MATLAB exception object
+        abd.internal_saveMExceptionObj(MException)
     end
 end
 end

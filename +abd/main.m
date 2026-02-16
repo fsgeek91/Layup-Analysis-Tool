@@ -571,8 +571,8 @@ function [S] = main(settings)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
-%   Last modified 13-Feb-2026 11:01:37 UTC
+%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
+%   Last modified 16-Feb-2026 12:06:38 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -950,8 +950,9 @@ addpath(genpath(outputLocation));
 if OUTPUT_LOCATION{2.0} == true
     try
         open([outputLocation, filesep, 'summary.log'])
-    catch
-        % Do nothing
+    catch MException
+        % Save the MATLAB exception object
+        abd.internal_saveMExceptionObj(MException)
     end
 end
 end

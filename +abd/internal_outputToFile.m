@@ -8,8 +8,8 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
-%   Last modified 13-Feb-2026 11:01:37 UTC
+%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
+%   Last modified 16-Feb-2026 12:06:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -37,8 +37,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 5.1.1 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 13-Feb-2026 11:01:37 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 5.1.2 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 16-Feb-2026 12:06:38 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
@@ -222,8 +222,11 @@ end
 %% Print critical ply summary
 if isStrengthOutput == true
     fprintf(fid, '\nFAILURE CRITERIA ASSESSMENT RESULTS\n');
-    fprintf(fid, '\nCritical ply summary (all criteria):\n');
-    fprintf(fid, 'CRITERION     PLY           SYMMETRIC?\n');
+    fprintf(fid, '\nCritical ply summary (all evaluated criteria):\n');
+    fprintf(fid, 'CRITERION     VALUE/RESERVE    PLY           SYMMETRIC?\n');
+
+    % Initial the overall worst value buffer
+    WORST_CRITERION_BUFFER = containers.Map();
 
     if noFailStress == false
         % Get the critical ply and the symmetry condition
@@ -232,9 +235,17 @@ if isStrengthOutput == true
             ...
             abd.internal_getCriticalPly([MSTRS', TSAIH', HOFFMAN', TSAIW', AZZIT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
+        % Get the worst criterion value at the worst ply
+        WORST_MSTRS = MAX_MSTRS_DATA(MAX_MSTRS, 1.0);
+        WORST_TSAIH = MAX_TSAIH_DATA(MAX_TSAIH, 1.0);
+        WORST_HOFFMAN = MAX_HOFFMAN_DATA(MAX_HOFFMAN, 1.0);
+        WORST_TSAIW = MAX_TSAIW_DATA(MAX_TSAIW, 1.0);
+        WORST_AZZIT = MAX_AZZIT_DATA(MAX_AZZIT, 1.0);
+
         % Print the result
-        fprintf(fid, 'MSTRS         %-14.0f%-9s\nTSAIH         %-14.0f%-9s\nHOFFMAN       %-14.0f%-9s\nTSAIW         %-14.0f%-9s\nAZZIT         %-14.0f%-9s\n', MAX_MSTRS,...
-            MSTRS_SYM, MAX_TSAIH, TSAIH_SYM, MAX_HOFFMAN, HOFFMAN_SYM, MAX_TSAIW, TSAIW_SYM, MAX_AZZIT, AZZIT_SYM);
+        fprintf(fid, ['MSTRS         %-17g%-14.0f%-9s\nTSAIH         %-17g%-14.0f%-9s\nHOFFMAN       %-17g%-14.0f%-9s\nTSAIW         %-17g%-14.0f%-9s\nAZZIT         %-17g%-14.0f%-',...
+            '9s\n'], WORST_MSTRS, MAX_MSTRS, MSTRS_SYM, WORST_TSAIH, MAX_TSAIH, TSAIH_SYM, WORST_HOFFMAN, MAX_HOFFMAN, HOFFMAN_SYM, WORST_TSAIW, MAX_TSAIW, TSAIW_SYM, WORST_AZZIT,...
+            MAX_AZZIT, AZZIT_SYM);
 
         % Get worst criterion values (per ply)
         MAX_MSTRS_VAL = MAX_MSTRS_DATA(:, 1.0);
@@ -249,6 +260,10 @@ if isStrengthOutput == true
         MAX_HOFFMAN_SP = MAX_HOFFMAN_DATA(:, 2.0);
         MAX_TSAIW_SP = MAX_TSAIW_DATA(:, 2.0);
         MAX_AZZIT_SP = MAX_AZZIT_DATA(:, 2.0);
+
+        % Update the overall worst criterion buffer
+        WORST_CRITERION_BUFFER = abd.internal_updateCrtBuffer(WORST_CRITERION_BUFFER, {'MSTRS', 'TSAIH', 'HOFFMAN', 'TSAIW', 'AZZIT'}, [WORST_MSTRS, WORST_TSAIH, WORST_HOFFMAN,...
+            WORST_TSAIW, WORST_AZZIT]);
     end
 
     if noFailStrain == false
@@ -257,14 +272,20 @@ if isStrengthOutput == true
             ...
             abd.internal_getCriticalPly(MSTRN', symmetricAbd, plyBuffer_sfailratio, nPlies);
 
+        % Get the worst criterion value at the worst ply
+        WORST_MSTRN = MAX_MSTRN_DATA(MAX_MSTRN, 1.0);
+
         % Print the result
-        fprintf(fid, 'MSTRN         %-14.0f%-9s\n', MAX_MSTRN, MSTRN_SYM);
+        fprintf(fid, 'MSTRN         %-17g%-14.0f%-9s\n', WORST_MSTRN, MAX_MSTRN, MSTRN_SYM);
 
         % Get worst criterion values (per ply)
         MAX_MSTRN_VAL = MAX_MSTRN_DATA(:, 1.0);
 
         % Get worst section point per criterion value (per ply)
         MAX_MSTRN_SP = MAX_MSTRN_DATA(:, 2.0);
+
+        % Update the overall worst criterion buffer
+        WORST_CRITERION_BUFFER = abd.internal_updateCrtBuffer(WORST_CRITERION_BUFFER, {'MSTRN'}, WORST_MSTRN);
     end
 
     if noHashin == false
@@ -274,9 +295,15 @@ if isStrengthOutput == true
             ...
             abd.internal_getCriticalPly([HSNFTCRT', HSNFCCRT', HSNMTCRT', HSNMCCRT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
+        % Get the worst criterion value at the worst ply
+        WORST_HSNFTCRT = MAX_HSNFTCRT_DATA(MAX_HSNFTCRT, 1.0);
+        WORST_HSNFCCRT = MAX_HSNFCCRT_DATA(MAX_HSNFCCRT, 1.0);
+        WORST_HSNMTCRT = MAX_HSNMTCRT_DATA(MAX_HSNMTCRT, 1.0);
+        WORST_HSNMCCRT = MAX_HSNMCCRT_DATA(MAX_HSNMCCRT, 1.0);
+
         % Print the result
-        fprintf(fid, 'HSNFTCRT      %-14.0f%-9s\nHSNFCCRT      %-14.0f%-9s\nHSNMTCRT      %-14.0f%-9s\nHSNMCCRT      %-14.0f%-9s\n', MAX_HSNFTCRT, HSNFTCRT_SYM, MAX_HSNFCCRT,...
-            HSNFCCRT_SYM, MAX_HSNMTCRT, HSNMTCRT_SYM, MAX_HSNMCCRT, HSNMCCRT_SYM);
+        fprintf(fid, 'HSNFTCRT      %-17g%-14.0f%-9s\nHSNFCCRT      %-17g%-14.0f%-9s\nHSNMTCRT      %-17g%-14.0f%-9s\nHSNMCCRT      %-17g%-14.0f%-9s\n', WORST_HSNFTCRT,...
+            MAX_HSNFTCRT, HSNFTCRT_SYM, WORST_HSNFCCRT, MAX_HSNFCCRT, HSNFCCRT_SYM, WORST_HSNMTCRT, MAX_HSNMTCRT, HSNMTCRT_SYM, WORST_HSNMCCRT, MAX_HSNMCCRT, HSNMCCRT_SYM);
 
         % Get worst criterion values (per ply)
         MAX_HSNFTCRT_VAL = MAX_HSNFTCRT_DATA(:, 1.0);
@@ -289,6 +316,10 @@ if isStrengthOutput == true
         MAX_HSNFCCRT_SP = MAX_HSNFCCRT_DATA(:, 2.0);
         MAX_HSNMTCRT_SP = MAX_HSNMTCRT_DATA(:, 2.0);
         MAX_HSNMCCRT_SP = MAX_HSNMCCRT_DATA(:, 2.0);
+
+        % Update the overall worst criterion buffer
+        WORST_CRITERION_BUFFER = abd.internal_updateCrtBuffer(WORST_CRITERION_BUFFER, {'HSNFTCRT', 'HSNFCCRT', 'HSNMTCRT', 'HSNMCCRT'}, [WORST_HSNFTCRT, WORST_HSNFCCRT,...
+            WORST_HSNMTCRT, WORST_HSNMCCRT]);
     end
 
     if noLaRC05 == false
@@ -298,9 +329,17 @@ if isStrengthOutput == true
             ...
             abd.internal_getCriticalPly([LARPFCRT', LARMFCRT', LARKFCRT', LARSFCRT', LARTFCRT'], symmetricAbd, plyBuffer_sfailratio, nPlies);
 
+        % Get the worst criterion value at the worst ply
+        WORST_LARPFCRT = MAX_LARPFCRT_DATA(MAX_LARPFCRT, 1.0);
+        WORST_LARMFCRT = MAX_LARMFCRT_DATA(MAX_LARMFCRT, 1.0);
+        WORST_LARKFCRT = MAX_LARKFCRT_DATA(MAX_LARKFCRT, 1.0);
+        WORST_LARSFCRT = MAX_LARSFCRT_DATA(MAX_LARSFCRT, 1.0);
+        WORST_LARTFCRT = MAX_LARTFCRT_DATA(MAX_LARTFCRT, 1.0);
+
         % Print the result
-        fprintf(fid, 'LARPFCRT      %-14.0f%-9s\nLARMFCRT      %-14.0f%-9s\nLARKFCRT      %-14.0f%-9s\nLARSFCRT      %-14.0f%-9s\nLARTFCRT      %-14.0f%-9s\n', MAX_LARPFCRT,...
-            LARPFCRT_SYM, MAX_LARMFCRT, LARMFCRT_SYM, MAX_LARKFCRT, LARKFCRT_SYM, MAX_LARSFCRT, LARSFCRT_SYM, MAX_LARTFCRT, LARTFCRT_SYM);
+        fprintf(fid, ['LARPFCRT      %-17g%-14.0f%-9s\nLARMFCRT      %-17g%-14.0f%-9s\nLARKFCRT      %-17g%-14.0f%-9s\nLARSFCRT      %-17g%-14.0f%-9s\nLARTFCRT      %-17g%-14.0f%-',...
+            '9s\n'], WORST_LARPFCRT, MAX_LARPFCRT, LARPFCRT_SYM, WORST_LARMFCRT, MAX_LARMFCRT, LARMFCRT_SYM, WORST_LARKFCRT, MAX_LARKFCRT, LARKFCRT_SYM, WORST_LARSFCRT,...
+            MAX_LARSFCRT, LARSFCRT_SYM, WORST_LARTFCRT, MAX_LARTFCRT, LARTFCRT_SYM);
 
         % Get worst criterion values (per ply)
         MAX_LARPFCRT_VAL = MAX_LARPFCRT_DATA(:, 1.0);
@@ -315,6 +354,10 @@ if isStrengthOutput == true
         MAX_LARKFCRT_SP = MAX_LARKFCRT_DATA(:, 2.0);
         MAX_LARSFCRT_SP = MAX_LARSFCRT_DATA(:, 2.0);
         MAX_LARTFCRT_SP = MAX_LARTFCRT_DATA(:, 2.0);
+
+        % Update the overall worst criterion buffer
+        WORST_CRITERION_BUFFER = abd.internal_updateCrtBuffer(WORST_CRITERION_BUFFER, {'LARPFCRT', 'LARMFCRT', 'LARKFCRT', 'LARSFCRT', 'LARTFCRT'}, [MAX_LARPFCRT_VAL,...
+            MAX_LARMFCRT_VAL, MAX_LARKFCRT_VAL, MAX_LARSFCRT_VAL, MAX_LARTFCRT_VAL]);
     end
 
     if noUcrt == false
@@ -323,16 +366,28 @@ if isStrengthOutput == true
             ...
             abd.internal_getCriticalPly(UCRT', symmetricAbd, plyBuffer_sfailratio, nPlies);
 
+        % Get the worst criterion value at the worst ply
+        WORST_UCRT = MAX_UCRT_DATA(MAX_UCRT, 1.0);
+
         % Print the result
-        fprintf(fid, 'UCRT          %-14.0f%-9s\n', MAX_UCRT, UCRT_SYM);
+        fprintf(fid, 'UCRT          %-17g%-14.0f%-9s\n', WORST_UCRT, MAX_UCRT, UCRT_SYM);
 
         % Get worst criterion values (per ply)
         MAX_UCRT_VAL = MAX_UCRT_DATA(:, 1.0);
 
         % Get worst section point per criterion value (per ply)
         MAX_UCRT_SP = MAX_UCRT_DATA(:, 2.0);
+
+        % Update the overall worst criterion buffer
+        WORST_CRITERION_BUFFER = abd.internal_updateCrtBuffer(WORST_CRITERION_BUFFER, {'UCRT'}, WORST_UCRT);
     end
 
+    % Get the overall worst criterion value and identifier
+    KEYS = WORST_CRITERION_BUFFER.keys;
+    [MAX_OVERALL_CRT, IDX] = max(cell2mat(WORST_CRITERION_BUFFER.values));
+
+    % Print the overall worst criterion value
+    fprintf(fid, '_______________________________________________________\nWORST:        %-17s\n', sprintf('%g (%s)', MAX_OVERALL_CRT, KEYS{IDX}));
     fprintf(fid, '\n===========================================================================\n');
 end
 
@@ -350,7 +405,7 @@ if (isStrengthOutput == true) && (noFailStress == false)
     FAIL_STRESS_ALL_MAX = max(FAIL_STRESS_ALL, [], 2.0);
 
     % Print table header
-    fprintf(fid, '\nAssessment summary for stress-based failure criteria\nOutput location: <Worst section point>\n');
+    fprintf(fid, '\nDetailed assessment summary for stress-based failure criteria:\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           MSTRS(V)      @SP   TSAIH%s      @SP   HOFFMAN%s    @SP   TSAIW%s      @SP   AZZIT%s      @SP   (WORST)       STATUS\n', parameter, parameter,...
         parameter, parameter);
 
@@ -385,7 +440,7 @@ end
 %% Print results of failure criteria analysis (strain-based)
 if (isStrengthOutput == true) && (noFailStrain == false)
     % Print table header
-    fprintf(fid, '\nAssessment summary for strain-based failure criteria\nOutput location: <Worst section point>\n');
+    fprintf(fid, '\nDetailed assessment summary for strain-based failure criteria:\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           MSTRN(V)      @SP   STATUS\n');
 
     % Print ply-wise results
@@ -436,7 +491,7 @@ if (isStrengthOutput == true) && (noHashin == false)
     HASHIN_ALL_MAX = max(HASHIN_ALL, [], 2.0);
 
     % Print table header
-    fprintf(fid, '\nAssessment summary for Hashin''s damage initiation criteria\nOutput location: <Worst section point>\n');
+    fprintf(fid, '\nDetailed assessment summary for Hashin''s damage initiation criteria:\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           HSNFTCRT      @SP   HSNFCCRT      @SP   HSNMTCRT      @SP   HSNMCCRT      @SP   (WORST)       STATUS\n');
 
     % Print ply-wise results
@@ -485,7 +540,7 @@ if (isStrengthOutput == true) && (noLaRC05 == false)
     LARC05_ALL_MAX = max(LARC05_ALL, [], 2.0);
 
     % Print table header
-    fprintf(fid, '\nAssessment summary for LaRC05 damage initiation criteria\nOutput location: <Worst section point>\n');
+    fprintf(fid, '\nDetailed assessment summary for LaRC05 damage initiation criteria:\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           LARPFCRT      @SP   LARMFCRT      @SP   LARKFCRT      @SP   LARSFCRT      @SP   LARTFCRT      @SP   (WORST)       STATUS\n');
 
     % Print ply-wise results
@@ -532,7 +587,7 @@ end
 %% Print results of damage initiation criterion analysis (UCRT)
 if (isStrengthOutput == true) && ((isa(outputStrength{1.0}, 'function_handle') == true) && (all(UCRT == -1.0) == false))
     % Print table header
-    fprintf(fid, '\nAssessment summary for user-defined damage initiation criterion\nUser routine: @%s\nOutput location: <Worst section point>\n', char(outputStrength{1.0}));
+    fprintf(fid, '\nDetailed assessment summary for user-defined failure criterion:\nUser routine: @%s\nOutput location: <Worst section point>\n', char(outputStrength{1.0}));
     fprintf(fid, 'PLY           UCRT          @SP   STATUS\n');
 
     % Print ply-wise results

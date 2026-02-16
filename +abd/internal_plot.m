@@ -3,8 +3,8 @@ classdef internal_plot < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.1 Copyright Louis Vallance 2026
-%   Last modified 13-Feb-2026 11:01:37 UTC
+%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
+%   Last modified 16-Feb-2026 12:06:38 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -120,8 +120,11 @@ classdef internal_plot < handle
                 % Try to tighten the axes
                 try
                     axis tight
-                catch
+                catch MException
                     % Don't tighten the axis
+
+                    % Save the MATLAB exception object
+                    abd.internal_saveMExceptionObj(MException)
                 end
                 
                 % Save the MATLAB figure to a file
@@ -242,8 +245,11 @@ classdef internal_plot < handle
                 % Try to tighten the axes
                 try
                     axis tight
-                catch
+                catch MException
                     % Don't tighten the axis
+
+                    % Save the MATLAB exception object
+                    abd.internal_saveMExceptionObj(MException)
                 end
 
                 % Save the MATLAB figure to a file now (detached mode only)
@@ -388,12 +394,15 @@ classdef internal_plot < handle
 
                 % Get the figure visibility
                 figureVisibility = p.qftpref_output.figureVisibility;
-            catch
+            catch MException
                 %{
                     There is no QFT user preference object, so use default
                     value of 'off'
                 %}
                 figureVisibility = 'off';
+
+                % Save the MATLAB exception object
+                abd.internal_saveMExceptionObj(MException)
             end
 
             % Create the MATLAB figure window
