@@ -1,4 +1,4 @@
-help abd.main
+help lat
 
 try 
     edit user_definitions.m
