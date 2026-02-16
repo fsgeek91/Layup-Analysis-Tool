@@ -401,8 +401,8 @@ classdef internal_plot < handle
                 %}
                 figureVisibility = 'off';
 
-                % Save the MATLAB exception object
-                abd.internal_saveMExceptionObj(MException)
+                % % Save the MATLAB exception object
+                % abd.internal_saveMExceptionObj(MException)
             end
 
             % Create the MATLAB figure window
