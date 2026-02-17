@@ -171,10 +171,8 @@
 %
 %   OUTPUT_PLY. The section output request:
 %     DEFAULT: Program controlled
-%       If:
-%         SECTION_POINTS = 1: Midspans only
-%       Else:
-%         Top and bottom faces
+%       If SECTION_POINTS = 1: Midspans only
+%       Else: Top and bottom faces
 %     TOP: Top faces only
 %     MIDDLE: Midspans only
 %     BOTTOM: Bottom faces only
@@ -231,7 +229,7 @@
 %                          'load_hydro', [<1x1>],...
 %                          'output_ply', [<'param'> | [SP1,..., SPn]],...
 %                          'output_figure', {<1x3>},...
-%                          'output_strength', {<1x2>},...
+%                          'output_strength', {<1x3>},...
 %                          'output_location', {<1x2>}),...
 %                          ).
 %
@@ -297,9 +295,9 @@
 %   value of -1 is specified. Unspecified criteria are left empty ( [] ).
 %   Derivation of PHI0 requires the Symbolic Math Toolbox.
 %
-%   OUTPUT_STRENGTH. A 1x2 cell array specifying settings for the strength
+%   OUTPUT_STRENGTH. A 1x3 cell array specifying settings for the strength
 %   assessment:
-%     {{[false | true] | [@<ucrt>, '<file-name>']}, '<parameter>'}
+%     {{[false | true] | [@<ucrt>, '<file-name>']}, '<parameter>', '<step-size>'}
 %
 %   OUTPUT_STRENGTH(1) is a flag to enable or disable the strength
 %   assessment:
@@ -334,6 +332,13 @@
 %
 %   Note: For Hashin's theory and LaRC05, R is not evaluated; output for
 %   these criteria is quoted as the damage initiation criterion index.
+%
+%   OUTPUT_STRENGTH(3) is the angular step size for the critical plane
+%   search algorithm (LaRC05 only).
+%     DEFAULT: Program controlled
+%       If stacking sequence optimisation: 15 degrees
+%       Else: 5 degrees
+%     THETA: User-defined angular step size (degrees)
 %__________________________________________________________________________
 %   USE CASE IV - Stacking sequence optimisation:
 %
@@ -570,5 +575,5 @@
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC

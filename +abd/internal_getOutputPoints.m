@@ -4,8 +4,8 @@ function [error, OUTPUT_PLY_POINTS, plyBuffer, OUTPUT_ENVELOPE, ENVELOPE_MODE, o
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE

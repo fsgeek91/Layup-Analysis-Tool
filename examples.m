@@ -26,8 +26,8 @@
 %
 %   See also abd.main, user_definitions.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 %
 %==========================================================================
 %__________________________________________________________________________
@@ -104,7 +104,7 @@
     'load_mech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
     'output_ply', 'BOTTOM',...                                              % Ply output location
     'output_figure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
-    'output_strength', {{true, 'RESERVE'}},...                              % Strength calculation
+    'output_strength', {{true, 'RESERVE', 'DEFAULT'}},...                   % Strength calculation
     'output_location', {{'DEFAULT', false}}));                              % Analysis output location
 %__________________________________________________________________________
 %   USE CASE IV - Stacking sequence optimisation:
@@ -127,6 +127,6 @@
     'load_mech', [0, 150, 0; -100, 0, 0],...                                % Load matrix (mechanical)
     'output_ply', 'BOTTOM',...                                              % Ply output location
     'output_figure', {{'DEFAULT', 'POINTS', 'SPLIT'}},...                   % MATLAB figures
-    'output_strength', {{true, 'RESERVE'}},...                              % Strength calculation
+    'output_strength', {{true, 'RESERVE', 'DEFAULT'}},...                   % Strength calculation
     'output_optimised', {{'TSAIW', 'RESERVE', 'MINMAX', 10.0}},...          % Stacking sequence optimisation
     'output_location', {{'DEFAULT', false}}));                              % Analysis output location

@@ -1,17 +1,17 @@
 function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, G12, Xt, Xc, Yt,Yc, Sl, St, alpha0, phi0, nl,...
-    nt, SECTION_POINTS)
+    nt, SECTION_POINTS, step, mode)
 %   Perform strength calculations based on the ply stresses.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 %
     
     %%
 
 %% Initialise variables
-step = 15.0;
+% Basic
 iterate = true;
 S11 = stress(1.0, :);
 S22 = stress(2.0, :);
@@ -19,6 +19,18 @@ S33 = zeros(1.0, nPlies_points);
 S12 = stress(3.0, :);
 S13 = S33;
 S23 = S33;
+
+% Critical plane step size
+if ischar(step) == true
+    switch mode
+        case 1.0 % Normal
+            step = 5.0;
+        case 2.0 % Stacking sequence optimisation
+            step = 15.0;
+        otherwise % Default case (should never be reached!)
+            step = 15.0;
+    end
+end
     
 %% Initialise St/nt/phi0 if applicable
 % ST

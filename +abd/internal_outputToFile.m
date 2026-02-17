@@ -8,8 +8,8 @@ function [SFAILRATIO_STRESS, SFAILRATIO_STRAIN, SFAILRATIO_HASHIN, SFAILRATIO_LA
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -37,8 +37,8 @@ fprintf(fid, '*                                                                 
 fprintf(fid, '*   File Exchange: 128914-layup-analysis-tool                             *\n');
 fprintf(fid, '*   GitHub: https://github.com/fsgeek91/Layup-Analysis-Tool/releases      *\n');
 fprintf(fid, '***************************************************************************\n\n');
-fprintf(fid, 'Layup Analysis Tool 5.1.2 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
-fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 16-Feb-2026 12:06:38 UTC\n\n');
+fprintf(fid, 'Layup Analysis Tool 5.1.3 on machine %s\nMATLAB version %s on %s\n\n', hostname(1.0:end - 1.0), version, computer);
+fprintf(fid, 'Copyright Louis Vallance 2026\nLast modified 17-Feb-2026 06:40:45 UTC\n\n');
 fprintf(fid, 'ANALYSIS RESULTS GENERATED ON %s\n\n', upper(dateString));
 fprintf(fid, 'Job name:  %s\n', JOB_NAME);
 if isempty(JOB_DESCRIPTION) == false
@@ -383,11 +383,14 @@ if isStrengthOutput == true
     end
 
     % Get the overall worst criterion value and identifier
-    KEYS = WORST_CRITERION_BUFFER.keys;
-    [MAX_OVERALL_CRT, IDX] = max(cell2mat(WORST_CRITERION_BUFFER.values));
+    if WORST_CRITERION_BUFFER.Count > 1.0
+        KEYS = WORST_CRITERION_BUFFER.keys;
+        [MAX_OVERALL_CRT, IDX] = max(cell2mat(WORST_CRITERION_BUFFER.values));
 
-    % Print the overall worst criterion value
-    fprintf(fid, '_______________________________________________________\nWORST:        %-17s\n', sprintf('%g (%s)', MAX_OVERALL_CRT, KEYS{IDX}));
+        % Print the overall worst criterion value
+        fprintf(fid, '_______________________________________________________\nWORST:        %-17s\n', sprintf('%g (%s)', MAX_OVERALL_CRT, KEYS{IDX}));
+    end
+    
     fprintf(fid, '\n===========================================================================\n');
 end
 

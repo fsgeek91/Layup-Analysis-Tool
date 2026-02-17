@@ -19,8 +19,8 @@ function [] = user_definitions(varargin)
 %
 %   See also abd.main, examples.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 
 %__________________________________________________________________________
 %% 1: JOB
@@ -225,11 +225,15 @@ OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
 
     Second argument (failure parameter):
     '<param>': Reserve (strength reserve factor); Value (criterion value)
+    
+    Third argument (critical plane step size for LaRC05):
+    'Default': Program controlled
+    theta: User-defined angular step size
 
     Note: The setting of the failure parameter only applies to the
     Tsai-Hill, 2D Hoffman, Tsai-Wu and Azzi-Tsai-Hill failure criteria.
 %}
-OUTPUT_STRENGTH = {false, 'RESERVE'};
+OUTPUT_STRENGTH = {false, 'RESERVE', 'DEFAULT'};
 
 % OUTPUT_OPTIMISED  Compute the optimised stacking sequence
 %{

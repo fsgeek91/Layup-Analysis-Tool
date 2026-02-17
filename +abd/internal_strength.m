@@ -3,8 +3,8 @@ classdef internal_strength < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -19,7 +19,7 @@ classdef internal_strength < handle
                 =...
                 main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C12, B12, E11, E22, G12, V12, AXX, AYY, AXY, BXX, BYY, BXY, XET, XEC, YET,...
                 YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, TENSORS, nPlies, nPlies_points, SECTION_POINTS, fcnHandle,...
-                parameter, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT)
+                parameter, step, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT, mode)
             % Initialise the output
             S1 = [];    S2 = [];    S3 = [];    UCRT_MException = [];
 
@@ -149,7 +149,7 @@ classdef internal_strength < handle
             if noLaRC05 == false
                 [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                     ...
-                    abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS);
+                    abd.internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, step, mode);
             end
 
             % Failure calculation: UCRT
@@ -177,7 +177,7 @@ classdef internal_strength < handle
         function [error, output] = getSettings(OUTPUT_STRENGTH)
             % Initialise output
             error = false;
-            output = cell(1.0, 2.0);
+            output = cell(1.0, 3.0);
 
             if iscell(OUTPUT_STRENGTH) == false
                 % Convert to cell if necessary
@@ -189,9 +189,9 @@ classdef internal_strength < handle
                 OUTPUT_STRENGTH = {false, 'RESERVE'};
             end
 
-            if length(OUTPUT_STRENGTH) ~= 2.0
+            if length(OUTPUT_STRENGTH) ~= 3.0
                 % Incorrect number of arguments
-                fprintf('[ERROR] The setting OUTPUT_STRENGTH requires two\narguments:\n{{[false | true] | [@<ucrt> | ''<file-name>'']}, ''<parameter>''}\n');
+                fprintf('[ERROR] The setting OUTPUT_STRENGTH requires three\narguments:\n{{[false | true] | [@<ucrt> | ''<file-name>'']}, ''<parameter>'', <theta>}\n');
 
                 % Reset the error flag and RETURN
                 error = true;
@@ -289,6 +289,27 @@ classdef internal_strength < handle
                     output{2.0} = 2.0;
                 otherwise
                     output{2.0} = 1.0;
+            end
+
+            % Process the third argument
+            argument = OUTPUT_STRENGTH{3.0};
+
+            if (isnumeric(argument) == true) && ((argument <= 0.0) || (argument > 90.0))
+                % Incorrect argument type
+                fprintf('[ERROR] OUTPUT_STRENGTH(3) must be a real number in the range {0 < theta <= 90}\n');
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            elseif (ischar(argument) == true) && (strcmpi(argument, 'default') == false)
+                % Incorrect argument type
+                fprintf('[ERROR] OUTPUT_STRENGTH(3) must be a string or a real number: {''DEFAULT'' | theta}\n');
+
+                % Reset the error flag and RETURN
+                error = true;
+                return
+            else
+                output{3.0} = argument;
             end
         end
 

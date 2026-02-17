@@ -4,8 +4,8 @@ classdef internal_optimise < handle
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -17,7 +17,7 @@ classdef internal_optimise < handle
         function [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
                 main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, nSectionPoints, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points, B22_points, tolerance,...
                 XT, XC, YT, YC, S, C12, B12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, deltaT, deltaM,...
-                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS, pctAvail)
+                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS, pctAvail, step)
             % Initialise output
             %{
                 BEST_SEQUENCE(1) = Optimum stacking sequence
@@ -103,14 +103,14 @@ classdef internal_optimise < handle
                     CRITERION_BUFFER = abd.internal_optimise.parfor1(nPermutations, anglePermutations, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points,...
                         A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
                         parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC,...
-                        SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle);
+                        SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
                 case 2.0 % MIXED-RADIX REPRESENTATION
                     % Run the stacking sequence optimiser
                     try
                         CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
                             A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT,...
                             XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12,...
-                            XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle);
+                            XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
                     catch MException
                         % A problem occurred while running the optimisation
                         BEST_SEQUENCE{5.0} = MException;
@@ -157,7 +157,7 @@ classdef internal_optimise < handle
                         CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance,...
                             Q11, Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
                             failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
-                            symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle);
+                            symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
                     catch MException
                         % A problem occurred while running the optimisation
                         BEST_SEQUENCE{5.0} = MException;
@@ -395,7 +395,7 @@ classdef internal_optimise < handle
         function [CRITERION_BUFFER] = parfor1(nPermutations, anglePermutations, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points, A22_points,...
                 B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
                 E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
-                SECTION_POINTS, objective, fcnHandle)
+                SECTION_POINTS, objective, fcnHandle, step)
             parfor i = 1.0:nPermutations                
                 % Get the current stacking order
                 theta = anglePermutations(i, :);
@@ -465,7 +465,8 @@ classdef internal_optimise < handle
                     case 'larc05' % LaRC05
                         [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                             ...
-                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS);
+                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS,...
+                            step, 2.0);
 
                         %{
                             Reset large LARMFCT values to one to prevent
@@ -511,7 +512,7 @@ classdef internal_optimise < handle
         function [CRITERION_BUFFER] = parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points, A22_points,...
                 B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
                 E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
-                SECTION_POINTS, objective, fcnHandle)
+                SECTION_POINTS, objective, fcnHandle, step)
             parfor i = 1.0:nPermutations
                 % Get the current stacking order
                 theta = abd.internal_optimise.indexToStacking(i, thetaAll, numAngles, nPlies);
@@ -581,7 +582,8 @@ classdef internal_optimise < handle
                     case 'larc05' % LaRC05
                         [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                             ...
-                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS);
+                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS,...
+                            step, 2.0);
 
                         %{
                             Reset large LARMFCT values to one to prevent
@@ -627,7 +629,7 @@ classdef internal_optimise < handle
         function [CRITERION_BUFFER] = parfor3(numChunks, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
                 A11_points, A22_points, B11_points, B22_points, nargin, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
                 parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX,...
-                SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle)
+                SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step)
             % Initialise the outer buffer for the PARFOR loop
             OUTER_BUFFER = cell(numChunks, 1.0);
 
@@ -709,7 +711,8 @@ classdef internal_optimise < handle
                         case 'larc05' % LaRC05
                             [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                                 ...
-                                abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS);
+                                abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
+                                SECTION_POINTS, step, 2.0);
 
                             %{
                                 Reset large LARMFCT values to one to

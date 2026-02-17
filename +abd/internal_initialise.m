@@ -5,8 +5,8 @@ function [enableTensor, printTensor, material, fail_stress, fail_strain, hashin,
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 %
 %#ok<*NODEF>
 
@@ -376,7 +376,7 @@ if exist(outputlocationFull, 'dir') == 7.0
             end
         catch MException
             % Save the MATLAB exception object
-            abd.internal_saveMExceptionObj(MException)
+            %abd.internal_saveMExceptionObj(MException)
         end
     else
         % Re-enable all warnings

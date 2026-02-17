@@ -16,8 +16,8 @@ function [S] = main(settings)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.1.2 Copyright Louis Vallance 2026
-%   Last modified 16-Feb-2026 12:06:38 UTC
+%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
+%   Last modified 17-Feb-2026 06:40:45 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -300,8 +300,8 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
         ...
         abd.internal_strength.main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, axx, ayy, axy, bxx, byy, bxy, XET,...
         XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, TENSORS, nPlies, nPlies_points, SECTION_POINTS,...
-        OUTPUT_STRENGTH{1.0}, OUTPUT_STRENGTH{2.0}, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT,...
-        LARTFCRT, UCRT);
+        OUTPUT_STRENGTH{1.0}, OUTPUT_STRENGTH{2.0}, OUTPUT_STRENGTH{3.0}, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT,...
+        LARKFCRT, LARSFCRT, LARTFCRT, UCRT, 1.0);
 
     % Update UCRT flag based on outcome of routine
     noUcrt = ((isa(OUTPUT_STRENGTH{1.0}, 'function_handle') == true) & (all(UCRT == -1.0) == false)) == false;
@@ -315,7 +315,8 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nargin, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
-            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS, pctAvail);
+            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS, pctAvail,...
+            OUTPUT_STRENGTH{3.0});
     else
         CRITERION_BUFFER = [];
     end
