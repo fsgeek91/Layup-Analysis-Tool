@@ -16,8 +16,8 @@ function [S] = main(settings)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
-%   Last modified 17-Feb-2026 06:40:45 UTC
+%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
+%   Last modified 18-Feb-2026 13:55:35 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
@@ -182,7 +182,12 @@ end
 tolerance = 1e-6;
 
 %% GET THICKNESS FRACTIONS
-[z, t] = abd.internal_getThickness(nPlies, t_ply, tolerance);
+[z, t, error] = abd.internal_getThickness(nPlies, t_ply, tolerance);
+
+% An error occurred, so RETURN
+if error == true
+    return
+end
 
 %% PROCESS SECTION_POINTS
 [error, z_points, theta_points, nPlies_points, A11_points, A22_points, B11_points, B22_points, plyBuffer, thickness, SECTION_POINTS, OUTPUT_PLY] =...
@@ -235,9 +240,14 @@ end
     abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
 
 %% COMPUTE A, B and D MATRICES
-[ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
+[ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM, error] =...
     ...
     abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, nargin, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, SECTION_POINTS);
+
+% An error occurred, so RETURN
+if error == true
+    return
+end
 
 %% COMPUTE TENSOR QUANTITIES
 if enableTensor == true

@@ -490,7 +490,7 @@
 %   CFAILURE. A structure containing the failure/damage initiation measure
 %   components for all section points.
 %
-%   CFAILURE.STRESS is a 4xN table of the stress-based failure measure
+%   CFAILURE.STRESS is a 5xN table of the stress-based failure measure
 %   components for all (N-1) section points. The Nth column contains the
 %   value of SFAILRATIO for each failure measure component:
 %       MSTRS: Maximum stress theory failure measure
@@ -575,5 +575,5 @@
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
-%   Last modified 17-Feb-2026 06:40:45 UTC
+%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
+%   Last modified 18-Feb-2026 13:55:35 UTC

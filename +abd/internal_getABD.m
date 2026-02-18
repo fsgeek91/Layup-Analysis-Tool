@@ -1,16 +1,20 @@
-function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
+function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM, error] =...
     internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, nargin, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, SECTION_POINTS)
 %   Get the A, B and D matrices.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
-%   Last modified 17-Feb-2026 06:40:45 UTC
+%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
+%   Last modified 18-Feb-2026 13:55:35 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
 %%
+% Initialise output
+error = false;
+ABD_INV = [];
+
 % Buffers for A, B and D matrix elements
 Aij = zeros(3.0, 3.0); Bij = Aij; Dij = Aij;
 
@@ -88,6 +92,13 @@ end
 
 % Construct the ABD matrix
 ABD = [Aij, Bij; Bij, Dij];
+
+% Singular matrix check
+if det(ABD) == 0.0
+    fprintf('[ERROR] ABD matrix is singular to working precision\n-> Please check the layup definition for possible modelling errors\n');
+    error = true;
+    return
+end
 
 % Get the inverse ABD matrix
 ABD_INV = inv(ABD);

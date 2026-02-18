@@ -1,15 +1,18 @@
-function [z, t] = internal_getThickness(nPlies, t_ply, tolerance)
+function [z, t, error] = internal_getThickness(nPlies, t_ply, tolerance)
 %   Get z-coordinates from the layup definition.
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.3 Copyright Louis Vallance 2026
-%   Last modified 17-Feb-2026 06:40:45 UTC
+%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
+%   Last modified 18-Feb-2026 13:55:35 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
 %%
+% Initialise output
+error = false;
+
 % Buffer for ply boundary locations
 z = zeros(1.0, nPlies + 1.0);
 
@@ -18,7 +21,8 @@ t = [];
 
 % Check for invalid thickness values
 if any(t_ply <= 0.0) == true
-    fprintf('[ERROR] Zero or negative ply thickness values are not\nallowed\n');
+    fprintf('[ERROR] Zero or negative ply thickness values are not allowed\n');
+    error = true;
     return
 end
 
