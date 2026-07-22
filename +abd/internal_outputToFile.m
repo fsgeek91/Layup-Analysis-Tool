@@ -443,7 +443,7 @@ end
 %% Print results of failure criteria analysis (strain-based)
 if (isStrengthOutput == true) && (noFailStrain == false)
     % Print table header
-    fprintf(fid, '\nDetailed assessment summary for strain-based failure criteria:\nOutput location: <Worst section point>\n');
+    fprintf(fid, '\nDetailed assessment summary for strain-based failure criterion:\nOutput location: <Worst section point>\n');
     fprintf(fid, 'PLY           MSTRN(V)      @SP   STATUS\n');
 
     % Print ply-wise results
@@ -869,7 +869,8 @@ elseif ((isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == t
         fprintf(fid, ['\nError: Stacking sequence optimisation results are unavailable because the\nuser-defined failure criterion failed upstream. Please select a different\nfail',...
             'ure/damage initiation criterion.\n']);
     elseif printTensor ~= -1.0
-        fprintf(fid, '\nNote: Stacking sequence optimisation results are unavailable. The strength\ncalculation must first be enabled with OUTPUT_STRENGTH = {true, <param>}.\n');
+        fprintf(fid, ['\nNote: Stacking sequence optimisation results are unavailable. The strength\ncalculation must first be enabled with OUTPUT_STRENGTH = {true, <param>, theta',...
+            '}.\n']);
     else
         fprintf(fid, '\nNote: Stacking sequence optimisation results are unavailable. A load matrix\ndefinition is required using NXX/NYY/NXY and MXX/MYY/MXY.\n');
     end

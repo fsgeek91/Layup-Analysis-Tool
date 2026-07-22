@@ -160,7 +160,7 @@ OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
     
     Note: When the strength assessment is a user-defined failure criterion,
     the user criterion is evaluated in addition to all previously evaluated
-    critera. Run the following command to generate a template user routine
+    criteria. Run the following command to generate a template user routine
     file: >> abd.createUcrt('<criterion-name>').
 
     Second argument (failure parameter):

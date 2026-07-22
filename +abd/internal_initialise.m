@@ -187,7 +187,7 @@ end
 
 if all(cellfun(@isempty, output_strength)) == true
     % Set default values if necessary
-    output_strength = {false, 'RESERVE'};
+    output_strength = {false, 'RESERVE', 'DEFAULT'};
 end
 
 %% Process OUTPUT_OPTIMISED

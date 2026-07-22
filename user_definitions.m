@@ -71,7 +71,7 @@ TIP:
 %}
 FAIL_STRESS = [];
 
-% FAIL_STRAIN  Strength properties for strain-based failure criteria
+% FAIL_STRAIN  Strength properties for strain-based failure criterion
 %{
 TIP:
 
@@ -220,7 +220,7 @@ OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
     
     Note: When the strength assessment is a user-defined failure criterion,
     the user criterion is evaluated in addition to all previously evaluated
-    critera. Run the following command to generate a template user routine
+    criteria. Run the following command to generate a template user routine
     file: >> abd.createUcrt('<criterion-name>').
 
     Second argument (failure parameter):
@@ -240,7 +240,8 @@ OUTPUT_STRENGTH = {false, 'RESERVE', 'DEFAULT'};
     Note: The stacking optimisation properties are taken from the number of
     plies and section points in the layup definition. The optimisation
     requires a load matrix definition (see Section 3) and the results of a
-    strength evaluation using OUTPUT_STRENGTH = {true, <param>}.
+    strength evaluation using
+    OUTPUT_STRENGTH = {true, <param>, <step-size>}.
 
     First argument (failure/damage initiation criterion):
     '<criterion>': Mstrs (Maximum stress); Tsaih (Tsai-Hill); Hoffman;

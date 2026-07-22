@@ -71,7 +71,7 @@ FAIL_STRESS = {[400, 400, 200, 200, 150, 0.5, 0],...
                [200, 200, 100, 100, 75, 0.5, 0],...
                [400, 400, 200, 200, 150, 0.5, 0]};
 
-% FAIL_STRAIN  Strength properties for strain-based failure criteria
+% FAIL_STRAIN  Strength properties for strain-based failure criterion
 %{
 TIP:
 
@@ -197,7 +197,7 @@ OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
     
     Note: When the strength assessment is a user-defined failure criterion,
     the user criterion is evaluated in addition to all previously evaluated
-    critera. Run the following command to generate a template user routine
+    criteria. Run the following command to generate a template user routine
     file: >> abd.createUcrt('<criterion-name>').
 
     Second argument (failure parameter):

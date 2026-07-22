@@ -106,7 +106,7 @@ end
 
 if (all(cellfun(@isempty, data)) == true) && (mode ~= 1.0)
     %{
-        Even if OUTPUT_STRENGTH = true, it is not compulsory to define
+        Even if OUTPUT_STRENGTH(1) = true, it is not compulsory to define
         FAIL_STRESS and FAIL_STRAIN properties. RETURN now and check that
         at least FAIL_STRESS or FAIL_STRAIN properties are specified
     %}

@@ -250,7 +250,7 @@ classdef internal_optimise < handle
 
             if (all(cellfun(@isempty, OUTPUT_OPTIMISED)) == true) || (length(OUTPUT_OPTIMISED) ~= 4.0)
                 % Incorrect number of arguments
-                fprintf('[ERROR] The setting OUTPUT_OPTIMISED requires four\narguments: {''<criterion>'', ''<parameter>'', ''<fun>'', theta}\n');
+                fprintf('[ERROR] The setting OUTPUT_OPTIMISED requires four\narguments: {''<criterion>'', ''<parameter>'', ''<fun>'', <step-size>}\n');
 
                 % Reset the error flag and RETURN
                 error = true;

@@ -2,7 +2,7 @@ function [UCRT] = ucrt_example(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS
 %UCRT_EXAMPLE    Example routine for user-defined failure criterion.
 %    To use this routine for a strength calculation with Layup Analysis
 %    Tool, specify the following in the layup definition file:
-%      OUTPUT_STRENGTH = {@ucrt_example, {'RESERVE' | 'VALUE'}};
+%      OUTPUT_STRENGTH = {@ucrt_example, ..};
 %
 %    Routine interface
 %      [UCRT] = ucrt_example(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS)
@@ -17,7 +17,7 @@ function [UCRT] = ucrt_example(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS
 %      MATERIAL_MECH [struct], Mechanical material properties
 %      MATERIAL_FAIL [struct], Composite strength properties
 %        STRESS: Stress-based failure criteria
-%        STRAIN: Strain-based failure criteria
+%        STRAIN: Strain-based failure criterion
 %        HASHIN: Hashin damage initiation criteria
 %        LARC05: LaRC05 damage initiation criteria
 %      TENSORS [struct], Stress/strain tensor data
@@ -32,7 +32,7 @@ function [UCRT] = ucrt_example(INFO, UCRT, MATERIAL_MECH, MATERIAL_FAIL, TENSORS
 %        E_HYDRO_ALIGNED [3xTOTAL_POINTS double], Stress-free ply strains due to moisture process in ply (1-2) coordinates
 %
 %    NOTE: For a description of the mechanical material/composite strength
-%    property identifieres, run the command >> help lat
+%    property identifiers, run the command >> help lat
 %    and consult the sections "USE CASE I" and "USE CASE III",
 %    respectively.
 %

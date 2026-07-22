@@ -29,7 +29,7 @@
 %   - X-Y stresses and strains based on specified forces and moments
 %   - Ply stresses and strains based on specified forces and moments
 %   - Equivalent extensional and bending moduli (symmetric layups only)
-%   - Stress and strain-based failure criteria:
+%   - Stress and strain-based failure criterion:
 %     - Maximum Stress, Tsai-Hill, 2D Hoffman, Tsai-Wu, Azzi-Tsai-Hill,
 %       Maximum Strain
 %   - Stress-based damage initiation criteria
@@ -250,7 +250,7 @@
 %   Note: If B = 0, the coupling term is computed from C.
 %
 %   FAIL_STRAIN. A 1xn cell array specifying the strength properties for
-%   strain-based failure criteria:
+%   strain-based failure criterion:
 %     {[XET, XEC, YET, YEC, SE]}(1),
 %     ...
 %     {[XET, XEC, YET, YEC, SE]}(n)
@@ -297,7 +297,7 @@
 %
 %   OUTPUT_STRENGTH. A 1x3 cell array specifying settings for the strength
 %   assessment:
-%     {{[false | true] | [@<ucrt>, '<file-name>']}, '<parameter>', '<step-size>'}
+%     {{[false | true] | [@<ucrt>, '<file-name>']}, '<parameter>', <step-size>}
 %
 %   OUTPUT_STRENGTH(1) is a flag to enable or disable the strength
 %   assessment:
@@ -310,12 +310,12 @@
 %
 %   Note: When the strength assessment is a user-defined failure criterion,
 %   the user criterion is evaluated in addition to all previously evaluated
-%   critera. Run the following command to generate a template user routine
+%   criteria. Run the following command to generate a template user routine
 %   file: >> abd.createUcrt('<criterion-name>').
 %
 %   OUTPUT_STRENGTH(2) is the failure assessment parameter:
 %     RESERVE: Strength reserve factor, R. For stress-based and
-%     strain-based failure criteria, the inverse of the strength reserve
+%     strain-based failure criterion, the inverse of the strength reserve
 %     factor [1/R] is the scaling factor by which the load matrix must be
 %     multiplied to hit the failure surface.
 %     VALUE: Criterion value, V. The value of the index obtained directly
@@ -357,7 +357,7 @@
 %                          'load_hydro', [<1x1>],...
 %                          'output_ply', [<'param'> | [SP1,..., SPn]],...
 %                          'output_figure', {<1x3>},...
-%                          'output_strength', {<1x2>},...
+%                          'output_strength', {<1x3>},...
 %                          'output_optimised', {<1x4>},...
 %                          'optimiser_settings', {<1x3>},...
 %                          'output_location', {<1x2>}),...
@@ -379,7 +379,7 @@
 %
 %   OUTPUT_OPTIMISED(3) is the objective function:
 %     <fun>: MinMax (minimise the maximum criterion value); MinMean
-%     (minimise the average criterion value)distrubte 
+%     (minimise the average criterion value) 
 %
 %   OUTPUT_OPTIMISED(4) is the angular step size for the stacking sequence
 %   permutations, STEP.

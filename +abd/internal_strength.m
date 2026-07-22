@@ -186,7 +186,7 @@ classdef internal_strength < handle
 
             if cellfun(@isempty, OUTPUT_STRENGTH) == true
                 % Set default values if necessary
-                OUTPUT_STRENGTH = {false, 'RESERVE'};
+                OUTPUT_STRENGTH = {false, 'RESERVE', 'DEFAULT'};
             end
 
             if length(OUTPUT_STRENGTH) ~= 3.0
