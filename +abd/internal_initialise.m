@@ -5,8 +5,8 @@ function [enableTensor, printTensor, material, fail_stress, fail_strain, hashin,
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
-%   Last modified 18-Feb-2026 13:55:35 UTC
+%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%   Last modified 04-Sep-2026 12:21:27 UTC
 %
 %#ok<*NODEF>
 
@@ -47,8 +47,8 @@ error = false;
 % Set the default settings structure
 defaultSettings = struct('job_name', job_name, 'job_description', [], 'material', {{[]}}, 'fail_stress', {{[]}}, 'fail_strain', {{[]}}, 'hashin', {{[]}}, 'larc05', {{[]}},...
     'stacking_sequence', [0.0, 45.0, 90.0], 'ply_thickness', 0.1, 'symmetric_layup', false, 'section_points', 'DEFAULT', 'load_mech', [0.0, 0.0, 0.0; 0.0, 0.0, 0.0],...
-    'load_therm', 0.0, 'load_hydro', 0.0, 'output_ply', 'DEFAULT', 'output_figure', {{[], 'POINTS', 'SPLIT'}}, 'output_strength', {{false, 'RESERVE'}}, 'output_optimised',...
-    {{'', 'RESERVE', 'MINMAX', 5.0}}, 'optimiser_settings', {{'MIXED-RADIX', 'DEFAULT', 'DEFAULT'}}, 'output_location', {{'DEFAULT', true}});
+    'load_therm', 0.0, 'load_hydro', 0.0, 'output_ply', 'DEFAULT', 'output_figure', {{[], 'POINTS', 'SPLIT'}}, 'output_strength', {{false, 'RESERVE', 'DEFAULT'}},...
+    'output_optimised', {{'', 'RESERVE', 'MINMAX', 5.0}}, 'optimiser_settings', {{'MIXED-RADIX', 'DEFAULT', 'DEFAULT'}}, 'output_location', {{'DEFAULT', true}});
 
 % Get the field name list
 settingsNames =  fieldnames(defaultSettings);

@@ -3,8 +3,8 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd, plyBuffer, nP
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
-%   Last modified 18-Feb-2026 13:55:35 UTC
+%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%   Last modified 04-Sep-2026 12:21:27 UTC
 %
 
 %% - DO NOT EDIT BELOW LINE
@@ -13,8 +13,8 @@ function [varargout] = internal_getCriticalPly(DATA, symmetricAbd, plyBuffer, nP
 
 %% Adjust failure values
 %{
-    Identify failure values that are very close to each other (witin a
-    toleance) and make them equal. This ensures that plies with the same
+    Identify failure values that are very close to each other (within a
+    tolerance) and make them equal. This ensures that plies with the same
     failure value are not ignored due to small rounding errors
 %}
 % Get the number of columns to process individually

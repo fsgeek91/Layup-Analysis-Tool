@@ -4,8 +4,8 @@ function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
-%   Last modified 18-Feb-2026 13:55:35 UTC
+%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%   Last modified 04-Sep-2026 12:21:27 UTC
 %
     
     %%

@@ -16,8 +16,8 @@ function [S] = main(settings)
 %   CC by-nc-sa 4.0 licenses, where applicable. Third-party source code is
 %   clearly indicated in its own subfolder.
 %
-%   Layup Analysis Tool 5.1.4 Copyright Louis Vallance 2026
-%   Last modified 18-Feb-2026 13:55:35 UTC
+%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%   Last modified 04-Sep-2026 12:21:27 UTC
 
 %% - DO NOT EDIT BELOW LINE
 %_______________________________________________________________________
