@@ -25,5 +25,5 @@ axx(abs(axx) < 1e-12) = 0.0;
 ayy(abs(ayy) < 1e-12) = 0.0;
 axy(abs(axy) < 1e-12) = 0.0;
 bxx(abs(bxx) < 1e-12) = 0.0;
-byy(abs(bxy) < 1e-12) = 0.0;
+byy(abs(byy) < 1e-12) = 0.0;
 bxy(abs(bxy) < 1e-12) = 0.0;
