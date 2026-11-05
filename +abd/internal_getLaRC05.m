@@ -1,5 +1,5 @@
-function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05(nPlies_points, stress, symsAvailable, S1, S2, S3, G12, Xt, Xc, Yt,Yc, Sl, St, alpha0, phi0, nl,...
-    nt, SECTION_POINTS, step, mode)
+function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05(nPlies_points, stress, ~, S1, S2, S3, G12, Xt, Xc, Yt,Yc, Sl, St, alpha0, phi0, nl,...
+    nt, ~, step, mode)
 %   Perform strength calculations based on the ply stresses.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -12,7 +12,6 @@ function [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = internal_getLaRC05
 
 %% Initialise variables
 % Basic
-iterate = true;
 S11 = stress(1.0, :);
 S22 = stress(2.0, :);
 S33 = zeros(1.0, nPlies_points);
@@ -45,34 +44,43 @@ nl(deriveElements) = (Sl(deriveElements).*cosd(2.0.*alpha0(deriveElements))) ./ 
 deriveElements = nt == -1.0;
 nt(deriveElements) = -1.0 ./ (tand(2.0.*(alpha0(deriveElements))));
 
-% PHI0 (get PHIC only)
-if any(phi0 == -1.0) == true
-    %{
-        If the Symbolic Math Toolbox is not installed, do not try to
-        calculate the value of phi0 iteratively.
-    %}
-    if (iterate == true) && (symsAvailable == true)
-        % Initialise the intermediate variable PHIC
-        phic = zeros(1.0, nPlies_points);
+% PHI0 (initial fibre misalignment, in degrees)
+%{
+    Derive only undefined values, once per distinct material. Calibration
+    uses pure longitudinal compression, not the current section-point load.
+    The legacy toolbox/section-point arguments are retained in the function
+    interface, but a numerical solution does not require either of them.
+%}
+deriveElements = phi0 == -1.0;
+if any(deriveElements) == true
+    [materialData, ~, materialIndexes] = unique([Xc(deriveElements)', Sl(deriveElements)', G12(deriveElements)', nl(deriveElements)'], 'rows');
+    phi0_material = zeros(size(materialData, 1.0), 1.0);
 
-        % Get the indexes of undefined plies
-        deriveElements = phi0 == -1.0;
+    for i = 1.0:size(materialData, 1.0)
+        Xc_i = materialData(i, 1.0);
+        Sl_i = materialData(i, 2.0);
+        G12_i = materialData(i, 3.0);
+        nl_i = materialData(i, 4.0);
 
-        % Evaluate the intermediate variable PHIC
-        phic(deriveElements) = atand((1.0 - sqrt(1.0 - 4.0.*((Sl(deriveElements)./Xc(deriveElements)) + nl(deriveElements)).*(Sl(deriveElements)./Xc(deriveElements)))) ./...
-            (2.0.*((Sl(deriveElements)./Xc(deriveElements)) + nl(deriveElements))));
+        %{
+            Critical angle at failure under pure compression (in radians).
+            Rationalise the quadratic root to avoid cancellation and 0/0
+        %}
+        ratio = Sl_i/Xc_i;
+        discriminant = 1.0 - 4.0*(ratio + nl_i)*ratio;
+        if (isfinite(discriminant) == false) || (discriminant < 0.0)
+            error('abd:LaRC05:InvalidMisalignment', 'Cannot derive PHI0: the LaRC05 strengths and friction coefficient give no real critical angle.');
+        end
+        phic = atan(2.0*ratio/(1.0 + sqrt(discriminant)));
 
-        % Reset NaN values
-        phi0(isreal(phic) == false) = 0.0;
-        phi0j = phi0;
-
-        syms phi0sym;
-    else
-        phi0 = zeros(1.0, nPlies_points);
-        phi0j = phi0;
+        %{
+            Linear shear response in the initial misalignment frame: phi0 +
+            Xc*sin(2*phi0)/(2*G12) = phic (all angles in radians)
+        %}
+        phi0_material(i) = (180.0/pi)*fzero(@(angle) angle + (Xc_i/(2.0*G12_i))*sin(2.0*angle) - phic, [0.0, phic]);
     end
-else
-    phi0j = phi0;
+
+    phi0(deriveElements) = phi0_material(materialIndexes);
 end
 
 %% Polymer failure
@@ -108,31 +116,18 @@ FI_kink = FI_split;
 
 % Critical plane searching
 if (any(kink) == true) || (any(split) == true)
-    if any(phi0 == -1.0) == true
-        %{
-            PHI0 is undefined, so compute the value iteratively during
-            critical plane searching
-        %}
-        [FI_kink, FI_split] = CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, nPlies_points, phi0j, phi0sym, phic, Xc, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt,...
-            SECTION_POINTS, kink, split);
-    else
-        %{
-            PHI0 is already defined, so use the faster PARFOR version of
-            the critical plane search algorithm
-        %}
-        [FI_kink, FI_split] = par_CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, phi0j, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt, kink, split);
-    end
+    [FI_kink, FI_split] = CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, phi0, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt, kink, split);
 
-    % Failure crtiterion for the critical plane (kinking)
+    % Failure criterion for the critical plane (kinking)
     LARKFCRT = max(FI_kink, [], 2.0)';
 
-    % Failure crtiterion for the critical plane (splitting)
+    % Failure criterion for the critical plane (splitting)
     LARSFCRT = max(FI_split, [], 2.0)';
 else
-    % Failure crtiterion for the critical plane (kinking)
+    % Failure criterion for the critical plane (kinking)
     LARKFCRT = zeros(1.0, nPlies_points);
 
-    % Failure crtiterion for the critical plane (splitting)
+    % Failure criterion for the critical plane (splitting)
     LARSFCRT = LARKFCRT;
 end
 
@@ -167,82 +162,8 @@ parfor alphaIndex = 1.0:precision
 end
 end
 
-%% CP search for fibre kinking/splitting failure (PHI0 computation)
-function [FI_kink, FI_split] = CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, L, phi0j, phi0sym, phic, Xc, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt, SECTION_POINTS, kink,...
-    split)
-% Get the plies (first section points) which are derived
-loopIndexes = SECTION_POINTS.*find(phi0j(1.0:SECTION_POINTS:L) == -1.0) - (SECTION_POINTS - 1.0);
-
-for psiIndex = 1.0:precision
-    % Get the current value of PSI
-    psii = (psiIndex*step) - step;
-
-    % Initialise PHI0J on this plane
-    phi0j_psi = phi0j;
-
-    % Get the stresses on the kink band
-    S2_psi = cosd(psii.*S22).^2.0 + sind(psii.*S33).^2.0 + 2.0.*sind(psii).*cosd(psii.*S23);
-    Tau12_psi = S12.*cosd(psii) + S13.*sind(psii);
-    Tau23_psi = -sind(psii).*cosd(psii.*S22) + sind(psii).*cosd(psii.*S33) + (cosd(psii).^2.0 - sind(psii).^2.0).*S23;
-    Tau13_psi = S13.*cosd(psii) - S12.*sind(psii);
-
-    % Get the shear strain in the initial fibre misalignment frame
-    gamma0 = Tau12_psi./G12;
-
-    % Calculate the initial fibre misalignment angle iteratively, if applicable
-    phi0j_ii = zeros(1.0, length(loopIndexes));
-
-    % Get consecutive indexes for PARFOR loop
-    parforIndexes = 1:length(loopIndexes);
-
-    % Slice the loop variables to avoid broadcasting
-    phic_ii = phic(loopIndexes);
-    gamma0_ii = gamma0(loopIndexes);
-    Xc_ii = Xc(loopIndexes);
-
-    % Calculate the initial fibre misalignment angle iteratively
-    parfor j = parforIndexes
-        warning('off', 'all')
-
-        % Get the current variable slice
-        phic_i = phic_ii(j);
-        gamma0_i = gamma0_ii(j);
-        Xc_i = Xc_ii(j);
-
-        % Solve symbolically for PHI0
-        phi0j_ii(j) = solve(phi0sym == phic_i - gamma0_i*sin(2.0*phi0sym*(pi/180.0))*Xc_i, phi0sym);
-    end
-    
-    warning('on','all')
-
-    %{
-        Add the solved PHI0J values (one per ply) to the remainder of the
-        section points
-    %}
-    for k = 1:length(loopIndexes)
-        phi0j_psi(loopIndexes(k):loopIndexes(k) + (SECTION_POINTS - 1.0)) = phi0j_ii(k);
-    end
-
-    % Get the misalignment angle
-    phi = phi0j_psi.*sign(Tau12_psi) + gamma0;
-
-    % Get the stresses on the fibre misalignment plane
-    S2_m = sind(phi.*S11).^2.0 + cosd(phi.*S2_psi).^2.0 - 2.0.*sind(phi).*cosd(phi.*Tau12_psi);
-    Tau12_m = -sind(phi).*cosd(phi.*S11) + sind(phi).*cosd(phi.*S2_psi) + (cosd(phi).^2.0 - sind(phi).^2.0).*Tau12_psi;
-    Tau23_m = Tau23_psi.*cosd(phi) - Tau13_psi.*sind(phi);
-
-    % McCauley normal stress
-    S2_m_pos = S2_m;
-    S2_m_pos(S2_m_pos < 0.0) = 0.0;
-
-    % Failure criterion on the current plane
-    FI_kink(kink, psiIndex) = sqrt((Tau23_m(kink) ./ (St(kink) - (nt(kink).*S2_m(kink)))).^2.0 + (Tau12_m(kink) ./ (Sl(kink) - (nl(kink).*S2_m(kink)))).^2.0 + ((S2_m_pos(kink)) ./ Yt(kink)).^2.0);
-    FI_split(split, psiIndex) = sqrt((Tau23_m(split) ./ (St(split) - (nt(split).*S2_m(split)))).^2.0 + (Tau12_m(split) ./ (Sl(split) - (nl(split).*S2_m(split)))).^2.0 + ((S2_m_pos(split)) ./ Yt(split)).^2.0);
-end
-end
-
-%% CP search for fibre kinking/splitting failure (omits PHI0 computation)
-function [FI_kink, FI_split] = par_CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, phi0j, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt, kink, split)
+%% CP search for fibre kinking/splitting failure
+function [FI_kink, FI_split] = CP_FKS(precision, step, S22, S33, S23, S12, S13, G12, phi0, S11, FI_kink, St, nt, Sl, nl, FI_split, Yt, kink, split)
 for psiIndex = 1.0:precision
     % Initialise CP buffer
     FI_kink_ii = zeros(1.0, length(S22));
@@ -252,20 +173,32 @@ for psiIndex = 1.0:precision
     psii = (psiIndex*step) - step;
 
     % Get the stresses on the kink band
-    S2_psi = cosd(psii.*S22).^2.0 + sind(psii.*S33).^2.0 + 2.0.*sind(psii).*cosd(psii.*S23);
+    S2_psi = cosd(psii).^2.0.*S22 + sind(psii).^2.0.*S33 + 2.0.*sind(psii).*cosd(psii).*S23;
     Tau12_psi = S12.*cosd(psii) + S13.*sind(psii);
-    Tau23_psi = -sind(psii).*cosd(psii.*S22) + sind(psii).*cosd(psii.*S33) + (cosd(psii).^2.0 - sind(psii).^2.0).*S23;
+    Tau23_psi = sind(psii).*cosd(psii).*(S33 - S22) + (cosd(psii).^2.0 - sind(psii).^2.0).*S23;
     Tau13_psi = S13.*cosd(psii) - S12.*sind(psii);
 
-    % Get the shear strain in the initial fibre misalignment frame
-    gamma0 = Tau12_psi./G12;
+    %{
+        Get the shear strain magnitude in the initial misalignment frame.
+        Pinho et al. (2006), Part II, Eqs. (7)-(10), with linear shear
+        response
+    %}
+    Tau12_initial = 0.5.*(S2_psi - S11).*sind(2.0.*phi0) + abs(Tau12_psi).*cosd(2.0.*phi0);
+    gamma0 = abs(Tau12_initial)./G12;
 
-    % Get the misalignment angle
-    phi = phi0j.*sign(Tau12_psi) + gamma0;
+    %{
+        Preserve the initial imperfection at zero shear. Either sign gives
+        the same failure index for this plane-stress case
+    %}
+    shearSign = sign(Tau12_psi);
+    shearSign(shearSign == 0.0) = 1.0;
+
+    % Convert shear strain (radians) before adding to angles in degrees.
+    phi = shearSign.*(phi0 + (180.0/pi).*gamma0);
 
     % Get the stresses on the fibre misalignment plane
-    S2_m = sind(phi.*S11).^2.0 + cosd(phi.*S2_psi).^2.0 - 2.0.*sind(phi).*cosd(phi.*Tau12_psi);
-    Tau12_m = -sind(phi).*cosd(phi.*S11) + sind(phi).*cosd(phi.*S2_psi) + (cosd(phi).^2.0 - sind(phi).^2.0).*Tau12_psi;
+    S2_m = sind(phi).^2.0.*S11 + cosd(phi).^2.0.*S2_psi - 2.0.*sind(phi).*cosd(phi).*Tau12_psi;
+    Tau12_m = sind(phi).*cosd(phi).*(S2_psi - S11) + (cosd(phi).^2.0 - sind(phi).^2.0).*Tau12_psi;
     Tau23_m = Tau23_psi.*cosd(phi) - Tau13_psi.*sind(phi);
 
     % McCauley normal stress

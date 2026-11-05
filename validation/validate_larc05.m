@@ -1,0 +1,153 @@
+function [] = validate_larc05()
+%   Regression checks for LaRC05 kinking and splitting (issue #95).
+%
+%   RUN THIS FUNCTION FROM THE REPOSITORY ROOT:
+%   >> addpath('validation'); validate_larc05
+%
+%   Independent reference stresses are obtained using rotation matrices.
+%   Existing parallel pool settings apply. No analysis files are written.
+%
+%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%
+%% - DO NOT EDIT BELOW LINE
+%__________________________________________________________________________
+%%
+% Material rows: XT, XC, YT, YC, SL, ST, G12, NL, NT, A0, PHI0.
+material = [2000.0; 1500.0; 50.0; 200.0; 80.0; 70.0; 5000.0; 0.2; 0.3; 53.0; 2.0];
+
+%% CHECK STRESS TRANSFORMATIONS AGAINST MATRIX ROTATIONS
+stress = [-1000.0, -200.0, -900.0, 100.0; -40.0, 20.0, 15.0, 20.0; 30.0, -25.0, -40.0, 10.0];
+materials = repmat(material, 1.0, 4.0);
+materials(11.0, :) = [1.5, 2.0, 2.5, 3.0];
+actual = evaluate(stress, materials, false, 1.0);
+checkValues(actual(3.0:4.0, :), referenceFailure(stress, materials), 'Matrix-rotation reference');
+
+%% CHECK ZERO STRESS AND PURE COMPRESSION WITHOUT APPLIED SHEAR
+materials = repmat(material, 1.0, 2.0);
+materials(11.0, 2.0) = -1.0;
+checkValues(evaluate(zeros(3.0, 2.0), materials, false, 1.0), zeros(5.0, 2.0), 'Zero stress');
+stress = repmat([-material(2.0); 0.0; 0.0], 1.0, 2.0);
+actual = evaluate(stress, materials, false, 1.0);
+assert(actual(3.0, 1.0) > 0.0, 'Zero applied shear must not remove the supplied imperfection.');
+checkValues(actual(3.0, 2.0), 1.0, 'Calibrated uniaxial compressive strength');
+checkValues(actual(4.0, :), zeros(1.0, 2.0), 'Pure-compression mode selection');
+
+%% CHECK MIXED MATERIALS, SECTION POINTS AND TOOLBOX INDEPENDENCE
+materials = repmat(material, 1.0, 6.0);
+materials(11.0, 1.0:3.0) = -1.0;
+materials(2.0, 4.0:6.0) = 1200.0;
+materials(7.0, 4.0:6.0) = 6000.0;
+materials(11.0, 4.0:6.0) = 1.5;
+stress = [-1100.0, -200.0, -800.0, -900.0, -300.0, -700.0;...
+    -40.0, 20.0, -10.0, -25.0, 15.0, 5.0; 30.0, -25.0, 0.0, -35.0, 20.0, 0.0];
+actual = evaluate(stress, materials, false, 3.0);
+checkValues(evaluate(stress, materials, true, 3.0), actual, 'Symbolic toolbox independence');
+checkValues(evaluate(stress, materials, false, 1.0), actual, 'Section-point grouping');
+
+% Obtain the imperfection independently by requiring the matrix-rotation
+% reference to reach failure under pure longitudinal compression.
+explicitMaterials = materials;
+explicitMaterials(11.0, 1.0:3.0) = (180.0/pi)*fzero(@(angle) compressionFailure(angle, material) - 1.0, [0.0, 0.1]);
+checkValues(evaluate(stress, explicitMaterials, false, 3.0), actual, 'Material-only calibration');
+checkValues(actual(3.0:4.0, :), referenceFailure(stress, explicitMaterials), 'Mixed-material reference');
+order = [6.0, 1.0, 4.0, 2.0, 5.0, 3.0];
+checkValues(evaluate(stress(:, order), materials(:, order), false, 3.0), actual(:, order), 'Section-point order');
+
+% Derive two different materials together and check the material-to-point
+% mapping after changing the order of their section points.
+derivedMaterials = materials;
+derivedMaterials(11.0, :) = -1.0;
+derivedActual = evaluate(stress, derivedMaterials, false, 3.0);
+explicitMaterials(11.0, 4.0:6.0) = (180.0/pi)*fzero(@(angle) compressionFailure(angle, materials(:, 4.0)) - 1.0, [0.0, 0.1]);
+checkValues(evaluate(stress, explicitMaterials, false, 3.0), derivedActual, 'Multiple material calibrations');
+checkValues(evaluate(stress(:, order), derivedMaterials(:, order), false, 3.0), derivedActual(:, order), 'Derived-material mapping');
+
+%% CHECK INVARIANCE UNDER A CHANGE OF STRESS UNITS
+scaledMaterials = materials;
+scaledMaterials(1.0:7.0, :) = 1e6*scaledMaterials(1.0:7.0, :);
+checkValues(evaluate(1e6*stress, scaledMaterials, false, 3.0), actual, 'Stress-unit invariance');
+
+%% CHECK INVALID MATERIAL CALIBRATION
+invalidMaterial = material;
+invalidMaterial(5.0) = 1000.0;
+invalidMaterial(11.0) = -1.0;
+failedAsExpected = false;
+try
+    evaluate([-1000.0; 0.0; 0.0], invalidMaterial, false, 1.0);
+catch MException
+    failedAsExpected = strcmp(MException.identifier, 'abd:LaRC05:InvalidMisalignment');
+end
+assert(failedAsExpected == true, 'Invalid calibration must report the material error.');
+
+fprintf('[PASS] LaRC05 rotations, calibration, zero stress, material grouping and stress units\n');
+end
+
+%% EVALUATE ALL FIVE CRITERIA
+function [result] = evaluate(stress, material, symsAvailable, sectionPoints)
+nPoints = size(stress, 2.0);
+meanStress = 0.5.*(stress(1.0, :) + stress(2.0, :));
+radius = sqrt((0.5.*(stress(1.0, :) - stress(2.0, :))).^2.0 + stress(3.0, :).^2.0);
+[PF, MF, KF, SF, TF] = abd.internal_getLaRC05(nPoints, stress, symsAvailable, meanStress + radius, meanStress - radius, zeros(1.0, nPoints),...
+    material(7.0, :), material(1.0, :), material(2.0, :), material(3.0, :), material(4.0, :), material(5.0, :), material(6.0, :),...
+    material(10.0, :), material(11.0, :), material(8.0, :), material(9.0, :), sectionPoints, 15.0, 1.0);
+result = [PF; MF; KF; SF; TF];
+end
+
+%% INDEPENDENT REFERENCE USING TWO ORTHOGONAL ROTATIONS
+function [result] = referenceFailure(stress, material)
+result = zeros(2.0, size(stress, 2.0));
+for i = 1.0:size(stress, 2.0)
+    tensor = [stress(1.0, i), stress(3.0, i), 0.0; stress(3.0, i), stress(2.0, i), 0.0; 0.0, 0.0, 0.0];
+    initialAngle = material(11.0, i)*pi/180.0;
+    initialRotation = getRotation(initialAngle);
+    for psi = (0.0:15.0:180.0)*pi/180.0
+        rotation = [1.0, 0.0, 0.0; 0.0, cos(psi), sin(psi); 0.0, -sin(psi), cos(psi)];
+        kinkTensor = rotation*tensor*rotation';
+        unsignedTensor = kinkTensor;
+        unsignedTensor(1.0, 2.0) = abs(kinkTensor(1.0, 2.0));
+        unsignedTensor(2.0, 1.0) = unsignedTensor(1.0, 2.0);
+        initialTensor = initialRotation*unsignedTensor*initialRotation';
+        direction = 1.0;
+        if kinkTensor(1.0, 2.0) < 0.0
+            direction = -1.0;
+        end
+        angle = direction*(initialAngle + abs(initialTensor(1.0, 2.0))/material(7.0, i));
+        rotation = getRotation(angle);
+        misalignedTensor = rotation*kinkTensor*rotation';
+        criterion = getCriterion(misalignedTensor, material(:, i));
+        if stress(1.0, i) <= -0.5*material(2.0, i)
+            result(1.0, i) = max(result(1.0, i), criterion);
+        end
+        if (stress(1.0, i) >= -0.5*material(2.0, i)) && (stress(1.0, i) <= 0.0)
+            result(2.0, i) = max(result(2.0, i), criterion);
+        end
+    end
+end
+end
+
+%% CALIBRATE AGAINST UNIAXIAL FAILURE USING MATRIX ROTATIONS
+function [criterion] = compressionFailure(initialAngle, material)
+tensor = diag([-material(2.0), 0.0, 0.0]);
+rotation = getRotation(initialAngle);
+initialTensor = rotation*tensor*rotation';
+angle = initialAngle + abs(initialTensor(1.0, 2.0))/material(7.0);
+rotation = getRotation(angle);
+criterion = getCriterion(rotation*tensor*rotation', material);
+end
+
+function [rotation] = getRotation(angle)
+rotation = [cos(angle), sin(angle), 0.0; -sin(angle), cos(angle), 0.0; 0.0, 0.0, 1.0];
+end
+
+function [criterion] = getCriterion(tensor, material)
+criterion = sqrt((tensor(2.0, 3.0)/(material(6.0) - material(9.0)*tensor(2.0, 2.0)))^2.0 +...
+    (tensor(1.0, 2.0)/(material(5.0) - material(8.0)*tensor(2.0, 2.0)))^2.0 + (max(tensor(2.0, 2.0), 0.0)/material(3.0))^2.0);
+end
+
+%% COMPARE NUMERIC OUTPUT WITH THE EXPECTED VALUES
+function [] = checkValues(actual, expected, description)
+tolerance = 1e-9*max(1.0, max(abs(expected(:))));
+assert(isequal(size(actual), size(expected)) == true, '%s: output dimensions differ.', description);
+assert(all(isfinite(actual(:))) == true, '%s: output contains non-finite values.', description);
+assert(all(abs(actual(:) - expected(:)) <= tolerance) == true, '%s: incorrect output.', description);
+end
