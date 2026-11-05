@@ -1,5 +1,5 @@
 function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM, error] =...
-    internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, nargin, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, SECTION_POINTS)
+    internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, SECTION_POINTS)
 %   Get the A, B and D matrices.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -63,15 +63,17 @@ for i = 1.0:nPlies
     Dij = Dij + (1.0/3.0).*Qijt_ply.*(z(iz)^3.0 - z(iz - 1.0)^3.0);
 
     % Compute thermal resultants
-    if nargin == 5.0
+    if deltaT ~= 0.0
         NxxT = NxxT + (deltaT*((Q11t(i)*axx_ply + Q12t(i)*ayy_ply + Q16t(i)*axy_ply)*(z(iz) - z(iz - 1.0))));
         NyyT = NyyT + (deltaT*((Q12t(i)*axx_ply + Q22t(i)*ayy_ply + Q26t(i)*axy_ply)*(z(iz) - z(iz - 1.0))));
         NxyT = NxyT + (deltaT*((Q16t(i)*axx_ply + Q26t(i)*ayy_ply + Q66t(i)*axy_ply)*(z(iz) - z(iz - 1.0))));
         MxxT = MxxT + (0.5*deltaT*((Q11t(i)*axx_ply + Q12t(i)*ayy_ply + Q16t(i)*axy_ply)*(z(iz)^2.0 - z(iz - 1.0)^2.0)));
         MyyT = MyyT + (0.5*deltaT*((Q12t(i)*axx_ply + Q22t(i)*ayy_ply + Q26t(i)*axy_ply)*(z(iz)^2.0 - z(iz - 1.0)^2.0)));
         MxyT = MxyT + (0.5*deltaT*((Q16t(i)*axx_ply + Q26t(i)*ayy_ply + Q66t(i)*axy_ply)*(z(iz)^2.0 - z(iz - 1.0)^2.0)));
+    end
 
-        % Compute moisture resultants
+    % Compute moisture resultants
+    if deltaM ~= 0.0
         NxxM = NxxM + (deltaM*((Q11t(i)*bxx_ply + Q12t(i)*byy_ply + Q16t(i)*bxy_ply)*(z(iz) - z(iz - 1.0))));
         NyyM = NyyM + (deltaM*((Q12t(i)*bxx_ply + Q22t(i)*byy_ply + Q26t(i)*bxy_ply)*(z(iz) - z(iz - 1.0))));
         NxyM = NxyM + (deltaM*((Q16t(i)*bxx_ply + Q26t(i)*byy_ply + Q66t(i)*bxy_ply)*(z(iz) - z(iz - 1.0))));
