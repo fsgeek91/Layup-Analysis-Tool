@@ -458,6 +458,32 @@ classdef internal_strength < handle
         end
     end
     methods(Static = true, Access = public)
+        %% INVERSE OF THE FIRST POSITIVE LOAD FACTOR
+        function [RESERVE] = getReserve(A, B)
+            %{
+                Failure occurs when A*lambda^2 + B*lambda - 1 = 0. The
+                smallest positive real lambda gives the first failure under
+                the current loading direction. Its inverse is the largest
+                positive root of RESERVE^2 - B*RESERVE - A = 0.
+            %}
+            RESERVE = zeros(size(A));
+            discriminant = B.^2.0 + 4.0.*A;
+
+            % Positive linear term, including the linear/zero-stress cases
+            positiveB = (B >= 0.0) & (discriminant >= 0.0);
+            RESERVE(positiveB) = 0.5.*(B(positiveB) + sqrt(discriminant(positiveB)));
+
+            % Rationalise the root to avoid cancellation for negative B
+            negativeB = (B < 0.0) & (A > 0.0);
+            RESERVE(negativeB) = (2.0.*A(negativeB))./(sqrt(discriminant(negativeB)) - B(negativeB));
+
+            %{
+                No positive real root means infinite reserve (zero index).
+                Invalid coefficients must not be reported as zero failure
+            %}
+            RESERVE((isfinite(A) == false) | (isfinite(B) == false)) = NaN;
+        end
+
         %% FAILURE CRITERION: MAXIMUM STRESS
         function [MSTRS] = getMstrs(stress, XT, XC, YT, YC, S)
             % Get stresses for each section point
@@ -516,7 +542,7 @@ classdef internal_strength < handle
         %% FAILURE CRITERION: HOFFMAN
         function [HOFFMAN] = getHoffman(parameter, stress, XT, XC, YT, YC, S, S3, C)
             %{
-                The actual HOFFMAN criterion considerrs the action of both
+                The actual HOFFMAN criterion considers the action of both
                 the in-plane and out-of-plane shear stresses. Since Layup
                 Analysis Tool only considers plane stress, the following
                 simplifying assumptions are made:
@@ -551,7 +577,7 @@ classdef internal_strength < handle
             % Compute the parameter based on user setting
             if parameter == 1.0
                 % Strength reserve factor (failure index)
-                HOFFMAN = abs(1.0./min([(-B + sqrt(B.^2.0 - (4.0.*A.*C)))./(2.0.*A); (-B - sqrt(B.^2.0 - (4.0.*A.*C)))./(2.0.*A)], [], 1.0));
+                HOFFMAN = abd.internal_strength.getReserve(-A./C, -B./C);
             else
                 % Criterion value
                 HOFFMAN = abs(A + B);
@@ -588,16 +614,15 @@ classdef internal_strength < handle
                 B = (F1.*S1) + (F2.*S2);
 
                 % Strength reserve factor (failure index)
-                TSAIW = abs(1.0./min([(-B + sqrt(B.^2.0 + (4.0.*A)))./(2.0.*A);...
-                    (-B - sqrt(B.^2.0 + (4.0.*A)))./(2.0.*A)], [], 1.0));
+                TSAIW = abd.internal_strength.getReserve(A, B);
             else
                 % Criterion value
                 TSAIW = (F1.*S1) + (F2.*S2) + (F11.*S1.^2.0) +...
                     (F22.*S2.^2.0) + (F66.*T12.^2.0) + 2.0.*(F12.*S1.*S2);
-            end
 
-            % Reset NaN values of TSAIW to zero
-            TSAIW(isnan(TSAIW) == true) = 0.0;
+                % Reset NaN values of TSAIW to zero
+                TSAIW(isnan(TSAIW) == true) = 0.0;
+            end
         end
 
         %% FAILURE CRITERION: AZZI-TSAI-HILL
