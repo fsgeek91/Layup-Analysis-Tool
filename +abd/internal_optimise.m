@@ -394,7 +394,7 @@ classdef internal_optimise < handle
         %% PARFOR LOOP FOR METHOD 1: FULL MATRIX
         function [CRITERION_BUFFER] = parfor1(nPermutations, anglePermutations, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points, A22_points,...
                 B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
-                E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
+                E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                 SECTION_POINTS, objective, fcnHandle, step)
             parfor i = 1.0:nPermutations                
                 % Get the current stacking order
@@ -463,20 +463,21 @@ classdef internal_optimise < handle
                         % Get the worst criterion of all four calculations
                         CRITERION = max([HSNFTCRT; HSNFCCRT; HSNMTCRT; HSNMCCRT], [], 1.0);
                     case 'larc05' % LaRC05
+                        % Get principal stresses for the current candidate
+                        S11 = S_ply_aligned(1.0, :);
+                        S22 = S_ply_aligned(2.0, :);
+                        S12 = S_ply_aligned(3.0, :);
+                        S1_i = 0.5.*(S11 + S22) + sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                        S2_i = 0.5.*(S11 + S22) - sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                        S3_i = zeros(1.0, nPlies_points);
+
                         [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                             ...
-                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS,...
+                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1_i, S2_i, S3_i, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS,...
                             step, 2.0);
 
-                        %{
-                            Reset large LARMFCT values to one to prevent
-                            very large values from breaking the CB MATLAB
-                            figure
-                        %}
-                        LARMFCRT(LARMFCRT > 1.0) = 1.0;
-
-                        % Get the worst criterion of all four calculations
-                        CRITERION = max([LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT], [], 1.0);
+                        % Get the worst criterion of all five calculations
+                        CRITERION = max([LARPFCRT; LARMFCRT; LARKFCRT; LARSFCRT; LARTFCRT], [], 1.0);
                     case 'ucrt' % User-defined failure criterion
                         INFO = struct('PLY_COUNT', nPlies, 'SECTION_POINTS', SECTION_POINTS, 'TOTAL_POINTS', nPlies_points, 'FAILURE_PARAMETER', parameter);
                         MATERIAL_MECH = struct('E11', E11, 'E22', E22, 'G12', G12, 'V12', V12, 'AXX', axx, 'AYY', ayy, 'AXY', axy, 'BXX', bxx, 'BYY', byy, 'BXY', bxy);
@@ -511,7 +512,7 @@ classdef internal_optimise < handle
         %% PARFOR LOOP FOR METHOD 2: MIXED-RADIX REPRESENTATION
         function [CRITERION_BUFFER] = parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points, A22_points,...
                 B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
-                E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
+                E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                 SECTION_POINTS, objective, fcnHandle, step)
             parfor i = 1.0:nPermutations
                 % Get the current stacking order
@@ -580,20 +581,21 @@ classdef internal_optimise < handle
                         % Get the worst criterion of all four calculations
                         CRITERION = max([HSNFTCRT; HSNFCCRT; HSNMTCRT; HSNMCCRT], [], 1.0);
                     case 'larc05' % LaRC05
+                        % Get principal stresses for the current candidate
+                        S11 = S_ply_aligned(1.0, :);
+                        S22 = S_ply_aligned(2.0, :);
+                        S12 = S_ply_aligned(3.0, :);
+                        S1_i = 0.5.*(S11 + S22) + sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                        S2_i = 0.5.*(S11 + S22) - sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                        S3_i = zeros(1.0, nPlies_points);
+
                         [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                             ...
-                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS,...
+                            abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1_i, S2_i, S3_i, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS,...
                             step, 2.0);
 
-                        %{
-                            Reset large LARMFCT values to one to prevent
-                            very large values from breaking the CB MATLAB
-                            figure
-                        %}
-                        LARMFCRT(LARMFCRT > 1.0) = 1.0;
-
-                        % Get the worst criterion of all four calculations
-                        CRITERION = max([LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT], [], 1.0);
+                        % Get the worst criterion of all five calculations
+                        CRITERION = max([LARPFCRT; LARMFCRT; LARKFCRT; LARSFCRT; LARTFCRT], [], 1.0);
                     case 'ucrt' % User-defined failure criterion
                         INFO = struct('PLY_COUNT', nPlies, 'SECTION_POINTS', SECTION_POINTS, 'TOTAL_POINTS', nPlies_points, 'FAILURE_PARAMETER', parameter);
                         MATERIAL_MECH = struct('E11', E11, 'E22', E22, 'G12', G12, 'V12', V12, 'AXX', axx, 'AYY', ayy, 'AXY', axy, 'BXX', bxx, 'BYY', byy, 'BXY', bxy);
@@ -628,7 +630,7 @@ classdef internal_optimise < handle
         %% PARFOR LOOP FOR METHOD 3: CHUNKS
         function [CRITERION_BUFFER] = parfor3(numChunks, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
                 A11_points, A22_points, B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
-                parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX,...
+                parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX,...
                 SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step)
             % Initialise the outer buffer for the PARFOR loop
             OUTER_BUFFER = cell(numChunks, 1.0);
@@ -709,20 +711,21 @@ classdef internal_optimise < handle
                             % Get the worst criterion of all four calculations
                             CRITERION = max([HSNFTCRT; HSNFCCRT; HSNMTCRT; HSNMCCRT], [], 1.0);
                         case 'larc05' % LaRC05
+                            % Get principal stresses for the current candidate
+                            S11 = S_ply_aligned(1.0, :);
+                            S22 = S_ply_aligned(2.0, :);
+                            S12 = S_ply_aligned(3.0, :);
+                            S1_i = 0.5.*(S11 + S22) + sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                            S2_i = 0.5.*(S11 + S22) - sqrt((0.5.*(S11 - S22)).^2.0 + S12.^2.0);
+                            S3_i = zeros(1.0, nPlies_points);
+
                             [LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT] = ...
                                 ...
-                                abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
+                                abd.internal_getLaRC05(nPlies_points, S_ply_aligned, symsAvailable, S1_i, S2_i, S3_i, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                                 SECTION_POINTS, step, 2.0);
 
-                            %{
-                                Reset large LARMFCT values to one to
-                                prevent very large values from breaking the
-                                CB MATLAB figure
-                            %}
-                            LARMFCRT(LARMFCRT > 1.0) = 1.0;
-
-                            % Get the worst criterion of all four calculations
-                            CRITERION = max([LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT], [], 1.0);
+                            % Get the worst criterion of all five calculations
+                            CRITERION = max([LARPFCRT; LARMFCRT; LARKFCRT; LARSFCRT; LARTFCRT], [], 1.0);
                         case 'ucrt' % User-defined failure criterion
                             INFO = struct('PLY_COUNT', nPlies, 'SECTION_POINTS', SECTION_POINTS, 'TOTAL_POINTS', nPlies_points, 'FAILURE_PARAMETER', parameter);
                             MATERIAL_MECH = struct('E11', E11, 'E22', E22, 'G12', G12, 'V12', V12, 'AXX', axx, 'AYY', ayy, 'AXY', axy, 'BXX', bxx, 'BYY', byy, 'BXY', bxy);
