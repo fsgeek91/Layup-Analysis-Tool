@@ -49,10 +49,6 @@ classdef internal_strength < handle
 
             % Spread material data over section points
             if noFailStrain == false
-                E11 = abd.internal_spreadProperties(E11, nPlies, SECTION_POINTS);
-                E22 = abd.internal_spreadProperties(E22, nPlies, SECTION_POINTS);
-                G12 = abd.internal_spreadProperties(G12, nPlies, SECTION_POINTS);
-                V12 = abd.internal_spreadProperties(V12, nPlies, SECTION_POINTS);
                 XET = abd.internal_spreadProperties(XET, nPlies, SECTION_POINTS);
                 XEC = abd.internal_spreadProperties(XEC, nPlies, SECTION_POINTS);
                 YET = abd.internal_spreadProperties(YET, nPlies, SECTION_POINTS);
