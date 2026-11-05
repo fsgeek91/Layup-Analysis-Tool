@@ -671,17 +671,17 @@ classdef internal_strength < handle
             YE = zeros(1.0, nPlies_points);
 
             % Get the strains
-            strain_11 = (S1./E11) - (V12.*(S2./E22));
+            strain_11 = (S1./E11) - (V12.*(S2./E11));
             strain_22 = -V12.*(S1./E11) + (S2./E22);
             strain_12 = T12./G12;
 
             % Tension-compression split (longitudinal)
-            XE(S1 >= 0.0) = XET(S1 >= 0.0);
-            XE(S1 < 0.0) = XEC(S1 < 0.0);
+            XE(strain_11 >= 0.0) = XET(strain_11 >= 0.0);
+            XE(strain_11 < 0.0) = XEC(strain_11 < 0.0);
 
             % Tension-compression split (transverse)
-            YE(S2 >= 0.0) = YET(S2 >= 0.0);
-            YE(S2 < 0.0) = YEC(S2 < 0.0);
+            YE(strain_22 >= 0.0) = YET(strain_22 >= 0.0);
+            YE(strain_22 < 0.0) = YEC(strain_22 < 0.0);
 
             % Compute individual strength terms
             ME11 = strain_11./XE;
