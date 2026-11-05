@@ -47,9 +47,7 @@ E_therm_aligned = E_ply_xy;
 E_moist_aligned = E_ply_xy;
 
 % Engineering/tensor conversion
-%A = 2.0;
 A = 1.0;
-%B = 0.5;
 B = 1.0;
 
 for i = 1:nPlies_points
@@ -72,7 +70,7 @@ for i = 1:nPlies_points
                              E_midspan(5.0);
                              E_midspan(6.0)];
 
-    % Thermal/moiture strain components (XY)
+    % Thermal/moisture strain components (XY)
     E_therm_xy(:, i) = deltaT*[axx(i); ayy(i); axy(i)];
     E_moist_xy(:, i) = deltaM*[bxx(i); byy(i); bxy(i)];
 
@@ -82,20 +80,25 @@ for i = 1:nPlies_points
          (E_ply_xy(2.0, i) - deltaT*ayy(i) - deltaM*byy(i));...
          (B*E_ply_xy(3.0, i) - deltaT*axy(i) - deltaM*bxy(i))];
 
-    % Transformation matrix for current ply
+    % Stress transformation matrix for current ply
     T = [cosd(theta_point).^2.0, sind(theta_point).^2.0, 2.0.*cosd(theta_point).*sind(theta_point);...
         sind(theta_point).^2.0, cosd(theta_point).^2.0, -2.0.*cosd(theta_point).*sind(theta_point);...
         -cosd(theta_point).*sind(theta_point), cosd(theta_point).*sind(theta_point), cosd(theta_point).^2.0 - sind(theta_point).^2.0];
 
+    % Engineering strain transformation matrix for current ply
+    T_strain = [cosd(theta_point).^2.0, sind(theta_point).^2.0, cosd(theta_point).*sind(theta_point);...
+        sind(theta_point).^2.0, cosd(theta_point).^2.0, -cosd(theta_point).*sind(theta_point);...
+        -2.0.*cosd(theta_point).*sind(theta_point), 2.0.*cosd(theta_point).*sind(theta_point), cosd(theta_point).^2.0 - sind(theta_point).^2.0];
+
     % Compute the fibre/transverse strains for the current ply
-    E_ply_aligned(:, i) = T*E_ply_xy(:, i);
+    E_ply_aligned(:, i) = T_strain*E_ply_xy(:, i);
 
     % Compute the fibre/transverse stresses for the current ply
     S_ply_aligned(:, i) = T*S_ply_xy(:, i);
 
     % Compute thermal/moisture strain for the current ply
-    E_therm_aligned(:, i) = T*E_therm_xy(:, i);
-    E_moist_aligned(:, i) = T*E_moist_xy(:, i);
+    E_therm_aligned(:, i) = T_strain*E_therm_xy(:, i);
+    E_moist_aligned(:, i) = T_strain*E_moist_xy(:, i);
 end
 
 % Remove near-zero stress values
