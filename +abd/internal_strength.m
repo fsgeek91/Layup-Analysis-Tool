@@ -571,7 +571,7 @@ classdef internal_strength < handle
             T12 = stress(3.0, :);
             S23 = S3;  S13 = S3;  S12 = T12; % Simplifying assumption [III]
 
-            A = C1.*(S1 - S3).^2.0 + C2.*(S3 - S1).^2.0 + C3.*(S1 - S2).^2.0 + C7.*S23.^2.0 + C8.*S13.^2.0 + C9.*S12.^2.0;
+            A = C1.*(S2 - S3).^2.0 + C2.*(S3 - S1).^2.0 + C3.*(S1 - S2).^2.0 + C7.*S23.^2.0 + C8.*S13.^2.0 + C9.*S12.^2.0;
             B = C4.*S1 + C5.*S2 + C6.*S3;
 
             % Compute the parameter based on user setting

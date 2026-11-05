@@ -1,5 +1,5 @@
 function [] = validate_reserve()
-%   Regression checks for forward-load failure indices (issue #96).
+%   Regression checks for forward-load failure indices and Hoffman (#96/97).
 %
 %   RUN THIS FUNCTION FROM THE REPOSITORY ROOT:
 %   >> addpath('validation'); validate_reserve
@@ -21,9 +21,31 @@ stress = [1000.0, -500.0, 500.0, -250.0, 0.0, 0.0, 0.0;...
 materials = repmat(material, 1.0, 7.0);
 checkValues(evaluate(1.0, 1.0, stress, materials), [1.0, 1.0, 0.5, 0.5, 1.0, 1.0, 0.0], 'Tsai-Wu strength limits');
 
-%% CHECK HOFFMAN WITHOUT DEPENDING ON THE SEPARATE EQUATION ISSUE (#97)
-% Equal biaxial stresses make the disputed squared stress differences
-% identical. With these strengths, failure occurs at 500 +/- 500*sqrt(3).
+%% CHECK HOFFMAN TENSION, COMPRESSION AND SHEAR STRENGTH LIMITS
+stress = [1000.0, -500.0, 0.0, 0.0, 0.0, 0.0;...
+    0.0, 0.0, 50.0, -150.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 100.0, -100.0];
+materials = repmat(material, 1.0, 6.0);
+for parameter = 1.0:2.0
+    checkValues(evaluate(2.0, parameter, stress, materials), ones(1.0, 6.0), 'Hoffman strength limits');
+end
+checkValues(evaluate(2.0, 1.0, 0.5*stress, materials), 0.5*ones(1.0, 6.0), 'Hoffman half loads');
+
+%% CHECK HOFFMAN AGAINST THE EXPANDED PLANE-STRESS POLYNOMIAL
+% Compression strengths are negative. ZT=XT and ZC=XC give the mixed
+% normal-stress term S1*S2/(YT*YC), without using C1, C2 or C3 here.
+stress = [250.0, -200.0, 120.0, -300.0; 15.0, -20.0, -30.0, 10.0; 20.0, -15.0, 35.0, -25.0];
+materials = repmat(material, 1.0, 4.0);
+materials(1.0:5.0, :) = materials(1.0:5.0, :).*repmat([1.0, 1.5, 0.8, 2.0], 5.0, 1.0);
+expected = -stress(1.0, :).^2.0./(materials(1.0, :).*materials(2.0, :)) -...
+    stress(2.0, :).^2.0./(materials(3.0, :).*materials(4.0, :)) +...
+    stress(1.0, :).*stress(2.0, :)./(materials(3.0, :).*materials(4.0, :)) +...
+    stress(3.0, :).^2.0./materials(5.0, :).^2.0 +...
+    (1.0./materials(1.0, :) + 1.0./materials(2.0, :)).*stress(1.0, :) +...
+    (1.0./materials(3.0, :) + 1.0./materials(4.0, :)).*stress(2.0, :);
+checkValues(evaluate(2.0, 2.0, stress, materials), abs(expected), 'Expanded Hoffman polynomial');
+
+%% CHECK HOFFMAN EQUAL BIAXIAL STRENGTH LIMITS
+% With these strengths, failure occurs at 500 +/- 500*sqrt(3).
 hoffmanMaterial = material;
 hoffmanMaterial(3.0:4.0) = material(1.0:2.0);
 limits = [500.0 + 500.0*sqrt(3.0), 500.0 - 500.0*sqrt(3.0)];
@@ -42,7 +64,9 @@ stress = [300.0, -300.0; zeros(2.0, 2.0)];
 checkValues(evaluate(1.0, 1.0, stress, repmat(symmetricMaterial, 1.0, 2.0)), [0.3, 0.3], 'Equal tension/compression strengths');
 
 %% CHECK VECTOR INPUTS AND PROPORTIONAL LOADING
-stress = [250.0, -200.0, 120.0, -300.0; 15.0, -20.0, -30.0, 10.0; 20.0, -15.0, 35.0, -25.0];
+% Opposite normal-stress signs ensure a positive quadratic coefficient in
+% both criteria, so every selected load direction crosses the surface.
+stress = [250.0, -200.0, 120.0, -300.0; -15.0, 20.0, -30.0, 10.0; 20.0, -15.0, 35.0, -25.0];
 materials = repmat(material, 1.0, 4.0);
 materials(1.0:5.0, :) = materials(1.0:5.0, :).*repmat([1.0, 1.5, 0.8, 2.0], 5.0, 1.0);
 for criterion = 1.0:2.0
