@@ -262,7 +262,7 @@ classdef internal_optimise < handle
             % Compute A, B and D matrices
             [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
                 ...
-                abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints);
+                abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints, false);
 
             % Compute tensor quantities
             [~, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, ~, ~, ~, ~] =...
@@ -505,7 +505,7 @@ classdef internal_optimise < handle
                 % Compute A, B and D matrices
                 [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
                     ...
-                    abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints);
+                    abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints, false);
 
                 % Built-in criteria use the stress-only recovery path
                 S_ply_aligned = [];
@@ -619,7 +619,7 @@ classdef internal_optimise < handle
                 % Compute A, B and D matrices
                 [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
                     ...
-                    abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints);
+                    abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints, false);
 
                 % Built-in criteria use the stress-only recovery path
                 S_ply_aligned = [];
@@ -744,7 +744,7 @@ classdef internal_optimise < handle
                     % Compute A, B and D matrices
                     [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
                         ...
-                        abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints);
+                        abd.internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, nSectionPoints, false);
 
                     % Built-in criteria use the stress-only recovery path
                     S_ply_aligned = [];

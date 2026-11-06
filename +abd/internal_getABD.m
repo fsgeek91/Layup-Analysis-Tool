@@ -1,5 +1,5 @@
 function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM, error] =...
-    internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, SECTION_POINTS)
+    internal_getABD(nPlies, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, z, deltaT, deltaM, axx, ayy, axy, bxx, byy, bxy, SECTION_POINTS, computeInverse)
 %   Get the A, B and D matrices.
 %
 %   DO NOT RUN THIS FUNCTION.
@@ -14,6 +14,11 @@ function [ABD, ABD_INV, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, Nx
 % Initialise output
 error = false;
 ABD_INV = [];
+
+% Compute the inverse unless it is explicitly disabled by the caller
+if nargin < 18.0
+    computeInverse = true;
+end
 
 % Buffers for A, B and D matrix elements
 Aij = zeros(3.0, 3.0); Bij = Aij; Dij = Aij;
@@ -102,5 +107,7 @@ if det(ABD) == 0.0
     return
 end
 
-% Get the inverse ABD matrix
-ABD_INV = inv(ABD);
+% Get the inverse ABD matrix when required
+if computeInverse == true
+    ABD_INV = inv(ABD);
+end
