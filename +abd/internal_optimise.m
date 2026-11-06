@@ -81,6 +81,9 @@ classdef internal_optimise < handle
             % Start the timer
             timer = tic;
 
+            % Cache the material properties for every ply/angle combination
+            CACHE = abd.internal_optimise.getCache(thetaAll, nPlies, nSectionPoints, Q11, Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points);
+
             switch OPTIMISER_SETTINGS{1.0}
                 case 1.0  % FULL MATRIX
                     % Get the stacking permutation matrix
@@ -97,24 +100,16 @@ classdef internal_optimise < handle
                         return
                     end
 
-                    % Get the angles
-                    anglePermutations = thetaAll(indexPermutations);
-
-                    % Transpose ANGLEPERMUTATIONS in case there is only one ply
-                    if (width(indexPermutations) == 1.0) && (nPlies == 1.0)
-                        anglePermutations = anglePermutations';
-                    end
-
                     % Run the stacking sequence optimiser
-                    CRITERION_BUFFER = abd.internal_optimise.parfor1(nPermutations, anglePermutations, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points,...
-                        A22_points, B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
+                    CRITERION_BUFFER = abd.internal_optimise.parfor1(nPermutations, indexPermutations, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                        deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
                         parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC,...
                         SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
                 case 2.0 % MIXED-RADIX REPRESENTATION
                     % Run the stacking sequence optimiser
                     try
-                        CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
-                            A11_points, A22_points, B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT,...
+                        CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT,...
                             XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12,...
                             XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
                     catch MException
@@ -160,8 +155,8 @@ classdef internal_optimise < handle
 
                     % Run the stacking sequence optimiser
                     try
-                        CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance,...
-                            Q11, Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
+                        CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
                             failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
                             symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
                     catch MException
@@ -188,7 +183,7 @@ classdef internal_optimise < handle
             %}
             switch OPTIMISER_SETTINGS{1.0}
                 case 1.0
-                    BEST_SEQUENCE{1.0} = anglePermutations(MIN_CRITERION, :);
+                    BEST_SEQUENCE{1.0} = thetaAll(indexPermutations(MIN_CRITERION, :));
                 otherwise
                     BEST_SEQUENCE{1.0} = abd.internal_optimise.indexToStacking(MIN_CRITERION, thetaAll, numAngles, nPlies);
             end
@@ -385,6 +380,66 @@ classdef internal_optimise < handle
             end
         end
 
+        %% CACHE PLY PROPERTIES FOR EACH ALLOWED ANGLE
+        function [CACHE] = getCache(thetaAll, nPlies, nSectionPoints, Q11, Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points)
+            % Initialise one block per angle, with one entry per ply
+            buffer = zeros(1.0, nPlies*numel(thetaAll));
+            CACHE = struct('Q11T', buffer, 'Q12T', buffer, 'Q16T', buffer, 'Q22T', buffer, 'Q26T', buffer, 'Q66T', buffer,...
+                'AXX', buffer, 'AYY', buffer, 'AXY', buffer, 'BXX', buffer, 'BYY', buffer, 'BXY', buffer,...
+                'THETA', thetaAll, 'PLY_INDEX', 1.0:nPlies, 'POINT_PLY', repelem(1.0:nPlies, nSectionPoints));
+
+            % Recover the ply-wise expansion coefficients
+            A11 = A11_points(1.0:nSectionPoints:end);
+            A22 = A22_points(1.0:nSectionPoints:end);
+            B11 = B11_points(1.0:nSectionPoints:end);
+            B22 = B22_points(1.0:nSectionPoints:end);
+
+            for i = 1.0:numel(thetaAll)
+                theta = repmat(thetaAll(i), 1.0, nPlies);
+                indexes = CACHE.PLY_INDEX + (i - 1.0)*nPlies;
+
+                % Compute transformed reduced stiffness components once
+                [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] = abd.internal_getTransformedQ(nPlies, theta, Q11, Q12, Q66, Q22);
+                CACHE.Q11T(indexes) = Q11t;
+                CACHE.Q12T(indexes) = Q12t;
+                CACHE.Q16T(indexes) = Q16t;
+                CACHE.Q22T(indexes) = Q22t;
+                CACHE.Q26T(indexes) = Q26t;
+                CACHE.Q66T(indexes) = Q66t;
+
+                % Preserve the existing expansion-coefficient cleanup
+                [axx, ayy, axy, bxx, byy, bxy] = abd.internal_getThermoHydro(theta, A11, A22, B11, B22);
+                CACHE.AXX(indexes) = axx;
+                CACHE.AYY(indexes) = ayy;
+                CACHE.AXY(indexes) = axy;
+                CACHE.BXX(indexes) = bxx;
+                CACHE.BYY(indexes) = byy;
+                CACHE.BXY(indexes) = bxy;
+            end
+        end
+
+        %% GET CACHED PROPERTIES FOR THE CURRENT CANDIDATE
+        function [theta_points, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, axx, ayy, axy, bxx, byy, bxy] = getCachedProperties(CACHE, angleIndexes)
+            % Select each ply's angle block using linear indices
+            indexes = CACHE.PLY_INDEX + (angleIndexes - 1.0)*numel(CACHE.PLY_INDEX);
+            Q11t = CACHE.Q11T(indexes);
+            Q12t = CACHE.Q12T(indexes);
+            Q16t = CACHE.Q16T(indexes);
+            Q22t = CACHE.Q22T(indexes);
+            Q26t = CACHE.Q26T(indexes);
+            Q66t = CACHE.Q66T(indexes);
+
+            % Expand the selected ply values over their section points
+            pointIndexes = indexes(CACHE.POINT_PLY);
+            theta_points = CACHE.THETA(angleIndexes(CACHE.POINT_PLY));
+            axx = CACHE.AXX(pointIndexes);
+            ayy = CACHE.AYY(pointIndexes);
+            axy = CACHE.AXY(pointIndexes);
+            bxx = CACHE.BXX(pointIndexes);
+            byy = CACHE.BYY(pointIndexes);
+            bxy = CACHE.BXY(pointIndexes);
+        end
+
         %% INDEX-TO-SEQUENCE CONVERTER
         function seq = indexToStacking(index, angles, numAngles, nPlies)
             seq = zeros(1.0, nPlies);
@@ -398,31 +453,18 @@ classdef internal_optimise < handle
         end
 
         %% PARFOR LOOP FOR METHOD 1: FULL MATRIX
-        function [CRITERION_BUFFER] = parfor1(nPermutations, anglePermutations, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points, A22_points,...
-                B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
+        function [CRITERION_BUFFER] = parfor1(nPermutations, indexPermutations, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
                 E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                 SECTION_POINTS, objective, fcnHandle, step)
             parfor i = 1.0:nPermutations                
-                % Get the current stacking order
-                theta = anglePermutations(i, :);
+                % Get the angle indices for the current stacking order
+                angleIndexes = indexPermutations(i, :);
 
-                % Get the values of theta over the section points
-                [~, ~, theta_points, ~, ~, ~, ~, ~, ~, ~] =...
+                % Get cached stiffness and expansion properties
+                [theta_points, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, axx, ayy, axy, bxx, byy, bxy] =...
                     ...
-                    abd.internal_getSectionPoints(nSectionPoints, '', nPlies, theta, z, dummy, dummy, dummy, dummy, tolerance, []);
-
-                % Compute transformed reduced stiffness matrix components
-                [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] =...
-                    ...
-                    abd.internal_getTransformedQ(nPlies, theta, Q11, Q12, Q66, Q22);
-
-                %{
-                    Get effective thermal and moisture expansion
-                    coefficients for each ply
-                %}
-                [axx, ayy, axy, bxx, byy, bxy] =...
-                    ...
-                    abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
+                    abd.internal_optimise.getCachedProperties(CACHE, angleIndexes);
 
                 % Compute A, B and D matrices
                 [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
@@ -516,31 +558,18 @@ classdef internal_optimise < handle
         end
 
         %% PARFOR LOOP FOR METHOD 2: MIXED-RADIX REPRESENTATION
-        function [CRITERION_BUFFER] = parfor2(nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22, A11_points, A22_points,...
-                B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
+        function [CRITERION_BUFFER] = parfor2(nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
                 E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                 SECTION_POINTS, objective, fcnHandle, step)
             parfor i = 1.0:nPermutations
-                % Get the current stacking order
-                theta = abd.internal_optimise.indexToStacking(i, thetaAll, numAngles, nPlies);
+                % Get the angle indices for the current stacking order
+                angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nPlies);
 
-                % Get the values of theta over the section points
-                [~, ~, theta_points, ~, ~, ~, ~, ~, ~, ~] =...
+                % Get cached stiffness and expansion properties
+                [theta_points, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, axx, ayy, axy, bxx, byy, bxy] =...
                     ...
-                    abd.internal_getSectionPoints(nSectionPoints, '', nPlies, theta, z, dummy, dummy, dummy, dummy, tolerance, []);
-
-                % Compute transformed reduced stiffness matrix components
-                [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] =...
-                    ...
-                    abd.internal_getTransformedQ(nPlies, theta, Q11, Q12, Q66, Q22);
-
-                %{
-                    Get effective thermal and moisture expansion
-                    coefficients for each ply
-                %}
-                [axx, ayy, axy, bxx, byy, bxy] =...
-                    ...
-                    abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
+                    abd.internal_optimise.getCachedProperties(CACHE, angleIndexes);
 
                 % Compute A, B and D matrices
                 [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
@@ -634,10 +663,9 @@ classdef internal_optimise < handle
         end
 
         %% PARFOR LOOP FOR METHOD 3: CHUNKS
-        function [CRITERION_BUFFER] = parfor3(numChunks, CHUNK_SIZE, nPermutations, thetaAll, numAngles, nSectionPoints, nPlies, z, dummy, tolerance, Q11, Q12, Q66, Q22,...
-                A11_points, A22_points, B11_points, B22_points, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
-                parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX,...
-                SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step)
+        function [CRITERION_BUFFER] = parfor3(numChunks, CHUNK_SIZE, nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx,...
+                Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC,...
+                SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step)
             % Initialise the outer buffer for the PARFOR loop
             OUTER_BUFFER = cell(numChunks, 1.0);
 
@@ -651,26 +679,13 @@ classdef internal_optimise < handle
                 INNER_BUFFER = cell(numItems, 1.0);
 
                 for i = startIdx:endIdx
-                    % Get the current stacking order
-                    theta = abd.internal_optimise.indexToStacking(i, thetaAll, numAngles, nPlies);
+                    % Get the angle indices for the current stacking order
+                    angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nPlies);
 
-                    % Get the values of theta over the section points
-                    [~, ~, theta_points, ~, ~, ~, ~, ~, ~, ~] =...
+                    % Get cached stiffness and expansion properties
+                    [theta_points, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, axx, ayy, axy, bxx, byy, bxy] =...
                         ...
-                        abd.internal_getSectionPoints(nSectionPoints, '', nPlies, theta, z, dummy, dummy, dummy, dummy, tolerance, []);
-
-                    % Compute transformed reduced stiffness matrix components
-                    [Q11t, Q12t, Q16t, Q22t, Q26t, Q66t] =...
-                        ...
-                        abd.internal_getTransformedQ(nPlies, theta, Q11, Q12, Q66, Q22);
-
-                    %{
-                        Get effective thermal and moisture expansion
-                        coefficients for each ply
-                    %}
-                    [axx, ayy, axy, bxx, byy, bxy] =...
-                        ...
-                        abd.internal_getThermoHydro(theta_points, A11_points, A22_points, B11_points, B22_points);
+                        abd.internal_optimise.getCachedProperties(CACHE, angleIndexes);
 
                     % Compute A, B and D matrices
                     [ABD, ~, Qijt, NxxT, NyyT, NxyT, MxxT, MyyT, MxyT, NxxM, NyyM, NxyM, MxxM, MyyM, MxyM] =...
