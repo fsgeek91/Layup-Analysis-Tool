@@ -89,6 +89,10 @@ classdef internal_plot < handle
 
                 % Set the figure title
                 figureTitle = sprintf('CDF plot of optimiser criterion for all stacking permutations');
+                nPermutations = numel(OUTPUT_OPTIMISED{5.0})^nPlies;
+                if numel(CRITERION_BUFFER) < nPermutations
+                    figureTitle = sprintf('CDF plot of optimiser criterion (sample of %.0f of %.0f stacking permutations)', numel(CRITERION_BUFFER), nPermutations);
+                end
 
                 % Plot the criterion
                 h = cdfplot(CRITERION_BUFFER);

@@ -208,6 +208,10 @@ OUTPUT_PLY = 'DEFAULT';
 
     Note: MATLAB figures are only generated when at least one load matrix
     component is specified with NXX/NYY/NXY or MXX/MYY/MXY.
+
+    Optimisation retains scores only for the CDF figure, up to a sample of
+    10000 stacking permutations. All candidates are evaluated to select
+    the exact optimum, regardless of the figure setting.
 %}
 OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
 

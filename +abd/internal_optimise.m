@@ -17,7 +17,7 @@ classdef internal_optimise < handle
         function [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
                 main(OUTPUT_OPTIMISED, nPlies, nPlies_points, nSectionPoints, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points, B22_points, tolerance,...
                 XT, XC, YT, YC, S, C12, B12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, deltaT, deltaM,...
-                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS, pctAvail, step)
+                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS, pctAvail, step, scoreLimit)
             % Initialise output
             %{
                 BEST_SEQUENCE(1) = Optimum stacking sequence
@@ -33,6 +33,11 @@ classdef internal_optimise < handle
             CHUNK_SIZE = [];
             N_CHUNKS = [];
             EXECUTION_MODE = 'N/A';
+
+            % Preserve complete score output for existing internal callers
+            if nargin < 67.0
+                scoreLimit = Inf;
+            end
 
             % Get data from OUTPUT_OPTIMISED
             [enabled, failureCriterion, parameter, objective, thetaAll] = deal(OUTPUT_OPTIMISED{1.0}, OUTPUT_OPTIMISED{2.0}, OUTPUT_OPTIMISED{3.0}, OUTPUT_OPTIMISED{4.0},...
@@ -58,6 +63,8 @@ classdef internal_optimise < handle
             % Get the number of permutations
             precision = length(thetaAll);
             nPermutations = precision^nPlies;
+            retainAll = scoreLimit >= nPermutations;
+            indexPermutations = [];
 
             % Warn the user if a large number of iteration will be required
             if nPermutations > 1e6
@@ -100,18 +107,22 @@ classdef internal_optimise < handle
                         return
                     end
 
-                    % Run the stacking sequence optimiser
-                    CRITERION_BUFFER = abd.internal_optimise.parfor1(nPermutations, indexPermutations, CACHE, nSectionPoints, nPlies, z, tolerance,...
-                        deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
-                        parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC,...
-                        SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
+                    % Run the stacking sequence optimiser with full scores
+                    if retainAll == true
+                        CRITERION_BUFFER = abd.internal_optimise.parfor1(nPermutations, indexPermutations, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S,...
+                            parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC,...
+                            SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
+                    end
                 case 2.0 % MIXED-RADIX REPRESENTATION
                     % Run the stacking sequence optimiser
                     try
-                        CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance,...
-                            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT,...
-                            XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12,...
-                            XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
+                        if retainAll == true
+                            CRITERION_BUFFER = abd.internal_optimise.parfor2(nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                                deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT,...
+                                XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12,...
+                                XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
+                        end
                     catch MException
                         % A problem occurred while running the optimisation
                         BEST_SEQUENCE{5.0} = MException;
@@ -151,10 +162,12 @@ classdef internal_optimise < handle
 
                     % Run the stacking sequence optimiser
                     try
-                        CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance,...
-                            deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
-                            failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
-                            symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
+                        if retainAll == true
+                            CRITERION_BUFFER = abd.internal_optimise.parfor3(N_CHUNKS, CHUNK_SIZE, nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance,...
+                                deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points,...
+                                failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY,...
+                                symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step);
+                        end
                     catch MException
                         % A problem occurred while running the optimisation
                         BEST_SEQUENCE{5.0} = MException;
@@ -167,11 +180,54 @@ classdef internal_optimise < handle
                 otherwise
             end
 
+            if retainAll == false
+                % Keep only selected plot scores and the exact winning index
+                sampleIndexes = abd.internal_optimise.getScoreIndexes(nPermutations, scoreLimit);
+                CRITERION_BUFFER = zeros(1.0, length(sampleIndexes));
+                sampleCount = 0.0;
+                minValue = [];
+
+                % Preserve user chunks; otherwise partition candidate ranges
+                blockSize = CHUNK_SIZE;
+                if isempty(blockSize) == true
+                    nBlocks = 40.0;
+                    if strcmpi(EXECUTION_MODE, 'Parallel') == true
+                        nBlocks = 5.0*poolObj.NumWorkers;
+                    end
+                    blockSize = ceil(nPermutations/nBlocks);
+                end
+                nBlocks = ceil(nPermutations/blockSize);
+
+                % Bound the summaries even when every chunk has one candidate
+                try
+                    for firstChunk = 1.0:1024.0:nBlocks
+                        batchChunks = min(1024.0, nBlocks - firstChunk + 1.0);
+                        [sampleScores, bestIndex, bestValue] = abd.internal_optimise.parfor3(batchChunks, blockSize, nPermutations, numAngles, CACHE, nSectionPoints,...
+                            nPlies, z, tolerance, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter,...
+                            C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, S1, S2, S3, GL12, XLT, XLC, YLT,...
+                            YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step, sampleIndexes, firstChunk, indexPermutations);
+
+                        % Batches and samples remain in global candidate order
+                        CRITERION_BUFFER(sampleCount + (1.0:length(sampleScores))) = sampleScores;
+                        sampleCount = sampleCount + length(sampleScores);
+                        if (isempty(bestIndex) == false) && ((isempty(MIN_CRITERION) == true) || (bestValue < minValue))
+                            MIN_CRITERION = bestIndex;
+                            minValue = bestValue;
+                        end
+                    end
+                catch MException
+                    BEST_SEQUENCE{5.0} = MException;
+                    abd.internal_saveMExceptionObj(MException)
+                    return
+                end
+            else
+                % Get the first permutation with the minimum criterion
+                MIN_CRITERION = find(CRITERION_BUFFER == min(CRITERION_BUFFER), 1.0);
+                minValue = CRITERION_BUFFER(MIN_CRITERION);
+            end
+
             % Stop the timer
             BEST_SEQUENCE{4.0} = toc(timer);
-
-            % Get the permutation with the minimum value of CRITERION
-            MIN_CRITERION = find(CRITERION_BUFFER == min(CRITERION_BUFFER), 1.0);
 
             %{
                 Get the stacking sequence corresponding to the optimal
@@ -185,7 +241,7 @@ classdef internal_optimise < handle
             end
 
             % Save the critical value
-            BEST_SEQUENCE{2.0} = CRITERION_BUFFER(MIN_CRITERION);
+            BEST_SEQUENCE{2.0} = minValue;
 
             % Get the optimised stress/strain tensors
             [E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, symmetricAbd] =...
@@ -195,6 +251,20 @@ classdef internal_optimise < handle
 
             % Collect output from stress/strain analysis
             BEST_SEQUENCE{6.0} = struct('STRESS_XY', S_ply_xy, 'STRESS_PLY', S_ply_aligned, 'STRAIN_XY', E_ply_xy, 'STRAIN_PLY', E_ply_aligned, 'SYMMETRIC_ABD', symmetricAbd);
+        end
+
+        %% SELECT A BOUNDED SAMPLE WITHOUT CHANGING THE GLOBAL RANDOM STATE
+        function [sampleIndexes] = getScoreIndexes(nPermutations, nSamples)
+            if nSamples == 0.0
+                sampleIndexes = [];
+                return
+            end
+
+            % Disjoint integer strata avoid aliasing the mixed-radix angles
+            firstIndex = floor((0.0:nSamples - 1.0)*nPermutations/nSamples) + 1.0;
+            lastIndex = floor((1.0:nSamples)*nPermutations/nSamples);
+            stream = RandStream('mt19937ar', 'Seed', 0.0);
+            sampleIndexes = firstIndex + floor(rand(stream, 1.0, nSamples).*(lastIndex - firstIndex + 1.0));
         end
 
         %% GET PLY STRESSES FOR BUILT-IN OPTIMISATION CRITERIA
@@ -713,27 +783,54 @@ classdef internal_optimise < handle
         end
 
         %% PARFOR LOOP FOR METHOD 3: CHUNKS
-        function [CRITERION_BUFFER] = parfor3(numChunks, CHUNK_SIZE, nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx,...
+        function [CRITERION_BUFFER, MIN_CRITERION, minValue] = parfor3(numChunks, CHUNK_SIZE, nPermutations, numAngles, CACHE, nSectionPoints, nPlies, z, tolerance, deltaT, deltaM, Nxx, Nyy, Nxy, Mxx,...
                 Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12, E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC,...
-                SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step)
+                SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT, SECTION_POINTS, objective, fcnHandle, step, sampleIndexes, firstChunk, indexPermutations)
+            % Existing callers retain every score for the complete search
+            retainAll = nargin < 64.0;
+            if retainAll == true
+                sampleIndexes = [];
+                firstChunk = 1.0;
+                indexPermutations = [];
+            end
+
             % Initialise the outer buffer for the PARFOR loop
             OUTER_BUFFER = cell(numChunks, 1.0);
+            INDEX_BUFFER = [];
+            VALUE_BUFFER = [];
+            if retainAll == false
+                INDEX_BUFFER = zeros(1.0, numChunks);
+                VALUE_BUFFER = Inf(1.0, numChunks);
+            end
 
             parfor chunkId = 1.0:numChunks
                 % Get iterator parameters
-                startIdx = (chunkId - 1.0) * CHUNK_SIZE + 1.0;
-                endIdx = min(chunkId * CHUNK_SIZE, nPermutations);
+                globalChunk = firstChunk + chunkId - 1.0;
+                startIdx = (globalChunk - 1.0) * CHUNK_SIZE + 1.0;
+                endIdx = min(globalChunk * CHUNK_SIZE, nPermutations);
                 numItems = endIdx - startIdx + 1.0;
 
-                % Initialise the inner buffer for the FOR loop
-                INNER_BUFFER = zeros(1.0, numItems);
+                % Limited retention stores only samples and a running winner
+                selected = sampleIndexes(sampleIndexes >= startIdx & sampleIndexes <= endIdx); %#ok<PFBNS>
+                samplePosition = 1.0;
+                bestIndex = 0.0;
+                bestValue = Inf;
+                if retainAll == true
+                    INNER_BUFFER = zeros(1.0, numItems);
+                else
+                    INNER_BUFFER = zeros(1.0, length(selected));
+                end
 
                 for localIdx = 1.0:numItems
                     % Map the local buffer index to the global permutation
                     i = startIdx + localIdx - 1.0;
 
                     % Get the angle indices for the current stacking order
-                    angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nPlies);
+                    if isempty(indexPermutations) == true
+                        angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nPlies);
+                    else
+                        angleIndexes = indexPermutations(i, :);
+                    end
 
                     % Get cached stiffness and expansion properties
                     [theta_points, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, axx, ayy, axy, bxx, byy, bxy] =...
@@ -832,19 +929,47 @@ classdef internal_optimise < handle
                     % Get the worst value of CRITERION based on objective
                     if objective == 1.0
                         % Objective function: MinMax
-                        INNER_BUFFER(localIdx) = max(CRITERION);
+                        value = max(CRITERION);
                     else
                         % Objective function: MinMean
-                        INNER_BUFFER(localIdx) = mean(CRITERION);
+                        value = mean(CRITERION);
+                    end
+
+                    if retainAll == true
+                        INNER_BUFFER(localIdx) = value;
+                    else
+                        % Ignore NaN scores; retain the first minimum, even Inf
+                        if (isnan(value) == false) && ((bestIndex == 0.0) || (value < bestValue))
+                            bestIndex = i;
+                            bestValue = value;
+                        end
+                        if (samplePosition <= length(selected)) && (i == selected(samplePosition))
+                            INNER_BUFFER(samplePosition) = value;
+                            samplePosition = samplePosition + 1.0;
+                        end
                     end
                 end
 
                 % Update the outer loop buffer
                 OUTER_BUFFER{chunkId} = INNER_BUFFER;
+                if retainAll == false
+                    INDEX_BUFFER(chunkId) = bestIndex;
+                    VALUE_BUFFER(chunkId) = bestValue;
+                end
             end
 
             % Collect outer buffers into function output
             CRITERION_BUFFER = horzcat(OUTER_BUFFER{:});
+            MIN_CRITERION = [];
+            minValue = [];
+            if retainAll == false
+                % Empty/all-NaN chunks must not displace a valid Inf minimum
+                valid = find(INDEX_BUFFER > 0.0);
+                if isempty(valid) == false
+                    [minValue, position] = min(VALUE_BUFFER(valid));
+                    MIN_CRITERION = INDEX_BUFFER(valid(position));
+                end
+            end
         end
 
         %% Check the user's parallel pool configuration

@@ -327,13 +327,19 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
         % Flag indicating if Parallel Computing Toolbox is available
         pctAvail = abd.internal_checkToolbox('Parallel Computing Toolbox');
 
+        % Retain a bounded score sample only when a CDF figure will be created
+        scoreLimit = 0.0;
+        if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) && (nPlies_points > 1.0)
+            scoreLimit = 10000.0;
+        end
+
         %% FIND THE OPTIMUM STACKING SEQUENCE
         [BEST_SEQUENCE, CRITERION_BUFFER, ~, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
             ...
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
             deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS, pctAvail,...
-            step);
+            step, scoreLimit);
     else
         CRITERION_BUFFER = [];
     end
