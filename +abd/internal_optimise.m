@@ -73,7 +73,7 @@ classdef internal_optimise < handle
             dummy = zeros(1.0, nPlies);
             
             % Check the user's parallel pool configuration
-            EXECUTION_MODE = abd.internal_optimise.checkParforConfig(pctAvail, EXECUTION_MODE);
+            [EXECUTION_MODE, poolObj] = abd.internal_optimise.checkParforConfig(pctAvail, EXECUTION_MODE);
 
             % Save number of analysed permutations
             BEST_SEQUENCE{3.0} = nPermutations;
@@ -123,7 +123,7 @@ classdef internal_optimise < handle
                     
                 case 3.0 % CHUNKS
                     if strcmpi(OPTIMISER_SETTINGS{2.0}, 'DEFAULT') == true
-                        if isempty(poolObj) == false
+                        if strcmpi(EXECUTION_MODE, 'Parallel') == true
                             % Parallel mode: Optimise chunk size for worker load
 
                             % Get the tuning constant
@@ -138,11 +138,7 @@ classdef internal_optimise < handle
                             % Set the chunk size
                             CHUNK_SIZE = ceil(nPermutations/(poolObj.NumWorkers*k));
                         else
-                            %{
-                                Serial mode: Use smaller chunks for
-                                frequent saves. Aim for about 40 total
-                                chunks
-                            %}
+                            % Serial mode: Aim for about 40 total chunks
                             CHUNK_SIZE = ceil(nPermutations/40.0);
                         end
                     else
@@ -730,9 +726,12 @@ classdef internal_optimise < handle
                 numItems = endIdx - startIdx + 1.0;
 
                 % Initialise the inner buffer for the FOR loop
-                INNER_BUFFER = cell(numItems, 1.0);
+                INNER_BUFFER = zeros(1.0, numItems);
 
-                for i = startIdx:endIdx
+                for localIdx = 1.0:numItems
+                    % Map the local buffer index to the global permutation
+                    i = startIdx + localIdx - 1.0;
+
                     % Get the angle indices for the current stacking order
                     angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nPlies);
 
@@ -833,23 +832,26 @@ classdef internal_optimise < handle
                     % Get the worst value of CRITERION based on objective
                     if objective == 1.0
                         % Objective function: MinMax
-                        INNER_BUFFER{i} = max(CRITERION);
+                        INNER_BUFFER(localIdx) = max(CRITERION);
                     else
                         % Objective function: MinMean
-                        INNER_BUFFER{i} = mean(CRITERION);
+                        INNER_BUFFER(localIdx) = mean(CRITERION);
                     end
                 end
 
                 % Update the outer loop buffer
-                OUTER_BUFFER{chunkId} = INNER_BUFFER(startIdx:endIdx);
+                OUTER_BUFFER{chunkId} = INNER_BUFFER;
             end
 
             % Collect outer buffers into function output
-            CRITERION_BUFFER = cell2mat(vertcat(OUTER_BUFFER{:})');
+            CRITERION_BUFFER = horzcat(OUTER_BUFFER{:});
         end
 
         %% Check the user's parallel pool configuration
-        function [EXECUTION_MODE] = checkParforConfig(pctAvail, EXECUTION_MODE)
+        function [EXECUTION_MODE, poolObj] = checkParforConfig(pctAvail, EXECUTION_MODE)
+            % Retain an empty pool when parallel computing is unavailable
+            poolObj = [];
+
             try
                 if pctAvail == true
                     % Get the parallel pool object
