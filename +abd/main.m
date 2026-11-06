@@ -301,6 +301,13 @@ noUcrt = true;
 [MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT, LARKFCRT, LARSFCRT, LARTFCRT, UCRT] = abd.internal_strength.init(nPlies_points);
 
 if (isStrengthOutput == true) && (printTensor == 1.0)
+    % Use the same LaRC05 step for the initial layup and optimisation
+    step = OUTPUT_STRENGTH{3.0};
+    if (noLaRC05 == false) && (ischar(step) == true) && (isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true)
+        step = 15.0;
+        fprintf('[NOTICE] The optimiser will use a fixed default step size of 15 degrees for LaRC05\n');
+    end
+
     % Get the tensor data into a structure
     TENSORS = struct('E_MIDSPAN', E_midspan, 'E_PLY_XY', E_ply_xy, 'S_PLY_XY', S_ply_xy, 'E_PLY_ALIGNED', E_ply_aligned, 'S_PLY_ALIGNED', S_ply_aligned, 'E_THERM_XY', E_therm_xy,...
         'E_HYDRO_XY', E_hydro_xy, 'E_THERM_ALIGNED', E_therm_aligned, 'E_HYDRO_ALIGNED', E_hydro_aligned);
@@ -310,7 +317,7 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
         ...
         abd.internal_strength.main(noFailStress, noFailStrain, noHashin, noLaRC05, symsAvailable, XT, XC, YT, YC, S, C, B, E11, E22, G12, V12, axx, ayy, axy, bxx, byy, bxy, XET,...
         XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, TENSORS, nPlies, nPlies_points, SECTION_POINTS,...
-        OUTPUT_STRENGTH{1.0}, OUTPUT_STRENGTH{2.0}, OUTPUT_STRENGTH{3.0}, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT,...
+        OUTPUT_STRENGTH{1.0}, OUTPUT_STRENGTH{2.0}, step, MSTRS, TSAIH, HOFFMAN, TSAIW, AZZIT, MSTRN, HSNFTCRT, HSNFCCRT, HSNMTCRT, HSNMCCRT, LARPFCRT, LARMFCRT,...
         LARKFCRT, LARSFCRT, LARTFCRT, UCRT, 1.0);
 
     % Update UCRT flag based on outcome of routine
@@ -326,7 +333,7 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
             deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS, pctAvail,...
-            OUTPUT_STRENGTH{3.0});
+            step);
     else
         CRITERION_BUFFER = [];
     end

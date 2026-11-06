@@ -1,5 +1,5 @@
 function [] = validate_larc05_optimisation()
-%   Regression checks for LaRC05 optimisation scores (issue #101).
+%   Regression checks for LaRC05 optimisation scores and steps (#101, #105).
 %
 %   RUN THIS FUNCTION FROM THE REPOSITORY ROOT:
 %   >> addpath('validation'); validate_larc05_optimisation
@@ -26,7 +26,7 @@ objectives = {'MINMAX', 'MINMEAN'};
 
 % The first case makes polymer failure govern; the second makes matrix
 % failure exceed one. Explicit plane spacing matches direct and optimised
-% analysis, whose DEFAULT spacings intentionally differ.
+% analysis. DEFAULT step selection is checked separately.
 failureMaterials = {[50.0; 50.0; 100000.0; 100000.0; 100000.0; 100000.0; 5000.0; 0.0; 0.0; 53.0; 2.0],...
     [1e6; 1e6; 25.0; 200.0; 40.0; 50.0; 5000.0; 0.0; 0.0; 53.0; 2.0]};
 loads = {[-150.0, 30.0, 20.0; 20.0, -10.0, 5.0], [100.0, 150.0, 30.0; 5.0, -2.0, 1.0]};
@@ -105,7 +105,44 @@ for caseIndex = 1.0:length(failureMaterials)
     end
 end
 
+%% CHECK DEFAULT AND EXPLICIT STEP ROUTING THROUGH THE PUBLIC INTERFACE
+notice = 'The optimiser will use a fixed default step size of 15 degrees for LaRC05';
+settings.output_strength = {true, 'RESERVE', 15.0};
+settings.output_optimised = {'LARC05', 'VALUE', 'MINMAX', 45.0};
+settings.job_name = 'larc05_public_fixed_default';
+[fixedResult, analysisOutput] = runAnalysis(settings);
+assert(contains(analysisOutput, notice) == false, 'An explicit step must not report the default step notice.');
+settings.output_strength{3.0} = 'DEFAULT';
+settings.job_name = 'larc05_public_default_optimised';
+[defaultResult, analysisOutput] = runAnalysis(settings);
+assert(count(analysisOutput, notice) == 1.0, 'DEFAULT optimisation must report its step exactly once.');
+checkValues(defaultResult.CFAILURE.LARC05{:, 1.0:end - 1.0}, fixedResult.CFAILURE.LARC05{:, 1.0:end - 1.0}, 'DEFAULT initial-layup fixed step');
+checkValues(defaultResult.OPT.CRITICAL_VALUE, fixedResult.OPT.CRITICAL_VALUE, 'DEFAULT public optimisation score');
+checkValues(defaultResult.OPT.SEQUENCE, fixedResult.OPT.SEQUENCE, 'DEFAULT public optimisation sequence');
+
+settings.output_optimised{1.0} = '';
+settings.job_name = 'larc05_public_default_analysis';
+[adaptiveResult, analysisOutput] = runAnalysis(settings);
+assert(contains(analysisOutput, notice) == false, 'Ordinary analysis must not report an optimisation step.');
+stress = table2array(adaptiveResult.STRESS.TENSOR_PLY);
+checkValues(adaptiveResult.CFAILURE.LARC05{:, 1.0:end - 1.0}, evaluate(stress, failure, settings.section_points, 'DEFAULT'), 'Public adaptive analysis');
+
+settings.output_strength{3.0} = 7.0;
+settings.job_name = 'larc05_public_custom_analysis';
+[customResult, analysisOutput] = runAnalysis(settings);
+assert(contains(analysisOutput, notice) == false, 'An explicit step must not report the default step notice.');
+checkValues(customResult.CFAILURE.LARC05{:, 1.0:end - 1.0}, evaluate(stress, failure, settings.section_points, 7.0), 'Public custom fixed step');
+[customBest, ~] = runOptimisation(settings, material, failure, 2.0, 1.0, stress);
+settings.output_optimised{1.0} = 'LARC05';
+settings.job_name = 'larc05_public_custom_optimised';
+[customOptimised, analysisOutput] = runAnalysis(settings);
+assert(contains(analysisOutput, notice) == false, 'Custom optimisation must not report the default step notice.');
+checkValues(customOptimised.CFAILURE.LARC05{:, 1.0:end - 1.0}, customResult.CFAILURE.LARC05{:, 1.0:end - 1.0}, 'Custom initial-layup fixed step');
+checkValues(customOptimised.OPT.CRITICAL_VALUE, customBest{2.0}, 'Custom public optimisation score');
+checkValues(customOptimised.OPT.SEQUENCE, customBest{1.0}, 'Custom public optimisation sequence');
+
 fprintf('[PASS] LaRC05 optimisation: candidate principal stresses, uncapped matrix failure and both objectives in all modes\n');
+fprintf('[PASS] LaRC05 public DEFAULT/custom step selection and command-window notices\n');
 fprintf('-> Validation output: %s\n', outputLocation);
 end
 
@@ -145,13 +182,25 @@ end
 end
 
 %% RUN ANALYSIS WITHOUT PRINTING THE COMPLETE SUMMARY
-function [result] = runAnalysis(settings) %#ok<INUSD>
+function [result, analysisOutput] = runAnalysis(settings) %#ok<INUSD>
 result = [];
 analysisOutput = evalc('result = abd.main(settings);');
 if isstruct(result) == false
     fprintf('%s', analysisOutput);
 end
 assert(isstruct(result) == true, 'Analysis did not return results.');
+end
+
+%% EVALUATE THE INITIAL LAYUP USING THE REQUESTED PLANE SEARCH
+function [values] = evaluate(stress, material, sectionPoints, step)
+material = repelem(material, 1.0, sectionPoints);
+nPoints = size(stress, 2.0);
+meanStress = 0.5.*(stress(1.0, :) + stress(2.0, :));
+radius = sqrt((0.5.*(stress(1.0, :) - stress(2.0, :))).^2.0 + stress(3.0, :).^2.0);
+[PF, MF, KF, SF, TF] = abd.internal_getLaRC05(nPoints, stress, false, meanStress + radius, meanStress - radius, zeros(1.0, nPoints),...
+    material(7.0, :), material(1.0, :), material(2.0, :), material(3.0, :), material(4.0, :), material(5.0, :), material(6.0, :),...
+    material(10.0, :), material(11.0, :), material(8.0, :), material(9.0, :), sectionPoints, step, 1.0);
+values = [PF; MF; KF; SF; TF];
 end
 
 %% COMPARE NUMERIC OUTPUT WITH THE EXPECTED VALUES

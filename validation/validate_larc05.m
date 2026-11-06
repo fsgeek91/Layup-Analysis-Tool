@@ -1,5 +1,5 @@
 function [] = validate_larc05()
-%   Regression checks for LaRC05 rotations and plane searches (#95, #102-104).
+%   Regression checks for LaRC05 rotations and plane searches (#95, #102-105).
 %
 %   RUN THIS FUNCTION FROM THE REPOSITORY ROOT:
 %   >> addpath('validation'); validate_larc05
@@ -38,14 +38,14 @@ searchStress = [-1000.0, -200.0, 100.0, -900.0, -300.0, 100.0, 0.0, 100.0;...
 searchMaterials = repmat(material, 1.0, size(searchStress, 2.0));
 searchMaterials(1.0:7.0, 5.0:8.0) = 1.2*searchMaterials(1.0:7.0, 5.0:8.0);
 searchMaterials(11.0, 5.0:8.0) = 1.5;
-stepCases = {'DEFAULT', 'DEFAULT', 5.0, 15.0, 20.0, 7.0, 40.0, 2.5, 90.0};
-searchModes = [1.0, 2.0, ones(1.0, 7.0)];
-referenceSteps = [5.0, 15.0, 5.0, 15.0, 20.0, 7.0, 40.0, 2.5, 90.0];
+stepCases = [5.0, 15.0, 20.0, 7.0, 40.0, 2.5, 90.0];
 baseline = evaluate(searchStress, searchMaterials, false, 1.0);
 for i = 1.0:length(stepCases)
-    searchActual = evaluate(searchStress, searchMaterials, false, 1.0, stepCases{i}, searchModes(i));
-    checkValues(searchActual(2.0, :), referenceMatrixFailure(searchStress, searchMaterials, referenceSteps(i), 180.0), 'Full-grid matrix reference');
-    checkValues(searchActual(3.0:4.0, :), referenceFailure(searchStress, searchMaterials, referenceSteps(i)), 'Full-grid kinking/splitting reference');
+    searchActual = evaluate(searchStress, searchMaterials, false, 1.0, stepCases(i), 1.0);
+    assert(isequaln(searchActual, evaluate(searchStress, searchMaterials, false, 1.0, stepCases(i), 2.0)) == true,...
+        'A user-defined step size must use the same fixed grid in both call modes.');
+    checkValues(searchActual(2.0, :), referenceMatrixFailure(searchStress, searchMaterials, stepCases(i), 180.0), 'Full-grid matrix reference');
+    checkValues(searchActual(3.0:4.0, :), referenceFailure(searchStress, searchMaterials, stepCases(i)), 'Full-grid kinking/splitting reference');
     checkValues(searchActual([1.0, 5.0], :), baseline([1.0, 5.0], :), 'Polymer and tensile criteria');
 end
 
@@ -55,6 +55,28 @@ end
 fullGrid = referenceMatrixFailure(searchStress, searchMaterials, 40.0, 180.0);
 truncatedGrid = referenceMatrixFailure(searchStress, searchMaterials, 40.0, 90.0);
 assert(fullGrid(1.0) > truncatedGrid(1.0) + 1e-6, 'The non-divisor case must detect a lost critical plane.');
+
+%% CHECK ADAPTIVE DEFAULT SEARCH AGAINST A DENSE ANGULAR REFERENCE
+% Compression, transverse tension, pure shear and zero stress cover both
+% interior and boundary peaks. Ordinary analysis refines the initial grid,
+% while optimisation uses the fixed default spacing of 15 degrees.
+adaptiveActual = evaluate(searchStress, searchMaterials, false, 1.0, 'DEFAULT', 1.0);
+defaultOptimised = evaluate(searchStress, searchMaterials, false, 1.0, 'DEFAULT', 2.0);
+assert(isequaln(defaultOptimised, baseline) == true, 'DEFAULT optimisation must use a fixed 15-degree grid.');
+checkValues(adaptiveActual(2.0, :), referenceMatrixFailure(searchStress, searchMaterials, 0.01, 180.0), 'Adaptive matrix dense reference', 1e-4);
+checkValues(adaptiveActual(3.0:4.0, :), referenceFailure(searchStress, searchMaterials, 0.01), 'Adaptive fibre dense reference', 1e-4);
+checkValues(adaptiveActual([1.0, 5.0], :), baseline([1.0, 5.0], :), 'Adaptive polymer and tensile criteria');
+coarseActual = evaluate(searchStress, searchMaterials, false, 1.0, 5.0, 1.0);
+adaptiveDifference = adaptiveActual(2.0:4.0, :) - coarseActual(2.0:4.0, :);
+assert(all(adaptiveDifference(:) >= -1e-12) == true, 'Refinement must retain the coarse sampled maxima.');
+assert(any(adaptiveDifference(:) > 1e-4) == true, 'The adaptive cases must require refinement.');
+adaptiveOrder = [8.0, 3.0, 6.0, 1.0, 7.0, 2.0, 5.0, 4.0];
+checkValues(evaluate(searchStress(:, 1.0), searchMaterials(:, 1.0), false, 1.0, 'DEFAULT', 1.0),...
+    adaptiveActual(:, 1.0), 'Adaptive single section point');
+checkValues(evaluate(searchStress(:, adaptiveOrder), searchMaterials(:, adaptiveOrder), false, 1.0, 'DEFAULT', 1.0),...
+    adaptiveActual(:, adaptiveOrder), 'Adaptive section-point order');
+checkValues(evaluate(repmat(searchStress, 1.0, 129.0), repmat(searchMaterials, 1.0, 129.0), false, 1.0, 'DEFAULT', 1.0),...
+    repmat(adaptiveActual, 1.0, 129.0), 'Adaptive section-point blocks');
 
 %% CHECK ANGULAR BLOCKS, RUNNING MAXIMA AND CHANGES BETWEEN CALLS
 blockStress = [-750.0, -751.0, -749.0, 0.0, 100.0, -900.0, 100.0, 0.0;...
@@ -117,6 +139,31 @@ singularMaterial(6.0) = 60.0;
 singularResult = evaluate([100.0; 200.0; 0.0], singularMaterial, false, 1.0, 90.0, 1.0);
 checkValues(singularResult(2.0), 0.0, 'Mixed finite and NaN matrix criteria');
 
+% Undefined, zero and ordinary criteria must remain independent when the
+% adaptive search shares a section-point block between them.
+mixedStress = [zeros(3.0, 2.0), searchStress(:, 1.0)];
+mixedMaterials = [undefinedMaterial, material, searchMaterials(:, 1.0)];
+mixedResult = evaluate(mixedStress, mixedMaterials, false, 1.0, 'DEFAULT', 1.0);
+assert(all(isnan(mixedResult([2.0, 4.0], 1.0))) == true, 'Adaptive all-NaN criteria must remain NaN.');
+checkValues(mixedResult([1.0, 3.0, 5.0], 1.0), zeros(3.0, 1.0), 'Adaptive inactive nonfinite criteria');
+checkValues(mixedResult(:, 2.0), zeros(5.0, 1.0), 'Adaptive zero stress');
+checkValues(mixedResult(:, 3.0), adaptiveActual(:, 1.0), 'Adaptive finite criteria beside NaN');
+
+%% CHECK DENSE FALLBACK FOR SHARP OR RAPIDLY VARYING CRITERIA
+poleStress = [100.0; 300.0; 35.0];
+poleActual = evaluate(poleStress, material, false, 1.0, 'DEFAULT', 1.0);
+poleReference = evaluate(poleStress, material, false, 1.0, 0.05, 1.0);
+checkValues(poleActual(2.0), poleReference(2.0), 'Matrix denominator-pole fallback');
+rapidMaterial = material;
+rapidMaterial(7.0) = 10.0;
+rapidStress = [-900.0; -20.0; 80.0];
+rapidActual = evaluate(rapidStress, rapidMaterial, false, 1.0, 'DEFAULT', 1.0);
+rapidReference = evaluate(rapidStress, rapidMaterial, false, 1.0, 0.05, 1.0);
+checkValues(rapidActual(3.0:4.0), rapidReference(3.0:4.0), 'Rapid misalignment fallback');
+assert(isequaln(evaluate(rapidStress, rapidMaterial, false, 1.0, 'DEFAULT', 2.0),...
+    evaluate(rapidStress, rapidMaterial, false, 1.0, 15.0, 1.0)) == true,...
+    'DEFAULT optimisation must not apply adaptive refinement or the dense fallback.');
+
 %% CHECK MIXED MATERIALS, SECTION POINTS AND TOOLBOX INDEPENDENCE
 materials = repmat(material, 1.0, 6.0);
 materials(11.0, 1.0:3.0) = -1.0;
@@ -146,6 +193,12 @@ derivedActual = evaluate(stress, derivedMaterials, false, 3.0);
 explicitMaterials(11.0, 4.0:6.0) = (180.0/pi)*fzero(@(angle) compressionFailure(angle, materials(:, 4.0)) - 1.0, [0.0, 0.1]);
 checkValues(evaluate(stress, explicitMaterials, false, 3.0), derivedActual, 'Multiple material calibrations');
 checkValues(evaluate(stress(:, order), derivedMaterials(:, order), false, 3.0), derivedActual(:, order), 'Derived-material mapping');
+
+% Adaptive refinement must also preserve independently calibrated angles
+% and the mapping of two automatically derived materials to section points.
+derivedAdaptive = evaluate(stress, derivedMaterials, false, 3.0, 'DEFAULT', 1.0);
+checkValues(derivedAdaptive, evaluate(stress, explicitMaterials, false, 3.0, 'DEFAULT', 1.0), 'Adaptive material-only calibration');
+checkValues(derivedAdaptive(3.0:4.0, :), referenceFailure(stress, explicitMaterials, 0.01), 'Adaptive derived-material dense reference', 1e-4);
 
 %% CHECK CALIBRATION REUSE AND CHANGES TO EACH MATERIAL INPUT
 % Candidate loads and point ordering may change without changing the
@@ -214,7 +267,7 @@ for i = 1.0:2.0
 end
 checkValues(evaluate(stress, derivedMaterials, false, 3.0), derivedActual, 'Calibration after invalid input');
 
-fprintf('[PASS] LaRC05 rotations, plane searches, calibration reuse, zero stress, material grouping and stress units\n');
+fprintf('[PASS] LaRC05 rotations, adaptive/fixed plane searches, calibration reuse, zero stress, material grouping and stress units\n');
 end
 
 %% EVALUATE ALL FIVE CRITERIA
@@ -308,8 +361,11 @@ criterion = sqrt((tensor(2.0, 3.0)/(material(6.0) - material(9.0)*tensor(2.0, 2.
 end
 
 %% COMPARE NUMERIC OUTPUT WITH THE EXPECTED VALUES
-function [] = checkValues(actual, expected, description)
-tolerance = 1e-9*max(1.0, max(abs(expected(:))));
+function [] = checkValues(actual, expected, description, relativeTolerance)
+if nargin < 4.0
+    relativeTolerance = 1e-9;
+end
+tolerance = relativeTolerance*max(1.0, max(abs(expected(:))));
 assert(isequal(size(actual), size(expected)) == true, '%s: output dimensions differ.', description);
 assert(all(isfinite(actual(:))) == true, '%s: output contains non-finite values.', description);
 assert(all(abs(actual(:) - expected(:)) <= tolerance) == true, '%s: incorrect output.', description);

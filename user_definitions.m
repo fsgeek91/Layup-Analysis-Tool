@@ -227,8 +227,11 @@ OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
     '<param>': Reserve (strength reserve factor); Value (criterion value)
     
     Third argument (critical plane step size for LaRC05):
-    'Default': Program controlled
-    theta: User-defined angular step size
+    'Default': Adaptive (initial step size of 5 degrees). When stacking
+    sequence optimisation is requested, a fixed step size of 15 degrees is
+    used throughout the job
+    theta: User-defined angular step size for a fixed-grid search,
+    regardless of whether stacking sequence optimisation is requested
 
     Note: The setting of the failure parameter only applies to the
     Tsai-Hill, 2D Hoffman, Tsai-Wu and Azzi-Tsai-Hill failure criteria.

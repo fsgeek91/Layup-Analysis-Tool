@@ -46,6 +46,12 @@ classdef internal_optimise < handle
                 %fprintf('[NOTICE] Stacking sequence optimisation started. Please be patient...\n');
             end
 
+            % Use the fixed default LaRC05 step throughout optimisation
+            if (strcmpi(failureCriterion, 'LARC05') == true) && (ischar(step) == true)
+                step = 15.0;
+                fprintf('[NOTICE] The optimiser will use a fixed default step size of 15 degrees for LaRC05\n');
+            end
+
             % Get the number of ply orientations to be considered
             numAngles = numel(thetaAll);
 
