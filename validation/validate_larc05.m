@@ -1,5 +1,5 @@
 function [] = validate_larc05()
-%   Regression checks for LaRC05 rotations and plane searches (#95, #102).
+%   Regression checks for LaRC05 rotations and plane searches (#95, #102/103).
 %
 %   RUN THIS FUNCTION FROM THE REPOSITORY ROOT:
 %   >> addpath('validation'); validate_larc05
@@ -55,6 +55,67 @@ end
 fullGrid = referenceMatrixFailure(searchStress, searchMaterials, 40.0, 180.0);
 truncatedGrid = referenceMatrixFailure(searchStress, searchMaterials, 40.0, 90.0);
 assert(fullGrid(1.0) > truncatedGrid(1.0) + 1e-6, 'The non-divisor case must detect a lost critical plane.');
+
+%% CHECK ANGULAR BLOCKS, RUNNING MAXIMA AND CHANGES BETWEEN CALLS
+blockStress = [-750.0, -751.0, -749.0, 0.0, 100.0, -900.0, 100.0, 0.0;...
+    -200.0, -40.0, 20.0, 15.0, -30.0, -10.0, 0.0, 0.0; 35.0, -35.0, 25.0, 30.0, 40.0, 0.0, -80.0, 0.0];
+blockMaterials = repmat(material, 1.0, size(blockStress, 2.0));
+blockMaterials(7.0, :) = [5000.0, 6000.0, 7000.0, 8000.0, 5000.0, 6000.0, 7000.0, 8000.0];
+blockMaterials(11.0, :) = [2.0, 1.5, 2.5, 3.0, 0.0, 1.0, 1.5, 2.0];
+changedMaterials = blockMaterials;
+changedMaterials(3.0:7.0, :) = 1.3*changedMaterials(3.0:7.0, :);
+changedMaterials(8.0:9.0, :) = 0.7*changedMaterials(8.0:9.0, :);
+changedMaterials(11.0, :) = 0.5*changedMaterials(11.0, :);
+
+% Fine grids span several blocks and leave a partial final block. Alternate
+% materials at the same spacing, then change the spacing and return to the
+% first case so that cached coefficients cannot retain stale inputs.
+blockSteps = [0.5, 0.5, 1.3, 5.0, 0.5];
+blockResults = cell(1.0, length(blockSteps));
+for i = 1.0:length(blockSteps)
+    currentMaterials = blockMaterials;
+    if i == 2.0
+        currentMaterials = changedMaterials;
+    end
+    blockResults{i} = evaluate(blockStress, currentMaterials, false, 1.0, blockSteps(i), 1.0);
+    checkValues(blockResults{i}(2.0, :), referenceMatrixFailure(blockStress, currentMaterials, blockSteps(i), 180.0), 'Blocked matrix reference');
+    checkValues(blockResults{i}(3.0:4.0, :), referenceFailure(blockStress, currentMaterials, blockSteps(i)), 'Blocked kinking/splitting reference');
+end
+checkValues(blockResults{5.0}, blockResults{1.0}, 'Repeated grid and material inputs');
+materialDifference = blockResults{2.0}(2.0:4.0, :) - blockResults{1.0}(2.0:4.0, :);
+assert(any(abs(materialDifference(:)) > 1e-6) == true, 'Changed materials must affect the failure indices.');
+checkValues(blockResults{1.0}(3.0, 1.0), blockResults{1.0}(4.0, 1.0), 'Shared kinking/splitting boundary');
+assert(blockResults{1.0}(3.0, 1.0) > 0.0, 'Both criteria must remain active at S11 = -0.5*XC.');
+
+% Check scalar output dimensions and the path with no active compression
+% criterion, including pure shear and zero stress in the mixed case above.
+checkValues(evaluate(blockStress(:, 1.0), blockMaterials(:, 1.0), false, 1.0, 0.5, 1.0), blockResults{1.0}(:, 1.0), 'Single section point');
+tensilePoints = [5.0, 7.0];
+checkValues(evaluate(blockStress(:, tensilePoints), blockMaterials(:, tensilePoints), false, 1.0, 0.5, 1.0),...
+    blockResults{1.0}(:, tensilePoints), 'Tensile-only section points');
+
+% Repetition increases the block workspace without repeating the expensive
+% independent reference. Every point must keep its own running maximum.
+repeatCount = 257.0;
+checkValues(evaluate(repmat(blockStress, 1.0, repeatCount), repmat(blockMaterials, 1.0, repeatCount), false, 1.0, 0.5, 1.0),...
+    repmat(blockResults{1.0}, 1.0, repeatCount), 'Large section-point array');
+
+%% PRESERVE FULL-GRID REDUCTION OF NONFINITE CRITERIA
+% Zero strengths produce NaN at every angle under zero stress. An active
+% criterion must retain NaN, while inactive fibre kinking remains zero.
+undefinedMaterial = material;
+undefinedMaterial([3.0, 5.0, 6.0]) = 0.0;
+undefinedResult = evaluate(zeros(3.0, 1.0), undefinedMaterial, false, 1.0, 0.5, 1.0);
+assert(all(isnan(undefinedResult([2.0, 4.0]))) == true, 'All-NaN active criteria must remain NaN.');
+checkValues(undefinedResult([1.0, 3.0, 5.0]), zeros(3.0, 1.0), 'Inactive nonfinite criteria');
+
+% At 90-degree spacing, the 0/180-degree planes have 0/0 transverse shear
+% terms; the 90-degree plane has a finite zero criterion. The original
+% full-grid MAX ignores the NaN samples when a finite sample is available.
+singularMaterial = material;
+singularMaterial(6.0) = 60.0;
+singularResult = evaluate([100.0; 200.0; 0.0], singularMaterial, false, 1.0, 90.0, 1.0);
+checkValues(singularResult(2.0), 0.0, 'Mixed finite and NaN matrix criteria');
 
 %% CHECK MIXED MATERIALS, SECTION POINTS AND TOOLBOX INDEPENDENCE
 materials = repmat(material, 1.0, 6.0);
