@@ -48,38 +48,14 @@ nt(deriveElements) = -1.0 ./ (tand(2.0.*(alpha0(deriveElements))));
 %{
     Derive only undefined values, once per distinct material. Calibration
     uses pure longitudinal compression, not the current section-point load.
+    Reuse the calibration when successive candidates share the materials.
     The legacy toolbox/section-point arguments are retained in the function
     interface, but a numerical solution does not require either of them.
 %}
 deriveElements = phi0 == -1.0;
 if any(deriveElements) == true
     [materialData, ~, materialIndexes] = unique([Xc(deriveElements)', Sl(deriveElements)', G12(deriveElements)', nl(deriveElements)'], 'rows');
-    phi0_material = zeros(size(materialData, 1.0), 1.0);
-
-    for i = 1.0:size(materialData, 1.0)
-        Xc_i = materialData(i, 1.0);
-        Sl_i = materialData(i, 2.0);
-        G12_i = materialData(i, 3.0);
-        nl_i = materialData(i, 4.0);
-
-        %{
-            Critical angle at failure under pure compression (in radians).
-            Rationalise the quadratic root to avoid cancellation and 0/0
-        %}
-        ratio = Sl_i/Xc_i;
-        discriminant = 1.0 - 4.0*(ratio + nl_i)*ratio;
-        if (isfinite(discriminant) == false) || (discriminant < 0.0)
-            error('abd:LaRC05:InvalidMisalignment', 'Cannot derive PHI0: the LaRC05 strengths and friction coefficient give no real critical angle.');
-        end
-        phic = atan(2.0*ratio/(1.0 + sqrt(discriminant)));
-
-        %{
-            Linear shear response in the initial misalignment frame: phi0 +
-            Xc*sin(2*phi0)/(2*G12) = phic (all angles in radians)
-        %}
-        phi0_material(i) = (180.0/pi)*fzero(@(angle) angle + (Xc_i/(2.0*G12_i))*sin(2.0*angle) - phic, [0.0, phic]);
-    end
-
+    phi0_material = getInitialMisalignment(materialData);
     phi0(deriveElements) = phi0_material(materialIndexes);
 end
 
@@ -143,6 +119,47 @@ LARTFCRT = zeros(1.0, nPlies_points);
 
 % Failure criterion
 LARTFCRT(tens) = S11(tens)./Xt(tens);
+end
+
+%% CALIBRATE THE INITIAL FIBRE MISALIGNMENT
+function [phi0_material] = getInitialMisalignment(materialData)
+persistent previousMaterials previousMisalignment
+
+% Keep only the most recent material set. Each worker has its own cache
+if isequal(materialData, previousMaterials) == true
+    phi0_material = previousMisalignment;
+    return
+end
+
+% The key contains XC, SL, G12 and NL after resolving automatic values
+phi0_material = zeros(size(materialData, 1.0), 1.0);
+for i = 1.0:size(materialData, 1.0)
+    Xc_i = materialData(i, 1.0);
+    Sl_i = materialData(i, 2.0);
+    G12_i = materialData(i, 3.0);
+    nl_i = materialData(i, 4.0);
+
+    %{
+        Critical angle at failure under pure compression (in radians).
+        Rationalise the quadratic root to avoid cancellation and 0/0
+    %}
+    ratio = Sl_i/Xc_i;
+    discriminant = 1.0 - 4.0*(ratio + nl_i)*ratio;
+    if (isfinite(discriminant) == false) || (discriminant < 0.0)
+        error('abd:LaRC05:InvalidMisalignment', 'Cannot derive PHI0: the LaRC05 strengths and friction coefficient give no real critical angle.');
+    end
+    phic = atan(2.0*ratio/(1.0 + sqrt(discriminant)));
+
+    %{
+        Linear shear response in the initial misalignment frame: phi0 +
+        Xc*sin(2*phi0)/(2*G12) = phic (all angles in radians)
+    %}
+    phi0_material(i) = (180.0/pi)*fzero(@(angle) angle + (Xc_i/(2.0*G12_i))*sin(2.0*angle) - phic, [0.0, phic]);
+end
+
+% Replace the cache only after all materials have calibrated successfully
+previousMaterials = materialData;
+previousMisalignment = phi0_material;
 end
 
 %% PRECOMPUTE THE ANGULAR COEFFICIENTS

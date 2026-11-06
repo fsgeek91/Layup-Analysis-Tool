@@ -1,5 +1,5 @@
 function [] = validate_larc05()
-%   Regression checks for LaRC05 rotations and plane searches (#95, #102/103).
+%   Regression checks for LaRC05 rotations and plane searches (#95, #102-104).
 %
 %   RUN THIS FUNCTION FROM THE REPOSITORY ROOT:
 %   >> addpath('validation'); validate_larc05
@@ -147,24 +147,74 @@ explicitMaterials(11.0, 4.0:6.0) = (180.0/pi)*fzero(@(angle) compressionFailure(
 checkValues(evaluate(stress, explicitMaterials, false, 3.0), derivedActual, 'Multiple material calibrations');
 checkValues(evaluate(stress(:, order), derivedMaterials(:, order), false, 3.0), derivedActual(:, order), 'Derived-material mapping');
 
+%% CHECK CALIBRATION REUSE AND CHANGES TO EACH MATERIAL INPUT
+% Candidate loads and point ordering may change without changing the
+% material-only imperfection. Supplied angles must still take precedence.
+candidateStress = 0.7*stress(:, order);
+checkValues(evaluate(candidateStress, derivedMaterials(:, order), false, 3.0),...
+    evaluate(candidateStress, explicitMaterials(:, order), false, 3.0), 'Cached calibration under changed loads');
+mixedMaterials = derivedMaterials;
+mixedMaterials(11.0, [2.0, 5.0]) = [1.0, 3.0];
+mixedExplicit = explicitMaterials;
+mixedExplicit(11.0, [2.0, 5.0]) = [1.0, 3.0];
+checkValues(evaluate(stress, mixedMaterials, false, 3.0), evaluate(stress, mixedExplicit, false, 3.0), 'Supplied angles with cached materials');
+
+% Change one calibration input at a time. Obtain each expected angle from
+% the independent uniaxial-failure reference rather than the cached solver.
+calibrationMaterial = material;
+calibrationMaterial(11.0) = -1.0;
+calibrationStress = [-1000.0; -40.0; 30.0];
+calibrationRows = [2.0, 5.0, 7.0, 8.0];
+calibrationValues = [1300.0, 100.0, 7000.0, 0.4];
+for i = 1.0:length(calibrationRows)
+    evaluate(calibrationStress, calibrationMaterial, false, 1.0);
+    changedMaterial = calibrationMaterial;
+    changedMaterial(calibrationRows(i)) = calibrationValues(i);
+    explicitMaterial = changedMaterial;
+    explicitMaterial(11.0) = (180.0/pi)*fzero(@(angle) compressionFailure(angle, changedMaterial) - 1.0, [0.0, 0.1]);
+    expected = evaluate(calibrationStress, explicitMaterial, false, 1.0);
+    checkValues(evaluate(calibrationStress, changedMaterial, false, 1.0), expected, 'Changed calibration input');
+    checkValues(evaluate(calibrationStress, changedMaterial, false, 1.0), expected, 'Repeated changed material');
+end
+
+% The cache must use the effective NL after derivation. Both ALPHA0 and YC
+% can change this value even when the supplied NL remains -1.
+derivedFriction = calibrationMaterial;
+derivedFriction(8.0) = -1.0;
+frictionCases = [53.0, 57.0, 57.0; 200.0, 200.0, 240.0];
+for i = 1.0:size(frictionCases, 2.0)
+    derivedFriction([10.0, 4.0]) = frictionCases(:, i);
+    explicitMaterial = derivedFriction;
+    explicitMaterial(8.0) = material(5.0)*cosd(2.0*derivedFriction(10.0))/(derivedFriction(4.0)*cosd(derivedFriction(10.0))^2.0);
+    explicitMaterial(11.0) = (180.0/pi)*fzero(@(angle) compressionFailure(angle, explicitMaterial) - 1.0, [0.0, 0.1]);
+    checkValues(evaluate(calibrationStress, derivedFriction, false, 1.0),...
+        evaluate(calibrationStress, explicitMaterial, false, 1.0), 'Derived friction calibration');
+end
+
 %% CHECK INVARIANCE UNDER A CHANGE OF STRESS UNITS
 scaledMaterials = materials;
 scaledMaterials(1.0:7.0, :) = 1e6*scaledMaterials(1.0:7.0, :);
 checkValues(evaluate(1e6*stress, scaledMaterials, false, 3.0), actual, 'Stress-unit invariance');
 
 %% CHECK INVALID MATERIAL CALIBRATION
-invalidMaterial = material;
-invalidMaterial(5.0) = 1000.0;
-invalidMaterial(11.0) = -1.0;
-failedAsExpected = false;
-try
-    evaluate([-1000.0; 0.0; 0.0], invalidMaterial, false, 1.0);
-catch MException
-    failedAsExpected = strcmp(MException.identifier, 'abd:LaRC05:InvalidMisalignment');
+% A valid first material followed by an invalid one must not partially
+% overwrite the previous calibration, nor turn a repeated error into a hit.
+checkValues(evaluate(stress, derivedMaterials, false, 3.0), derivedActual, 'Calibration before invalid input');
+invalidMaterial = repmat(calibrationMaterial, 1.0, 2.0);
+invalidMaterial(2.0, 1.0) = 1000.0;
+invalidMaterial(5.0, 2.0) = 1000.0;
+for i = 1.0:2.0
+    failedAsExpected = false;
+    try
+        evaluate(repmat(calibrationStress, 1.0, 2.0), invalidMaterial, false, 1.0);
+    catch MException
+        failedAsExpected = strcmp(MException.identifier, 'abd:LaRC05:InvalidMisalignment');
+    end
+    assert(failedAsExpected == true, 'Invalid calibration must report the material error.');
 end
-assert(failedAsExpected == true, 'Invalid calibration must report the material error.');
+checkValues(evaluate(stress, derivedMaterials, false, 3.0), derivedActual, 'Calibration after invalid input');
 
-fprintf('[PASS] LaRC05 rotations, plane searches, calibration, zero stress, material grouping and stress units\n');
+fprintf('[PASS] LaRC05 rotations, plane searches, calibration reuse, zero stress, material grouping and stress units\n');
 end
 
 %% EVALUATE ALL FIVE CRITERIA
