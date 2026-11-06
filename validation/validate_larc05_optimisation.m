@@ -141,8 +141,19 @@ checkValues(customOptimised.CFAILURE.LARC05{:, 1.0:end - 1.0}, customResult.CFAI
 checkValues(customOptimised.OPT.CRITICAL_VALUE, customBest{2.0}, 'Custom public optimisation score');
 checkValues(customOptimised.OPT.SEQUENCE, customBest{1.0}, 'Custom public optimisation sequence');
 
+%% KEEP ADAPTIVE LARC05 OUTPUT WHEN OPTIMISING ANOTHER CRITERION
+settings.fail_stress = {[400.0, 400.0, 400.0, 400.0, 130.0, 1.0, 0.0]};
+settings.output_strength{3.0} = 'DEFAULT';
+settings.output_optimised = {'Tsaiw', 'RESERVE', 'MINMAX', 2.0};
+settings.job_name = 'tsaiw_public_default_larc05';
+[tsaiwResult, analysisOutput] = runAnalysis(settings);
+assert(isempty(tsaiwResult.OPT.EXCEPTION) == true, 'Tsai-Wu optimisation failed.');
+assert(contains(analysisOutput, notice) == false, 'Tsai-Wu optimisation must not report a LaRC05 step.');
+checkValues(tsaiwResult.CFAILURE.LARC05{:, 1.0:end - 1.0}, adaptiveResult.CFAILURE.LARC05{:, 1.0:end - 1.0}, 'Adaptive LaRC05 output during Tsai-Wu optimisation');
+
 fprintf('[PASS] LaRC05 optimisation: candidate principal stresses, uncapped matrix failure and both objectives in all modes\n');
 fprintf('[PASS] LaRC05 public DEFAULT/custom step selection and command-window notices\n');
+fprintf('[PASS] Tsai-Wu optimisation preserves adaptive LaRC05 output without the step notice\n');
 fprintf('-> Validation output: %s\n', outputLocation);
 end
 

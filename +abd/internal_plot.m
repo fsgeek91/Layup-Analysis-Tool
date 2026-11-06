@@ -13,7 +13,7 @@ classdef internal_plot < handle
     methods(Static = true, Access = public)
         %% MAIN FUNCTION FOR PLOTTING
         function [] = main(OUTPUT_FIGURE, SP_VIZ, PLOT_STYLE, outputLocation, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points, CRITERION_BUFFER,...
-                OUTPUT_OPTIMISED, SP_COLOUR_BUFFER)
+                OUTPUT_OPTIMISED, SP_COLOUR_BUFFER, nPermutations)
 
             % Plot parameters
             fontX = 14.0;
@@ -89,7 +89,9 @@ classdef internal_plot < handle
 
                 % Set the figure title
                 figureTitle = sprintf('CDF plot of optimiser criterion for all stacking permutations');
-                nPermutations = numel(OUTPUT_OPTIMISED{5.0})^nPlies;
+                if nargin < 15.0
+                    nPermutations = numel(OUTPUT_OPTIMISED{5.0})^nPlies;
+                end
                 if numel(CRITERION_BUFFER) < nPermutations
                     figureTitle = sprintf('CDF plot of optimiser criterion (sample of %.0f of %.0f stacking permutations)', numel(CRITERION_BUFFER), nPermutations);
                 end

@@ -17,7 +17,7 @@ classdef internal_optimise < handle
         function [BEST_SEQUENCE, CRITERION_BUFFER, MIN_CRITERION, CHUNK_SIZE, N_CHUNKS, EXECUTION_MODE] =...
                 main(OUTPUT_OPTIMISED, nPlies, nPlies_points, nSectionPoints, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points, B22_points, tolerance,...
                 XT, XC, YT, YC, S, C12, B12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0, deltaT, deltaM,...
-                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS, pctAvail, step, scoreLimit)
+                Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, fcnHandle, OPTIMISER_SETTINGS, pctAvail, step, scoreLimit, symmetricPly)
             % Initialise output
             %{
                 BEST_SEQUENCE(1) = Optimum stacking sequence
@@ -37,6 +37,9 @@ classdef internal_optimise < handle
             % Preserve complete score output for existing internal callers
             if nargin < 67.0
                 scoreLimit = Inf;
+            end
+            if nargin < 68.0
+                symmetricPly = false;
             end
 
             % Get data from OUTPUT_OPTIMISED
@@ -60,9 +63,20 @@ classdef internal_optimise < handle
             % Get the number of ply orientations to be considered
             numAngles = numel(thetaAll);
 
+            % Vary only the independent ply angles when symmetry is requested
+            nIndependent = nPlies;
+            anglePly = 1.0:nPlies;
+            if symmetricPly == true
+                if rem(nPlies, 2.0) ~= 0.0
+                    error('abd:Optimise:SymmetryPlyCount', 'Symmetric optimisation requires an even number of physical plies.');
+                end
+                nIndependent = 0.5*nPlies;
+                anglePly = [1.0:nIndependent, nIndependent:-1.0:1.0];
+            end
+
             % Get the number of permutations
             precision = length(thetaAll);
-            nPermutations = precision^nPlies;
+            nPermutations = precision^nIndependent;
             retainAll = scoreLimit >= nPermutations;
             indexPermutations = [];
 
@@ -73,8 +87,14 @@ classdef internal_optimise < handle
             end
 
             % Inform user about the required number of iterations
-            fprintf('[NOTICE] The number of iterations required by the stacking sequence optimiser is: ANGULAR_PRECISION(%.0f)^NUMBER_OF_PLIES(%.0f) = %s\n', precision, nPlies,...
-                fliplr(regexprep(fliplr(sprintf('%.0f', nPermutations)), '(\d{3})(?=\d)', '$1,')));
+            if symmetricPly == true
+                fprintf('[NOTICE] Symmetric stacking sequence optimisation: %.0f independent ply angles, %.0f total plies\n', nIndependent, nPlies);
+                fprintf('[NOTICE] The number of iterations required is: ANGULAR_PRECISION(%.0f)^INDEPENDENT_PLIES(%.0f) = %s\n', precision, nIndependent,...
+                    fliplr(regexprep(fliplr(sprintf('%.0f', nPermutations)), '(\d{3})(?=\d)', '$1,')));
+            else
+                fprintf('[NOTICE] The number of iterations required by the stacking sequence optimiser is: ANGULAR_PRECISION(%.0f)^NUMBER_OF_PLIES(%.0f) = %s\n', precision, nPlies,...
+                    fliplr(regexprep(fliplr(sprintf('%.0f', nPermutations)), '(\d{3})(?=\d)', '$1,')));
+            end
 
             % Set dummy variable
             dummy = zeros(1.0, nPlies);
@@ -90,6 +110,8 @@ classdef internal_optimise < handle
 
             % Cache the material properties for every ply/angle combination
             CACHE = abd.internal_optimise.getCache(thetaAll, nPlies, nSectionPoints, Q11, Q12, Q66, Q22, A11_points, A22_points, B11_points, B22_points);
+            CACHE.ANGLE_PLY = anglePly;
+            CACHE.N_INDEPENDENT = nIndependent;
 
             switch OPTIMISER_SETTINGS{1.0}
                 case 1.0  % FULL MATRIX
@@ -97,7 +119,7 @@ classdef internal_optimise < handle
                     try
                         indexPermutations =...
                             ...
-                            fig.combinator(numAngles, nPlies, 'p', 'r');
+                            fig.combinator(numAngles, nIndependent, 'p', 'r');
                     catch MException
                         % A problem occurred while getting the combinations
                         BEST_SEQUENCE{5.0} = MException;
@@ -237,8 +259,9 @@ classdef internal_optimise < handle
                 case 1.0
                     BEST_SEQUENCE{1.0} = thetaAll(indexPermutations(MIN_CRITERION, :));
                 otherwise
-                    BEST_SEQUENCE{1.0} = abd.internal_optimise.indexToStacking(MIN_CRITERION, thetaAll, numAngles, nPlies);
+                    BEST_SEQUENCE{1.0} = abd.internal_optimise.indexToStacking(MIN_CRITERION, thetaAll, numAngles, nIndependent);
             end
+            BEST_SEQUENCE{1.0} = BEST_SEQUENCE{1.0}(anglePly);
 
             % Save the critical value
             BEST_SEQUENCE{2.0} = minValue;
@@ -488,7 +511,8 @@ classdef internal_optimise < handle
             buffer = zeros(1.0, nPlies*numel(thetaAll));
             CACHE = struct('Q11T', buffer, 'Q12T', buffer, 'Q16T', buffer, 'Q22T', buffer, 'Q26T', buffer, 'Q66T', buffer,...
                 'AXX', buffer, 'AYY', buffer, 'AXY', buffer, 'BXX', buffer, 'BYY', buffer, 'BXY', buffer,...
-                'THETA', thetaAll, 'PLY_INDEX', 1.0:nPlies, 'POINT_PLY', repelem(1.0:nPlies, nSectionPoints));
+                'THETA', thetaAll, 'PLY_INDEX', 1.0:nPlies, 'POINT_PLY', repelem(1.0:nPlies, nSectionPoints),...
+                'ANGLE_PLY', 1.0:nPlies, 'N_INDEPENDENT', nPlies);
 
             % Recover the ply-wise expansion coefficients
             A11 = A11_points(1.0:nSectionPoints:end);
@@ -522,6 +546,9 @@ classdef internal_optimise < handle
 
         %% GET CACHED PROPERTIES FOR THE CURRENT CANDIDATE
         function [theta_points, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, axx, ayy, axy, bxx, byy, bxy] = getCachedProperties(CACHE, angleIndexes)
+            % Expand independent angles without changing physical ply properties
+            angleIndexes = angleIndexes(CACHE.ANGLE_PLY);
+
             % Select each ply's angle block using linear indices
             indexes = CACHE.PLY_INDEX + (angleIndexes - 1.0)*numel(CACHE.PLY_INDEX);
             Q11t = CACHE.Q11T(indexes);
@@ -673,9 +700,10 @@ classdef internal_optimise < handle
                 deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, nPlies_points, z_points, failureCriterion, XT, XC, YT, YC, S, parameter, C12, B12,...
                 E11, E22, V12, G12, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, symsAvailable, ~, ~, ~, GL12, XLT, XLC, YLT, YLC, SLX, SLY, A0, PHI0, NL, NT,...
                 SECTION_POINTS, objective, fcnHandle, step)
+            nIndependent = CACHE.N_INDEPENDENT;
             parfor i = 1.0:nPermutations
                 % Get the angle indices for the current stacking order
-                angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nPlies);
+                angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nIndependent);
 
                 % Get cached stiffness and expansion properties
                 [theta_points, Q11t, Q12t, Q16t, Q22t, Q26t, Q66t, axx, ayy, axy, bxx, byy, bxy] =...
@@ -803,6 +831,7 @@ classdef internal_optimise < handle
                 VALUE_BUFFER = Inf(1.0, numChunks);
             end
 
+            nIndependent = CACHE.N_INDEPENDENT;
             parfor chunkId = 1.0:numChunks
                 % Get iterator parameters
                 globalChunk = firstChunk + chunkId - 1.0;
@@ -827,7 +856,7 @@ classdef internal_optimise < handle
 
                     % Get the angle indices for the current stacking order
                     if isempty(indexPermutations) == true
-                        angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nPlies);
+                        angleIndexes = abd.internal_optimise.indexToStacking(i, 1.0:numAngles, numAngles, nIndependent);
                     else
                         angleIndexes = indexPermutations(i, :);
                     end

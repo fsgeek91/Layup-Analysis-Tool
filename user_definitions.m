@@ -148,6 +148,11 @@ STACKING_SEQUENCE = [0.0, 45.0, 90.0];
 PLY_THICKNESS = 0.1;
 
 % SYMMETRIC_LAYUP  Make the calculated section symmetric
+%{
+    When true, optimisation varies the independent half of the ply angles
+    and mirrors each candidate. When false, every ply angle is independent,
+    even if the initial stacking sequence is symmetric.
+%}
 SYMMETRIC_LAYUP = false;
 
 % SECTION_POINTS  Number of stress/strain section points per ply

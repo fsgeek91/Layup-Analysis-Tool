@@ -116,7 +116,8 @@
 %
 %   Note: When the symmetric layup definition is specified, material, layup
 %   stacking and ply thickness definitions are automatically reflected on
-%   the other side of the symmetry plane.
+%   the other side of the symmetry plane. During stacking sequence
+%   optimisation, this also restricts candidates to mirrored ply angles.
 %
 %   OUTPUT_LOCATION. A 1x2 cell array specifying the results location:
 %     {'<parameter>', [true | false]}

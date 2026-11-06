@@ -303,7 +303,8 @@ noUcrt = true;
 if (isStrengthOutput == true) && (printTensor == 1.0)
     % Use the same LaRC05 step for the initial layup and optimisation
     step = OUTPUT_STRENGTH{3.0};
-    if (noLaRC05 == false) && (ischar(step) == true) && (isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true)
+    if (noLaRC05 == false) && (ischar(step) == true) && (isempty(OUTPUT_OPTIMISED{1.0}) == false) && (OUTPUT_OPTIMISED{1.0} == true) &&...
+            (strcmpi(OUTPUT_OPTIMISED{2.0}, 'LARC05') == true)
         step = 15.0;
         fprintf('[NOTICE] The optimiser will use a fixed default step size of 15 degrees for LaRC05\n');
     end
@@ -339,7 +340,7 @@ if (isStrengthOutput == true) && (printTensor == 1.0)
             abd.internal_optimise.main(OUTPUT_OPTIMISED, nPlies, nPlies_points, SECTION_POINTS, z, z_points, Q11, Q22, Q66, Q12, A11_points, A22_points, B11_points,...
             B22_points, tolerance, XT, XC, YT, YC, S, C, B, XET, XEC, YET, YEC, SE, ALPHA, XHT, XHC, YHT, YHC, SHX, SHY, XLT, XLC, YLT, YLC, SLX, SLY, GL12, NL, NT, A0, PHI0,...
             deltaT, deltaM, Nxx, Nyy, Nxy, Mxx, Myy, Mxy, E11, E22, V12, G12, symsAvailable, S1, S2, S3, SECTION_POINTS, OUTPUT_STRENGTH{1.0}, OPTIMISER_SETTINGS, pctAvail,...
-            step, scoreLimit);
+            step, scoreLimit, symmetricPly);
     else
         CRITERION_BUFFER = [];
     end
@@ -393,9 +394,15 @@ if (isempty(OUTPUT_FIGURE{1.0}) == false) && (printTensor == 1.0) && (nPlies_poi
         mkdir(outputLocationFigure)
     end
 
+    % Use the actual candidate count, including any symmetry constraint
+    nPermutations = [];
+    if isempty(BEST_SEQUENCE) == false
+        nPermutations = BEST_SEQUENCE{3.0};
+    end
+
     % Create the MATLAB figures
     abd.internal_plot.main(OUTPUT_FIGURE{1.0}, OUTPUT_FIGURE{2.0}, OUTPUT_FIGURE{3.0}, outputLocationFigure, nPlies, E_ply_xy, S_ply_xy, E_ply_aligned, S_ply_aligned, z, z_points,...
-        CRITERION_BUFFER, OUTPUT_OPTIMISED, SP_COLOUR_BUFFER)
+        CRITERION_BUFFER, OUTPUT_OPTIMISED, SP_COLOUR_BUFFER, nPermutations)
 end
 
 %% WRITE RESULTS TO A TEXT FILE
