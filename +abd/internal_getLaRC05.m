@@ -96,10 +96,21 @@ LARPFCRT = (3.0.*(k2 - (Xt - Xc).*Sh)) ./ (Xt.*Xc);
 %% Matrix failure
 % Initialise critical plane search buffers
 precision = floor(180.0./step) + 1.0;
-FI_matrix = zeros(nPlies_points, precision);
+precision_matrix = precision;
+
+%{
+    Under plane stress, ALPHA and 180 - ALPHA give the same matrix
+    criterion. Search only the first half when the grid has reflected
+    pairs; otherwise retain all samples for a user-defined step size.
+    Keep the full precision for the fibre kinking/splitting search
+%}
+if rem(180.0, step) == 0.0
+    precision_matrix = floor(90.0./step) + 1.0;
+end
+FI_matrix = zeros(nPlies_points, precision_matrix);
 
 % Critical plane search
-FI_matrix = par_CP_MF(precision, step, S22, S33, S23, S12, S13, St, nt, Sl, nl, Yt, FI_matrix);
+FI_matrix = par_CP_MF(precision_matrix, step, S22, S33, S23, S12, S13, St, nt, Sl, nl, Yt, FI_matrix);
 
 % Failure criterion for the critical plane
 LARMFCRT = max(FI_matrix, [], 2.0)';

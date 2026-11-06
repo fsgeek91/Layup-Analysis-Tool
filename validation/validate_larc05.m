@@ -1,5 +1,5 @@
 function [] = validate_larc05()
-%   Regression checks for LaRC05 kinking and splitting (issue #95).
+%   Regression checks for LaRC05 rotations and plane searches (#95, #102).
 %
 %   RUN THIS FUNCTION FROM THE REPOSITORY ROOT:
 %   >> addpath('validation'); validate_larc05
@@ -31,6 +31,30 @@ actual = evaluate(stress, materials, false, 1.0);
 assert(actual(3.0, 1.0) > 0.0, 'Zero applied shear must not remove the supplied imperfection.');
 checkValues(actual(3.0, 2.0), 1.0, 'Calibrated uniaxial compressive strength');
 checkValues(actual(4.0, :), zeros(1.0, 2.0), 'Pure-compression mode selection');
+
+%% CHECK MATRIX-SEARCH SYMMETRY AGAINST THE FULL ANGULAR GRID
+searchStress = [-1000.0, -200.0, 100.0, -900.0, -300.0, 100.0, 0.0, 100.0;...
+    -200.0, -80.0, -40.0, 0.0, 20.0, 100.0, 0.0, 0.0; 0.0, -30.0, 40.0, -60.0, 30.0, -20.0, 0.0, 80.0];
+searchMaterials = repmat(material, 1.0, size(searchStress, 2.0));
+searchMaterials(1.0:7.0, 5.0:8.0) = 1.2*searchMaterials(1.0:7.0, 5.0:8.0);
+searchMaterials(11.0, 5.0:8.0) = 1.5;
+stepCases = {'DEFAULT', 'DEFAULT', 5.0, 15.0, 20.0, 7.0, 40.0, 2.5, 90.0};
+searchModes = [1.0, 2.0, ones(1.0, 7.0)];
+referenceSteps = [5.0, 15.0, 5.0, 15.0, 20.0, 7.0, 40.0, 2.5, 90.0];
+baseline = evaluate(searchStress, searchMaterials, false, 1.0);
+for i = 1.0:length(stepCases)
+    searchActual = evaluate(searchStress, searchMaterials, false, 1.0, stepCases{i}, searchModes(i));
+    checkValues(searchActual(2.0, :), referenceMatrixFailure(searchStress, searchMaterials, referenceSteps(i), 180.0), 'Full-grid matrix reference');
+    checkValues(searchActual(3.0:4.0, :), referenceFailure(searchStress, searchMaterials, referenceSteps(i)), 'Full-grid kinking/splitting reference');
+    checkValues(searchActual([1.0, 5.0], :), baseline([1.0, 5.0], :), 'Polymer and tensile criteria');
+end
+
+% A non-divisor must retain its upper-half samples. At 40-degree spacing,
+% the transverse-compression case peaks at 120 degrees (equivalent to 60),
+% which is absent from the truncated grid of 0, 40 and 80 degrees.
+fullGrid = referenceMatrixFailure(searchStress, searchMaterials, 40.0, 180.0);
+truncatedGrid = referenceMatrixFailure(searchStress, searchMaterials, 40.0, 90.0);
+assert(fullGrid(1.0) > truncatedGrid(1.0) + 1e-6, 'The non-divisor case must detect a lost critical plane.');
 
 %% CHECK MIXED MATERIALS, SECTION POINTS AND TOOLBOX INDEPENDENCE
 materials = repmat(material, 1.0, 6.0);
@@ -79,28 +103,37 @@ catch MException
 end
 assert(failedAsExpected == true, 'Invalid calibration must report the material error.');
 
-fprintf('[PASS] LaRC05 rotations, calibration, zero stress, material grouping and stress units\n');
+fprintf('[PASS] LaRC05 rotations, plane searches, calibration, zero stress, material grouping and stress units\n');
 end
 
 %% EVALUATE ALL FIVE CRITERIA
-function [result] = evaluate(stress, material, symsAvailable, sectionPoints)
+function [result] = evaluate(stress, material, symsAvailable, sectionPoints, step, mode)
+if nargin < 5.0
+    step = 15.0;
+end
+if nargin < 6.0
+    mode = 1.0;
+end
 nPoints = size(stress, 2.0);
 meanStress = 0.5.*(stress(1.0, :) + stress(2.0, :));
 radius = sqrt((0.5.*(stress(1.0, :) - stress(2.0, :))).^2.0 + stress(3.0, :).^2.0);
 [PF, MF, KF, SF, TF] = abd.internal_getLaRC05(nPoints, stress, symsAvailable, meanStress + radius, meanStress - radius, zeros(1.0, nPoints),...
     material(7.0, :), material(1.0, :), material(2.0, :), material(3.0, :), material(4.0, :), material(5.0, :), material(6.0, :),...
-    material(10.0, :), material(11.0, :), material(8.0, :), material(9.0, :), sectionPoints, 15.0, 1.0);
+    material(10.0, :), material(11.0, :), material(8.0, :), material(9.0, :), sectionPoints, step, mode);
 result = [PF; MF; KF; SF; TF];
 end
 
 %% INDEPENDENT REFERENCE USING TWO ORTHOGONAL ROTATIONS
-function [result] = referenceFailure(stress, material)
+function [result] = referenceFailure(stress, material, step)
+if nargin < 3.0
+    step = 15.0;
+end
 result = zeros(2.0, size(stress, 2.0));
 for i = 1.0:size(stress, 2.0)
     tensor = [stress(1.0, i), stress(3.0, i), 0.0; stress(3.0, i), stress(2.0, i), 0.0; 0.0, 0.0, 0.0];
     initialAngle = material(11.0, i)*pi/180.0;
     initialRotation = getRotation(initialAngle);
-    for psi = (0.0:15.0:180.0)*pi/180.0
+    for psi = (0.0:step:180.0)*pi/180.0
         rotation = [1.0, 0.0, 0.0; 0.0, cos(psi), sin(psi); 0.0, -sin(psi), cos(psi)];
         kinkTensor = rotation*tensor*rotation';
         unsignedTensor = kinkTensor;
@@ -121,6 +154,25 @@ for i = 1.0:size(stress, 2.0)
         if (stress(1.0, i) >= -0.5*material(2.0, i)) && (stress(1.0, i) <= 0.0)
             result(2.0, i) = max(result(2.0, i), criterion);
         end
+    end
+end
+end
+
+%% INDEPENDENT MATRIX REFERENCE USING PLANE TRACTIONS
+function [result] = referenceMatrixFailure(stress, material, step, maximumAngle)
+result = zeros(1.0, size(stress, 2.0));
+for i = 1.0:size(stress, 2.0)
+    tensor = [stress(1.0, i), stress(3.0, i), 0.0; stress(3.0, i), stress(2.0, i), 0.0; 0.0, 0.0, 0.0];
+    for alpha = (0.0:step:maximumAngle)*pi/180.0
+        normal = [0.0; cos(alpha); sin(alpha)];
+        transverse = [0.0; -sin(alpha); cos(alpha)];
+        traction = tensor*normal;
+        Sn = normal'*traction;
+        Tt = transverse'*traction;
+        Tl = traction(1.0);
+        criterion = sqrt((Tt/(material(6.0, i) - material(9.0, i)*Sn))^2.0 +...
+            (Tl/(material(5.0, i) - material(8.0, i)*Sn))^2.0 + (max(Sn, 0.0)/material(3.0, i))^2.0);
+        result(i) = max(result(i), criterion);
     end
 end
 end
