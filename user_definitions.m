@@ -149,9 +149,8 @@ PLY_THICKNESS = 0.1;
 
 % SYMMETRIC_LAYUP  Make the calculated section symmetric
 %{
-    When true, optimisation varies the independent half of the ply angles
-    and mirrors each candidate. When false, every ply angle is independent,
-    even if the initial stacking sequence is symmetric.
+    Stacking sequence optimisation varies the independent half of the ply
+    angles and mirrors each candidate orientation
 %}
 SYMMETRIC_LAYUP = false;
 
@@ -197,26 +196,19 @@ OUTPUT_PLY = 'DEFAULT';
 
 % OUTPUT_FIGURE  MATLAB figure of stress and strain
 %{
-    First argument (MATLAB figures):
-    '<mode>': [] (do not create figures); Default (no smoothing); Smooth
-    (smooth output at ply boundaries)
+    First argument (MATLAB figures): '<mode>': [] (do not create figures);
+    Default (no smoothing); Smooth (smooth output at ply boundaries)
     
-    Second argument (section points):
-    '<mode>': [] (do not visualise section points); Points
-    (plot all section points)
+    Second argument (section points): '<mode>': [] (do not visualise
+    section points); Points (plot all section points)
 
-    Third argument (MATLAB figure layout):
-    '<layout>': Split (single MATLAB figure, separate plot for each tensor
-    component); Compact (single MATLAB figure, one plot for all tensor
-    components); DETACHED (separate MATLAB figure for each tensor
-    component)
+    Third argument (MATLAB figure layout): '<layout>': Split (single MATLAB
+    figure, separate plot for each tensor component); Compact (single
+    MATLAB figure, one plot for all tensor components); DETACHED (separate
+    MATLAB figure for each tensor component)
 
-    Note: MATLAB figures are only generated when at least one load matrix
-    component is specified with NXX/NYY/NXY or MXX/MYY/MXY.
-
-    Optimisation retains scores only for the CDF figure, up to a sample of
-    10000 stacking permutations. All candidates are evaluated to select
-    the exact optimum, regardless of the figure setting.
+    Note: MATLAB figures are only generated when the load matrix is
+    specified (NXX/NYY/NXY, MXX/MYY/MXY or DELTA_T/DELTA_M).
 %}
 OUTPUT_FIGURE = {'DEFAULT', 'POINTS', 'SPLIT'};
 
