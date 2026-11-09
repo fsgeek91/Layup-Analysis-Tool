@@ -5,8 +5,8 @@ function [enableTensor, printTensor, material, fail_stress, fail_strain, hashin,
 %
 %   DO NOT RUN THIS FUNCTION.
 %
-%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
-%   Last modified 04-Sep-2026 12:21:27 UTC
+%   Layup Analysis Tool 5.2.0 Copyright Louis Vallance 2026
+%   Last modified 09-Nov-2026 15:04:58 UTC
 %
 %#ok<*NODEF>
 

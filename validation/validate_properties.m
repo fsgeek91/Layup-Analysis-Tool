@@ -7,7 +7,7 @@ function [] = validate_properties()
 %   Analysis files are written to a temporary directory. The MATLAB path is
 %   restored when the checks finish. Existing parallel pool settings apply.
 %
-%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%   Layup Analysis Tool 5.2.0 Copyright Louis Vallance 2026
 %
 %% - DO NOT EDIT BELOW LINE
 %__________________________________________________________________________

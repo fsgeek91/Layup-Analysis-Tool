@@ -7,7 +7,7 @@ function [] = validate_larc05()
 %   Independent reference stresses are obtained using rotation matrices.
 %   Existing parallel pool settings apply. No analysis files are written.
 %
-%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%   Layup Analysis Tool 5.2.0 Copyright Louis Vallance 2026
 %
 %% - DO NOT EDIT BELOW LINE
 %__________________________________________________________________________

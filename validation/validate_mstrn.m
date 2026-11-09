@@ -7,7 +7,7 @@ function [] = validate_mstrn()
 %   The public-interface check writes analysis files to a temporary folder.
 %   The MATLAB path is restored when the checks finish.
 %
-%   Layup Analysis Tool 5.1.5 Copyright Louis Vallance 2026
+%   Layup Analysis Tool 5.2.0 Copyright Louis Vallance 2026
 %
 %% - DO NOT EDIT BELOW LINE
 %__________________________________________________________________________
